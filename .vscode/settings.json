@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "${workspaceFolder}/venv/bin/python3",
+    "python.autoComplete.extraPaths": ["${workspaceFolder}/wwdtm"],
+    "python.linting.pylintArgs": [
+        "--extension-pkg-whitelist=numpy,mysql,oursql,slugify,wwdtm"
+    ]
+}

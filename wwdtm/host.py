@@ -1,0 +1,339 @@
+# -*- coding: utf-8 -*-
+# Copyright (c) 2018-2019 Linh Pham
+# wwdtm is relased under the terms of the Apache License 2.0
+"""This module provides functions that query the ww_hosts table in the
+Wait Wait... Don't Tell Me! Stats Page Database.
+"""
+
+import collections
+from typing import List, Dict, Tuple
+import mysql.connector
+from wwdtm.responsecode import ResponseCode
+
+def convert_slug_to_id(host_slug: str,
+                       database_connection: mysql.connector.connect
+                      ) -> Tuple[int, ResponseCode]:
+    """Return host database ID from slug string.
+
+    Arguments:
+        host_slug (str): Host slug string
+        database_connect (mysql.connector.connect): Database connect object
+
+    Returns:
+        (int, ResponseCode): Returns host ID on success; otherwise, it will return
+        None. Also returns a ReponseCode IntEnum
+    """
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = "SELECT hostid FROM ww_hosts WHERE hostslug = %s;"
+        cursor.execute(query, (host_slug,))
+
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return result["hostid"], ResponseCode.SUCCESS
+
+        return None, ResponseCode.NOT_FOUND
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def validate_id(host_id: int,
+                database_connection: mysql.connector.connect
+               ) -> Tuple[bool, ResponseCode]:
+    """Validate host ID against database
+
+    Arguments:
+        host_id (int); Host ID from database
+        database_connection (mysql.connector.connect): Database connect object
+
+    Returns:
+        (bool, ResponseCode): Returns True on success; otherwise, it will return False if not
+        found. Also returns a ReponseCode IntEnum
+    """
+    try:
+        host_id = int(host_id)
+    except ValueError:
+        return False, ResponseCode.BAD_REQUEST
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = "SELECT hostid FROM ww_hosts WHERE hostid = %s;"
+        cursor.execute(query, (host_id,))
+
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return True, ResponseCode.SUCCESS
+
+        return False, ResponseCode.NOT_FOUND
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def validate_slug(host_slug: str,
+                  database_connection: mysql.connector.connect
+                 ) -> Tuple[bool, ResponseCode]:
+    """Validate host slug string against database
+
+    Arguments:
+        host_slug (str): Host slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+
+    Returns:
+        (bool, ResponseCode): Returns True if host slug is valid, False otherwise.
+        Also returns a ReponseCode IntEnum
+    """
+    host_slug = host_slug.strip()
+    if not host_slug:
+        return False, ResponseCode.BAD_REQUEST
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = "SELECT hostslug FROM ww_hosts WHERE hostslug = %s;"
+        cursor.execute(query, (host_slug,))
+
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return True, ResponseCode.SUCCESS
+
+        return False, ResponseCode.NOT_FOUND
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def id_exists(host_id: int,
+              database_connection: mysql.connector.connect
+             ) -> Tuple[bool, ResponseCode]:
+    """Return whether or not a host ID exists in the database.
+
+    Arguments:
+        host_id (int): Host ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (bool, ResponseCode): Returns True if host ID exists, False otherwise. Also
+        returns a ReponseCode IntEnum
+    """
+    return validate_id(host_id, database_connection)
+
+def slug_exists(host_slug: str,
+                database_connection: mysql.connector.connect
+               ) -> Tuple[bool, ResponseCode]:
+    """Return whether or not a host slug exists in the database.
+
+    Arguments:
+        host_slug (int): Host slug from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (bool, ResponseCode): Returns True if host slug exists, False otherwise.
+        Also returns a ReponseCode IntEnum
+    """
+    return validate_slug(host_slug, database_connection)
+
+def retrieve_all(database_connection: mysql.connector.connect
+                ) -> Tuple[List[Dict], ResponseCode]:
+    """Return a list of OrderedDicts containing hosts and their details.
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict of host
+        details. Also returns a ReponseCode IntEnum
+    """
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT hostid, host, hostslug, hostgender FROM ww_hosts "
+                 "WHERE hostslug != 'tbd' ORDER BY host ASC;")
+        cursor.execute(query)
+
+        result = cursor.fetchall()
+        cursor.close()
+
+        hosts = []
+        for row in result:
+            host = collections.OrderedDict()
+            host["id"] = row["hostid"]
+            host["name"] = row["host"]
+            host["slug"] = row["hostslug"]
+            host["gender"] = row["hostgender"]
+            hosts.append(host)
+
+        return hosts, ResponseCode.SUCCESS
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def retrieve_all_ids(database_connection: mysql.connector.connect
+                    ) -> Tuple[List[int], ResponseCode]:
+    """Return a list of all host IDs, with IDs sorted in the order of host names.
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (list[int], ResponseCode): Returns a list containing host IDs. Also returns a ReponseCode
+        IntEnum
+    """
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT hostid FROM ww_hosts WHERE hostslug != 'none' ORDER BY host ASC;")
+        cursor.execute(query)
+
+        result = cursor.fetchall()
+        cursor.close()
+
+        panelists = []
+        for row in result:
+            panelists.append(row["hostid"])
+
+        return panelists, ResponseCode.SUCCESS
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def retrieve_by_id(host_id: int,
+                   database_connection: mysql.connector.connect,
+                   pre_validated_id: bool = False
+                  ) -> Tuple[Dict, ResponseCode]:
+    """Returns an OrderedDict with host details based on the host ID.
+
+    Arguments:
+        host_id (int): Host ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+    Returns:
+        (OrderedDict, ResponseCode): Returns an OrderedDict containing host id, name, and slug
+        string. Also returns a ReponseCode IntEnum
+    """
+    if not pre_validated_id:
+        (valid_id, response_code) = validate_id(host_id, database_connection)
+        if not valid_id:
+            return None, response_code
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT host, hostslug, hostgender FROM ww_hosts WHERE hostid = %s;")
+
+        cursor.execute(query, (host_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            host_dict = collections.OrderedDict()
+            host_dict = {
+                "id": host_id,
+                "name": result["host"],
+                "slug": result["hostslug"],
+                "gender": result["hostgender"]
+                }
+            return host_dict, ResponseCode.SUCCESS
+
+        return None, ResponseCode.NOT_FOUND
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def retrieve_by_slug(host_slug: str,
+                     database_connection: mysql.connector.connect
+                    ) -> Tuple[Dict, ResponseCode]:
+    """Returns an OrderedDict with host details based on the host slug string
+
+    Arguments:
+        host_slug (str): Host slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (OrderedDict, ResponseCode): Returns an OrderedDict containing host id, name and slug
+        string. Also returns a ReponseCode IntEnum
+    """
+    (host_id, response_code) = convert_slug_to_id(host_slug, database_connection)
+    if not host_id:
+        return None, response_code
+
+    return retrieve_by_id(host_id, database_connection, True)
+
+def retrieve_appearances_by_id(host_id: int,
+                               database_connection: mysql.connector.connect,
+                               pre_validated_id: bool = False
+                              ) -> Tuple[List[Dict], ResponseCode]:
+    """Returns a list of OrderedDicts containing information about all of the host's
+    appearances.
+
+    Arguments:
+        host_id (int): Host ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+    Returns:
+        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with host
+        appearance information. Also returns a ReponseCode IntEnum
+    """
+    if not pre_validated_id:
+        (valid_id, response_code) = validate_id(host_id, database_connection)
+        if not valid_id:
+            return None, response_code
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT ( "
+                 "SELECT COUNT(hm.showid) FROM ww_showhostmap hm "
+                 "JOIN ww_shows s ON s.showid = hm.showid "
+                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
+                 "hm.hostid = %s ) AS regular, ( "
+                 "SELECT COUNT(hm.showid) FROM ww_showhostmap hm "
+                 "JOIN ww_shows s ON s.showid = hm.showid "
+                 "WHERE hm.hostid = %s ) AS allshows;")
+        cursor.execute(query, (host_id, host_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        appearance_counts = collections.OrderedDict()
+        appearance_counts["regularShows"] = result["regular"]
+        appearance_counts["allShows"] = result["allshows"]
+
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT hm.showid, s.showdate, s.bestof, s.repeatshowid, hm.guest "
+                 "FROM ww_showhostmap hm "
+                 "JOIN ww_hosts h ON h.hostid = hm.hostid "
+                 "JOIN ww_shows s ON s.showid = hm.showid "
+                 "WHERE hm.hostid = %s "
+                 "ORDER BY s.showdate ASC;")
+
+        cursor.execute(query, (host_id,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        appearance_dict = collections.OrderedDict()
+        if result:
+            appearances = []
+            for appearance in result:
+                appearance_info = {}
+                appearance_info["date"] = appearance["showdate"].isoformat()
+                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
+                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
+                appearance_info["exception"] = bool(appearance["guest"])
+                appearances.append(appearance_info)
+
+            appearance_dict["count"] = appearance_counts
+            appearance_dict["shows"] = appearances
+        else:
+            appearance_dict["count"] = 0
+            appearance_dict["shows"] = None
+
+        return appearance_dict, ResponseCode.SUCCESS
+    except mysql.connector.Error:
+        return None, ResponseCode.ERROR
+
+def retrieve_appearances_by_slug(host_slug: str,
+                                 database_connection: mysql.connector.connect
+                                ) -> Tuple[List[Dict], ResponseCode]:
+    """Returns a list of OrderedDicts containing information about all of the host's
+    appearances.
+
+    Arguments:
+        host_slug (str): Host slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with host
+        appearance information. Also returns a ReponseCode IntEnum
+    """
+    (host_id, response_code) = convert_slug_to_id(host_slug, database_connection)
+    if not host_id:
+        return None, response_code
+
+    return retrieve_appearances_by_id(host_id, database_connection, True)
