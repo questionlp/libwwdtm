@@ -34,14 +34,14 @@ show.retrieve_by_id(id: str, database_connect: mysql.connector.connect)
 
 ## Running Tests
 
- 1. Set up a venv in the current directory
- 2. Create a copy of `config.dist.json` and name it `config.json`
- 3. Edit `config.json` and fill in the `local` section with the appropriate MySQL/MariaDB connection information
- 4. Activate the venv by running:
+1. Set up a venv in the current directory
+2. Create a copy of `config.dist.json` and name it `config.json`
+3. Edit `config.json` and fill in the `local` section with the appropriate MySQL/MariaDB connection information
+4. Activate the venv by running:
    * `source ${venv}/bin/activate`
- 5. Install any required packages via `pip`
+5. Install any required packages via `pip`
    * `pip install -r requirements.txt`
- 6. Run the test script
+6. Run the test script
    * `python test.py`
 
 ## Packaging
