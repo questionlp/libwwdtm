@@ -6,13 +6,11 @@ Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
 import collections
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import mysql.connector
-from wwdtm.responsecode import ResponseCode
 
 def convert_slug_to_id(guest_slug: str,
-                       database_connection: mysql.connector.connect
-                      ) -> Tuple[int, ResponseCode]:
+                       database_connection: mysql.connector.connect) -> int:
     """Return guest database ID from slug string.
 
     Arguments:
@@ -20,8 +18,7 @@ def convert_slug_to_id(guest_slug: str,
         database_connect (mysql.connector.connect): Database connect object
 
     Returns:
-        (int, ResponseCode): Returns guest ID on success; otherwise, it will return
-        None. Also returns a ReponseCode IntEnum
+        int: Returns guest ID on success; otherwise returns None
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -32,14 +29,14 @@ def convert_slug_to_id(guest_slug: str,
         cursor.close()
 
         if result:
-            return result["guestid"], ResponseCode.SUCCESS
+            return result["guestid"]
 
-        return None, ResponseCode.NOT_FOUND
+        return None
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def validate_id(guest_id: int,
-                database_connection: mysql.connector.connect) -> Tuple[bool, ResponseCode]:
+                database_connection: mysql.connector.connect) -> bool:
     """Validate guest ID against database
 
     Arguments:
@@ -47,13 +44,12 @@ def validate_id(guest_id: int,
         database_connection (mysql.connector.connect): Database connect object
 
     Returns:
-        (bool, ResponseCode): Returns True on success; otherwise, it will return False if not
-        found. Also returns a ReponseCode IntEnum
+        bool: Returns True on success; otherwise returns False
     """
     try:
         guest_id = int(guest_id)
     except ValueError:
-        return False, ResponseCode.BAD_REQUEST
+        return False
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -63,15 +59,12 @@ def validate_id(guest_id: int,
         result = cursor.fetchone()
         cursor.close()
 
-        if result:
-            return True, ResponseCode.SUCCESS
-
-        return False, ResponseCode.NOT_FOUND
+        return bool(result)
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def validate_slug(guest_slug: str,
-                  database_connection: mysql.connector.connect) -> Tuple[bool, ResponseCode]:
+                  database_connection: mysql.connector.connect) -> bool:
     """Validate guest slug string against database
 
     Arguments:
@@ -79,12 +72,11 @@ def validate_slug(guest_slug: str,
         database_connection (mysql.connector.connect): Database connect object
 
     Returns:
-        (bool, ResponseCode): Returns True if guest slug is valid, False otherwise.
-        Also returns a ReponseCode IntEnum
+        bool: Returns True if guest slug is valid, otherwise returns False
     """
     guest_slug = guest_slug.strip()
     if not guest_slug:
-        return False, ResponseCode.BAD_REQUEST
+        return False
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -94,47 +86,41 @@ def validate_slug(guest_slug: str,
         result = cursor.fetchone()
         cursor.close()
 
-        if result:
-            return True, ResponseCode.SUCCESS
-
-        return False, ResponseCode.NOT_FOUND
+        return bool(result)
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def id_exists(guest_id: int,
-              database_connection: mysql.connector.connect) -> Tuple[bool, ResponseCode]:
+              database_connection: mysql.connector.connect) -> bool:
     """Return whether or not a guest ID exists in the database.
 
     Arguments:
         guest_id (int): Guest ID from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (bool, ResponseCode): Returns True if guest ID exists, False otherwise. Also
-        returns a ReponseCode IntEnum
+        bool: Returns True if guest ID exists, otherwise returns False
     """
     return validate_id(guest_id, database_connection)
 
 def slug_exists(guest_slug: str,
-                database_connection: mysql.connector.connect) -> Tuple[bool, ResponseCode]:
+                database_connection: mysql.connector.connect) -> bool:
     """Return whether or not a guest slug exists in the database.
 
     Arguments:
         guest_slug (int): Guest slug from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (bool, ResponseCode): Returns True if guest slug exists, False otherwise.
-        Also returns a ReponseCode IntEnum
+        bool: Returns True if guest slug exists, otherwise returns False
     """
     return validate_slug(guest_slug, database_connection)
 
-def retrieve_all(database_connection: mysql.connector.connect) -> Tuple[List[Dict], ResponseCode]:
+def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     """Return a list of OrderedDicts containing guests and their details.
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict of guest
-        details. Also returns a ReponseCode IntEnum
+        list[OrderedDict]: Returns a list containing an OrderedDict of guest details
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -153,19 +139,17 @@ def retrieve_all(database_connection: mysql.connector.connect) -> Tuple[List[Dic
             guest["slug"] = row["guestslug"]
             guests.append(guest)
 
-        return guests, ResponseCode.SUCCESS
+        return guests
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
-def retrieve_all_ids(database_connection: mysql.connector.connect
-                    ) -> Tuple[List[int], ResponseCode]:
+def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
     """Return a list of all guest IDs, with IDs sorted in the order of guest names.
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (list[int], ResponseCode): Returns a list containing guest IDs. Also returns a ReponseCode
-        IntEnum
+        list[int]: Returns a list containing guest IDs
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -179,13 +163,13 @@ def retrieve_all_ids(database_connection: mysql.connector.connect
         for row in result:
             panelists.append(row["guestid"])
 
-        return panelists, ResponseCode.SUCCESS
+        return panelists
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def retrieve_by_id(guest_id: int,
                    database_connection: mysql.connector.connect,
-                   pre_validated_id: bool = False) -> Tuple[Dict, ResponseCode]:
+                   pre_validated_id: bool = False) -> Dict:
     """Returns an OrderedDict with guest details based on the guest ID.
 
     Arguments:
@@ -193,12 +177,11 @@ def retrieve_by_id(guest_id: int,
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
     Returns:
-        (OrderedDict, ResponseCode): Returns a dict containing guest id, name, and slug string.
-        Also returns a ReponseCode IntEnum
+        OrderedDict: Returns a dict containing guest id, name, and slug string
     """
-    (valid_id, response_code) = validate_id(guest_id, database_connection)
+    valid_id = validate_id(guest_id, database_connection)
     if (not pre_validated_id and not valid_id):
-        return None, response_code
+        return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -215,32 +198,31 @@ def retrieve_by_id(guest_id: int,
                 "name": result["guest"],
                 "slug": result["guestslug"]
                 }
-            return guest_dict, ResponseCode.SUCCESS
+            return guest_dict
 
-        return None, ResponseCode.NOT_FOUND
+        return None
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def retrieve_by_slug(guest_slug: str,
-                     database_connection: mysql.connector.connect) -> Tuple[Dict, ResponseCode]:
+                     database_connection: mysql.connector.connect) -> Dict:
     """Returns an OrderedDict with guest details based on the guest slug string
 
     Arguments:
         guest_slug (str): Guest slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (OrderedDict, ResponseCode): Returns an OrderedDict containing guest id, name and slug
-        string. Also returns a ReponseCode IntEnum
+        OrderedDict: Returns an OrderedDict containing guest id, name and slug string
     """
-    (guest_id, response_code) = convert_slug_to_id(guest_slug, database_connection)
-    if not guest_id:
-        return None, response_code
+    guest_id = convert_slug_to_id(guest_slug, database_connection)
+    if guest_id:
+        return retrieve_by_id(guest_id, database_connection, True)
 
-    return retrieve_by_id(guest_id, database_connection, True)
+    return None
 
 def retrieve_appearances_by_id(guest_id: int,
                                database_connection: mysql.connector.connect,
-                               pre_validated_id: bool = False) -> Tuple[List[Dict], ResponseCode]:
+                               pre_validated_id: bool = False) -> List[Dict]:
     """Returns a list of OrderedDicts containing information about all of the guest's
     appearances.
 
@@ -249,13 +231,13 @@ def retrieve_appearances_by_id(guest_id: int,
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
     Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with guest
-        appearance information. Also returns a ReponseCode IntEnum
+        list[OrderedDict]: Returns a list containing an OrderedDict with guest
+        appearance information
     """
     if not pre_validated_id:
-        (valid_id, response_code) = validate_id(guest_id, database_connection)
+        valid_id = validate_id(guest_id, database_connection)
         if not valid_id:
-            return None, response_code
+            return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -305,13 +287,13 @@ def retrieve_appearances_by_id(guest_id: int,
             appearance_dict["count"] = 0
             appearance_dict["shows"] = None
 
-        return appearance_dict, ResponseCode.SUCCESS
+        return appearance_dict
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def retrieve_appearances_by_slug(guest_slug: str,
                                  database_connection: mysql.connector.connect
-                                ) -> Tuple[List[Dict], ResponseCode]:
+                                ) -> List[Dict]:
     """Returns a list of OrderedDicts containing information about all of the guest's
     appearances.
 
@@ -319,11 +301,11 @@ def retrieve_appearances_by_slug(guest_slug: str,
         guest_slug (str): Guest slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with guest
-        appearance information. Also returns a ReponseCode IntEnum
+        list[OrderedDict]: Returns a list containing an OrderedDict with guest
+        appearance information
     """
-    (guest_id, response_code) = convert_slug_to_id(guest_slug, database_connection)
-    if not guest_id:
-        return None, response_code
+    guest_id = convert_slug_to_id(guest_slug, database_connection)
+    if guest_id:
+        return retrieve_appearances_by_id(guest_id, database_connection, True)
 
-    return retrieve_appearances_by_id(guest_id, database_connection, True)
+    return None

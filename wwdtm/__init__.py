@@ -3,4 +3,4 @@
 # wwdtm is relased under the terms of the Apache License 2.0
 """Explicitly listing all modules in this package"""
 
-from wwdtm import guest, host, panelist, responsecode, scorekeeper, show
+from wwdtm import guest, host, panelist, scorekeeper, show

@@ -6,13 +6,11 @@ Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
 import collections
-from typing import List, Dict, Tuple
+from typing import List, Dict
 import mysql.connector
-from wwdtm.responsecode import ResponseCode
 
 def convert_slug_to_id(scorekeeper_slug: str,
-                       database_connection: mysql.connector.connect
-                      ) -> Tuple[int, ResponseCode]:
+                       database_connection: mysql.connector.connect) -> int:
     """Return scorekeeper database ID from slug string.
 
     Arguments:
@@ -20,8 +18,7 @@ def convert_slug_to_id(scorekeeper_slug: str,
         database_connect (mysql.connector.connect): Database connect object
 
     Returns:
-        (int, ResponseCode): Returns scorekeeper ID on success; otherwise, it will return
-        None. Also returns a ReponseCode IntEnum
+        int: Returns scorekeeper ID on success; otherwise returns None
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -32,15 +29,14 @@ def convert_slug_to_id(scorekeeper_slug: str,
         cursor.close()
 
         if result:
-            return result["scorekeeperid"], ResponseCode.SUCCESS
+            return result["scorekeeperid"]
 
-        return None, ResponseCode.NOT_FOUND
+        return None
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def validate_id(scorekeeper_id: int,
-                database_connection: mysql.connector.connect
-               ) -> Tuple[bool, ResponseCode]:
+                database_connection: mysql.connector.connect) -> bool:
     """Validate scorekeeper ID against database
 
     Arguments:
@@ -48,13 +44,12 @@ def validate_id(scorekeeper_id: int,
         database_connection (mysql.connector.connect): Database connect object
 
     Returns:
-        (bool, ResponseCode): Returns True on success; otherwise, it will return False if not
-        found. Also returns a ReponseCode IntEnum
+        bool: Returns True on success; otherwise returns False
     """
     try:
         scorekeeper_id = int(scorekeeper_id)
     except ValueError:
-        return False, ResponseCode.BAD_REQUEST
+        return False
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -64,16 +59,12 @@ def validate_id(scorekeeper_id: int,
         result = cursor.fetchone()
         cursor.close()
 
-        if result:
-            return True, ResponseCode.SUCCESS
-
-        return False, ResponseCode.NOT_FOUND
+        return bool(result)
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def validate_slug(scorekeeper_slug: str,
-                  database_connection: mysql.connector.connect
-                 ) -> Tuple[bool, ResponseCode]:
+                  database_connection: mysql.connector.connect) -> bool:
     """Validate scorekeeper slug string against database
 
     Arguments:
@@ -81,12 +72,11 @@ def validate_slug(scorekeeper_slug: str,
         database_connection (mysql.connector.connect): Database connect object
 
     Returns:
-        (bool, ResponseCode): Returns True if scorekeeper slug is valid, False otherwise.
-        Also returns a ReponseCode IntEnum
+        bool: Returns True if scorekeeper slug is valid, otherwise returns False
     """
     scorekeeper_slug = scorekeeper_slug.strip()
     if not scorekeeper_slug:
-        return False, ResponseCode.BAD_REQUEST
+        return False
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -96,50 +86,42 @@ def validate_slug(scorekeeper_slug: str,
         result = cursor.fetchone()
         cursor.close()
 
-        if result:
-            return True, ResponseCode.SUCCESS
-
-        return False, ResponseCode.NOT_FOUND
+        return bool(result)
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def id_exists(scorekeeper_id: int,
-              database_connection: mysql.connector.connect
-             ) -> Tuple[bool, ResponseCode]:
+              database_connection: mysql.connector.connect) -> bool:
     """Return whether or not a scorekeeper ID exists in the database.
 
     Arguments:
         scorekeeper_id (int): Host ID from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (bool, ResponseCode): Returns True if scorekeeper ID exists, False otherwise. Also
-        returns a ReponseCode IntEnum
+        bool: Returns True if scorekeeper ID exists, otherwise returns False
     """
     return validate_id(scorekeeper_id, database_connection)
 
 def slug_exists(scorekeeper_slug: str,
-                database_connection: mysql.connector.connect
-               ) -> Tuple[bool, ResponseCode]:
+                database_connection: mysql.connector.connect) -> bool:
     """Return whether or not a scorekeeper slug exists in the database.
 
     Arguments:
         scorekeeper_slug (int): Host slug from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (bool, ResponseCode): Returns True if scorekeeper slug exists, False otherwise.
-                              Also returns a ReponseCode IntEnum
+        bool: Returns True if scorekeeper slug exists, otherwise returns False
     """
     return validate_slug(scorekeeper_slug, database_connection)
 
-def retrieve_all(database_connection: mysql.connector.connect
-                ) -> Tuple[List[Dict], ResponseCode]:
+def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     """Return a list of OrderedDicts containing scorekeepers and their details.
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict of scorekeeper
-        details. Also returns a ReponseCode IntEnum
+        list[OrderedDict]: Returns a list containing an OrderedDict of scorekeeper
+        details
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -159,19 +141,17 @@ def retrieve_all(database_connection: mysql.connector.connect
             scorekeeper["gender"] = row["scorekeepergender"]
             scorekeepers.append(scorekeeper)
 
-        return scorekeepers, ResponseCode.SUCCESS
+        return scorekeepers
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
-def retrieve_all_ids(database_connection: mysql.connector.connect
-                    ) -> Tuple[List[int], ResponseCode]:
+def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
     """Return a list of all scorekeeper IDs, with IDs sorted in the order of scorekeeper names.
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (list[int], ResponseCode): Returns a list containing scorekeeper IDs. Also returns a
-        ReponseCode IntEnum
+        list[int]: Returns a list containing scorekeeper IDs
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -186,14 +166,13 @@ def retrieve_all_ids(database_connection: mysql.connector.connect
         for row in result:
             panelists.append(row["scorekeeperid"])
 
-        return panelists, ResponseCode.SUCCESS
+        return panelists
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def retrieve_by_id(scorekeeper_id: int,
                    database_connection: mysql.connector.connect,
-                   pre_validated_id: bool = False
-                  ) -> Tuple[Dict, ResponseCode]:
+                   pre_validated_id: bool = False) -> Dict:
     """Returns an OrderedDict with scorekeeper details based on the scorekeeper ID.
 
     Arguments:
@@ -201,13 +180,12 @@ def retrieve_by_id(scorekeeper_id: int,
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
     Returns:
-        (OrderedDict, ResponseCode): Returns a dict containing scorekeeper id, name, and slug
-        string. Also returns a ReponseCode IntEnum
+        OrderedDict: Returns a dict containing scorekeeper id, name, and slug string
     """
     if not pre_validated_id:
-        (valid_id, response_code) = validate_id(scorekeeper_id, database_connection)
+        valid_id = validate_id(scorekeeper_id, database_connection)
         if not valid_id:
-            return None, response_code
+            return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -226,34 +204,31 @@ def retrieve_by_id(scorekeeper_id: int,
                 "slug": result["scorekeeperslug"],
                 "gender": result["scorekeepergender"]
                 }
-            return scorekeeper_dict, ResponseCode.SUCCESS
+            return scorekeeper_dict
 
-        return None, ResponseCode.NOT_FOUND
+        return None
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def retrieve_by_slug(scorekeeper_slug: str,
-                     database_connection: mysql.connector.connect
-                    ) -> Tuple[Dict, ResponseCode]:
+                     database_connection: mysql.connector.connect) -> Dict:
     """Returns an OrderedDict with scorekeeper details based on the scorekeeper slug string
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (OrderedDict, ResponseCode): Returns a dict containing scorekeeper id, name and slug
-        string. Also returns a ReponseCode IntEnum
+        OrderedDict: Returns a dict containing scorekeeper id, name and slug string
     """
-    (scorekeeper_id, response_code) = convert_slug_to_id(scorekeeper_slug, database_connection)
-    if not scorekeeper_id:
-        return None, response_code
+    scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
+    if scorekeeper_id:
+        return retrieve_by_id(scorekeeper_id, database_connection, True)
 
-    return retrieve_by_id(scorekeeper_id, database_connection, True)
+    return None
 
 def retrieve_appearances_by_id(scorekeeper_id: int,
                                database_connection: mysql.connector.connect,
-                               pre_validated_id: bool = False
-                              ) -> Tuple[List[Dict], ResponseCode]:
+                               pre_validated_id: bool = False) -> List:
     """Returns a list of OrderedDicts containing information about all of the scorekeeper's
     appearances.
 
@@ -262,13 +237,13 @@ def retrieve_appearances_by_id(scorekeeper_id: int,
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
     Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with
-        scorekeeper appearance information. Also returns a ReponseCode IntEnum
+        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
+        appearance information
     """
     if not pre_validated_id:
-        (valid_id, response_code) = validate_id(scorekeeper_id, database_connection)
+        valid_id = validate_id(scorekeeper_id, database_connection)
         if not valid_id:
-            return None, response_code
+            return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -318,13 +293,12 @@ def retrieve_appearances_by_id(scorekeeper_id: int,
             appearance_dict["count"] = 0
             appearance_dict["shows"] = None
 
-        return appearance_dict, ResponseCode.SUCCESS
+        return appearance_dict
     except mysql.connector.Error:
-        return None, ResponseCode.ERROR
+        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
 
 def retrieve_appearances_by_slug(scorekeeper_slug: str,
-                                 database_connection: mysql.connector.connect
-                                ) -> Tuple[List[Dict], ResponseCode]:
+                                 database_connection: mysql.connector.connect) -> List[Dict]:
     """Returns a list of OrderedDicts containing information about all of the scorekeeper's
     appearances.
 
@@ -332,11 +306,11 @@ def retrieve_appearances_by_slug(scorekeeper_slug: str,
         scorekeeper_slug (str): Scorekeeper slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with
-        scorekeeper appearance information. Also returns a ReponseCode IntEnum
+        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
+        appearance information
     """
-    (scorekeeper_id, response_code) = convert_slug_to_id(scorekeeper_slug, database_connection)
-    if not scorekeeper_id:
-        return None, response_code
+    scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
+    if scorekeeper_id:
+        return retrieve_appearances_by_id(scorekeeper_id, database_connection, True)
 
-    return retrieve_appearances_by_id(scorekeeper_id, database_connection, True)
+    return None
