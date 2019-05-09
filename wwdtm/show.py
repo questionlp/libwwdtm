@@ -10,10 +10,11 @@ import datetime
 from typing import List, Dict
 import dateutil.parser as parser
 import mysql.connector
+from mysql.connector.errors import DatabaseError, ProgrammingError
 
 def validate_id(show_id: int,
                 database_connection: mysql.connector.connect) -> bool:
-    """Validate show ID against database.
+    """Validate show ID against database
 
     Arguments:
         show_id (int): Show ID from database
@@ -34,14 +35,16 @@ def validate_id(show_id: int,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def convert_date_to_id(show_year: int,
                        show_month: int,
                        show_day: int,
                        database_connection: mysql.connector.connect) -> int:
-    """Return show database ID from show year, month and day.
+    """Return show database ID from show year, month and day
 
     Arguments:
         show_year (int): Show's four digit year
@@ -69,12 +72,14 @@ def convert_date_to_id(show_year: int,
             return result["showid"]
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def convert_id_to_date(show_id: int,
                        database_connection: mysql.connector.connect) -> datetime.datetime:
-    """Return show date based on the show ID from the database.
+    """Return show date based on the show ID from the database
 
     Arguments:
         show_id (int): Show ID from database
@@ -93,12 +98,14 @@ def convert_id_to_date(show_id: int,
             return result["showdate"]
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def id_exists(show_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a show ID exists in the database.
+    """Return whether or not a show ID exists in the database
 
     Arguments:
         show_id (int): Show ID from database
@@ -112,7 +119,7 @@ def date_exists(show_year: int,
                 show_month: int,
                 show_day: int,
                 database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a show ID exists in the database.
+    """Return whether or not a show ID exists in the database
 
     Arguments:
         show_year (int): Show's four digit year
@@ -137,30 +144,25 @@ def date_exists(show_year: int,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
-def retrieve_by_id(show_id: int,
-                   database_connection: mysql.connector.connect,
-                   pre_validated_id: bool = False) -> Dict:
-    """Return show information based on the show ID in the database.
+def _retrieve_show_core_info_by_id(show_id: int,
+                                   database_connection: mysql.connector.connect) -> Dict:
+    """Return core information about a show based on the show ID
 
     Arguments:
         show_id (int): Show ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the show ID has been validated or not
     Returns:
-        OrderedDict: Returns an OrderedDict containing show information
+        OrderedDict: Core information from a show, including host, scorekeeper and
+                     description
     """
-    if not pre_validated_id:
-        valid_id = validate_id(show_id, database_connection)
-        if not valid_id:
-            return None
-
-    show_details = collections.OrderedDict()
-
-    # Pull in the base show data, including date, host, scorekeeeper and notes
     try:
+        show_info = collections.OrderedDict()
+
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT s.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "h.hostid, h.host, h.hostslug, hm.guest as hostguest, sk.scorekeeperid, "
@@ -181,24 +183,25 @@ def retrieve_by_id(show_id: int,
         if not result:
             return None
 
-        show_details["id"] = show_id
-        show_details["date"] = result["showdate"].strftime("%Y-%m-%d")
-        show_details["bestOf"] = bool(result["bestof"])
+        show_info["id"] = show_id
+        show_info["date"] = result["showdate"].strftime("%Y-%m-%d")
+        show_info["bestOf"] = bool(result["bestof"])
         if result["repeatshowid"]:
-            show_details["isRepeat"] = True
+            show_info["isRepeat"] = True
             original_show_date = convert_id_to_date(result["repeatshowid"], database_connection)
-            show_details["originalShowDate"] = original_show_date.strftime("%Y-%m-%d")
+            show_info["originalShowDate"] = original_show_date.strftime("%Y-%m-%d")
         else:
-            show_details["isRepeat"] = False
+            show_info["isRepeat"] = False
 
-        show_details["description"] = str(result["showdescription"]).strip()
-        show_details["notes"] = str(result["shownotes"]).strip()
+        show_info["description"] = str(result["showdescription"]).strip()
+        show_info["notes"] = str(result["shownotes"]).strip()
 
         show_host = collections.OrderedDict()
         show_host["id"] = result["hostid"]
         show_host["name"] = result["host"]
         show_host["slug"] = result["hostslug"]
         show_host["guest"] = bool(result["hostguest"])
+        show_info["host"] = show_host
 
         show_scorekeeper = collections.OrderedDict()
         show_scorekeeper["id"] = result["scorekeeperid"]
@@ -206,13 +209,24 @@ def retrieve_by_id(show_id: int,
         show_scorekeeper["slug"] = result["scorekeeperslug"]
         show_scorekeeper["guest"] = bool(result["scorekeeperguest"])
         show_scorekeeper["description"] = result["description"]
+        show_info["scorekeeper"] = show_scorekeeper
 
-        show_details["host"] = show_host
-        show_details["scorekeeper"] = show_scorekeeper
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+        return show_info
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
-    # Pull in and parse show location data
+def _retrieve_show_location_by_id(show_id: int,
+                                  database_connection: mysql.connector.connect) -> Dict:
+    """Return show location information by show ID
+
+    Arguments:
+        show_id (int):
+        database_connection (mysql.connector.connect): Database connection object
+    Returns:
+        OrderedDict: Returns show location info
+    """
     try:
         location_info = collections.OrderedDict()
         cursor = database_connection.cursor(dictionary=True)
@@ -225,17 +239,28 @@ def retrieve_by_id(show_id: int,
         result = cursor.fetchone()
 
         if not result:
-            show_details["location"] = None
-        else:
-            location_info["city"] = result["city"]
-            location_info["state"] = result["state"]
-            location_info["venue"] = result["venue"]
+            return None
 
-        show_details["location"] = location_info
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+        location_info["city"] = result["city"]
+        location_info["state"] = result["state"]
+        location_info["venue"] = result["venue"]
 
-    # Pull in and parse panelist data
+        return location_info
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_show_panelist_info_by_id(show_id: int,
+                                       database_connection: mysql.connector.connect) -> Dict:
+    """Return show panelist information by show ID
+
+    Arguments:
+        show_id (int):
+        database_connection (mysql.connector.connect): Database connection object
+    Returns:
+        OrderedDict: Returns show panelist info
+    """
     try:
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.panelistid, p.panelist, p.panelistslug, pm.panelistlrndstart, "
@@ -249,25 +274,36 @@ def retrieve_by_id(show_id: int,
         cursor.close()
 
         if not result:
-            show_details["panelists"] = None
-        else:
-            panelists = []
-            for panelist in result:
-                panelist_info = collections.OrderedDict()
-                panelist_info["id"] = panelist["panelistid"]
-                panelist_info["name"] = panelist["panelist"]
-                panelist_info["slug"] = panelist["panelistslug"]
-                panelist_info["lightningRoundStart"] = panelist["panelistlrndstart"]
-                panelist_info["lightningRoundCorrect"] = panelist["panelistlrndcorrect"]
-                panelist_info["score"] = panelist["panelistscore"]
-                panelist_info["rank"] = panelist["showpnlrank"]
-                panelists.append(panelist_info)
+            return None
 
-            show_details["panelists"] = panelists
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+        panelists = []
+        for panelist in result:
+            panelist_info = collections.OrderedDict()
+            panelist_info["id"] = panelist["panelistid"]
+            panelist_info["name"] = panelist["panelist"]
+            panelist_info["slug"] = panelist["panelistslug"]
+            panelist_info["lightningRoundStart"] = panelist["panelistlrndstart"]
+            panelist_info["lightningRoundCorrect"] = panelist["panelistlrndcorrect"]
+            panelist_info["score"] = panelist["panelistscore"]
+            panelist_info["rank"] = panelist["showpnlrank"]
+            panelists.append(panelist_info)
 
-    # Pull in and parse Bluff the Listener data
+        return panelists
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_show_bluff_info_by_id(show_id: int,
+                                    database_connection: mysql.connector.connect) -> Dict:
+    """Return show panelist bluff information by show ID
+
+    Arguments:
+        show_id (int):
+        database_connection (mysql.connector.connect): Database connection object
+    Returns:
+        OrderedDict: Returns show panelist bluff info
+    """
     try:
         bluff_info = collections.OrderedDict()
         cursor = database_connection.cursor(dictionary=True)
@@ -309,11 +345,22 @@ def retrieve_by_id(show_id: int,
         bluff_info["chosenPanelist"] = chosen_bluff_info
         bluff_info["correctPanelist"] = correct_bluff_info
 
-        show_details["bluff"] = bluff_info
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+        return bluff_info
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
-    # Pull in and parse Not My Job guest data
+def _retrieve_show_not_my_job_info_by_id(show_id: int,
+                                         database_connection: mysql.connector.connect) -> Dict:
+    """Return show Not My Job information by show ID
+
+    Arguments:
+        show_id (int):
+        database_connection (mysql.connector.connect): Database connection object
+    Returns:
+        OrderedDict: Returns show Not My Job info
+    """
     try:
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT gm.guestid, g.guest, g.guestslug, gm.guestscore, gm.exception "
@@ -328,29 +375,71 @@ def retrieve_by_id(show_id: int,
         cursor.close()
 
         if not result:
-            show_details["guests"] = None
-        else:
-            guests = []
-            for guest in result:
-                guest_info = collections.OrderedDict()
-                guest_info["id"] = guest["guestid"]
-                guest_info["name"] = guest["guest"]
-                guest_info["slug"] = guest["guestslug"]
-                guest_info["score"] = guest["guestscore"]
-                guest_info["scoreException"] = bool(guest["exception"])
-                guests.append(guest_info)
+            return None
 
-            show_details["guests"] = guests
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+        guests = []
+        for guest in result:
+            guest_info = collections.OrderedDict()
+            guest_info["id"] = guest["guestid"]
+            guest_info["name"] = guest["guest"]
+            guest_info["slug"] = guest["guestslug"]
+            guest_info["score"] = guest["guestscore"]
+            guest_info["scoreException"] = bool(guest["exception"])
+            guests.append(guest_info)
 
-    return show_details
+        return guests
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def retrieve_by_id(show_id: int,
+                   database_connection: mysql.connector.connect,
+                   pre_validated_id: bool = False) -> Dict:
+    """Return show information based on the show ID in the database
+
+    Arguments:
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the show ID has been validated or not
+    Returns:
+        OrderedDict: Returns an OrderedDict containing show information
+    """
+    if not pre_validated_id:
+        valid_id = validate_id(show_id, database_connection)
+        if not valid_id:
+            return None
+
+    show_details = collections.OrderedDict()
+
+    # Pull in the base show data, including date, host, scorekeeeper and notes
+    show_info = _retrieve_show_core_info_by_id(show_id, database_connection)
+    if show_info:
+        show_details["id"] = show_info["id"]
+        show_details["date"] = show_info["date"]
+        show_details["bestOf"] = show_info["bestOf"]
+        show_details["isRepeat"] = show_info["isRepeat"]
+        if show_details["isRepeat"]:
+            show_details["originalShowDate"] = show_info["originalShowDate"]
+        show_details["description"] = show_info["description"]
+        show_details["notes"] = show_info["notes"]
+        show_details["host"] = show_info["host"]
+        show_details["scorekeeper"] = show_info["scorekeeper"]
+
+        show_details["location"] = _retrieve_show_location_by_id(show_id, database_connection)
+        show_details["panelists"] = _retrieve_show_panelist_info_by_id(show_id, database_connection)
+        show_details["bluff"] = _retrieve_show_bluff_info_by_id(show_id, database_connection)
+        show_details["guests"] = _retrieve_show_not_my_job_info_by_id(show_id, database_connection)
+
+        return show_details
+
+    return None
 
 def retrieve_by_date(show_year: int,
                      show_month: int,
                      show_day: int,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Return show information based on the show date in the database.
+    """Return show information based on the show date in the database
 
     Arguments:
         show_year (int): Show's four digit year
@@ -368,7 +457,7 @@ def retrieve_by_date(show_year: int,
 
 def retrieve_by_date_string(show_date: str,
                             database_connection: mysql.connector.connect) -> Dict:
-    """Return show information based on the show date string.
+    """Return show information based on the show date string
 
     Arguments:
         show_date (str): Show date in YYYY-MM-DD format
@@ -424,8 +513,10 @@ def retrieve_by_year(show_year: int,
             shows.append(show_detail)
 
         return shows
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_year_month(show_year: int,
                            show_month: int,
@@ -463,13 +554,15 @@ def retrieve_by_year_month(show_year: int,
             shows.append(show_detail)
 
         return shows
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_recent(database_connection: mysql.connector.connect,
                     include_days_ahead: int = 7,
                     include_days_back: int = 32,) -> List[Dict]:
-    """Return recent show information.
+    """Return recent show information
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
@@ -511,5 +604,7 @@ def retrieve_recent(database_connection: mysql.connector.connect,
             shows.append(show_detail)
 
         return shows
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))

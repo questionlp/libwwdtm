@@ -8,10 +8,11 @@ Wait Wait... Don't Tell Me! Stats Page Database.
 import collections
 from typing import List, Dict
 import mysql.connector
+from mysql.connector.errors import DatabaseError, ProgrammingError
 
 def convert_slug_to_id(scorekeeper_slug: str,
                        database_connection: mysql.connector.connect) -> int:
-    """Return scorekeeper database ID from slug string.
+    """Return scorekeeper database ID from slug string
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string
@@ -32,8 +33,10 @@ def convert_slug_to_id(scorekeeper_slug: str,
             return result["scorekeeperid"]
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def validate_id(scorekeeper_id: int,
                 database_connection: mysql.connector.connect) -> bool:
@@ -60,8 +63,10 @@ def validate_id(scorekeeper_id: int,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def validate_slug(scorekeeper_slug: str,
                   database_connection: mysql.connector.connect) -> bool:
@@ -87,12 +92,14 @@ def validate_slug(scorekeeper_slug: str,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def id_exists(scorekeeper_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a scorekeeper ID exists in the database.
+    """Return whether or not a scorekeeper ID exists in the database
 
     Arguments:
         scorekeeper_id (int): Host ID from database
@@ -104,7 +111,7 @@ def id_exists(scorekeeper_id: int,
 
 def slug_exists(scorekeeper_slug: str,
                 database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a scorekeeper slug exists in the database.
+    """Return whether or not a scorekeeper slug exists in the database
 
     Arguments:
         scorekeeper_slug (int): Host slug from database
@@ -115,7 +122,7 @@ def slug_exists(scorekeeper_slug: str,
     return validate_slug(scorekeeper_slug, database_connection)
 
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return a list of OrderedDicts containing scorekeepers and their details.
+    """Return a list of OrderedDicts containing scorekeepers and their details
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
@@ -142,11 +149,13 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
             scorekeepers.append(scorekeeper)
 
         return scorekeepers
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all scorekeeper IDs, with IDs sorted in the order of scorekeeper names.
+    """Return a list of all scorekeeper IDs, with IDs sorted in the order of scorekeeper names
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
@@ -167,13 +176,15 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
             panelists.append(row["scorekeeperid"])
 
         return panelists
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_id(scorekeeper_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with scorekeeper details based on the scorekeeper ID.
+    """Returns an OrderedDict with scorekeeper details based on the scorekeeper ID
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
@@ -207,8 +218,10 @@ def retrieve_by_id(scorekeeper_id: int,
             return scorekeeper_dict
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_slug(scorekeeper_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
@@ -230,7 +243,7 @@ def retrieve_appearances_by_id(scorekeeper_id: int,
                                database_connection: mysql.connector.connect,
                                pre_validated_id: bool = False) -> List:
     """Returns a list of OrderedDicts containing information about all of the scorekeeper's
-    appearances.
+    appearances
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
@@ -294,13 +307,15 @@ def retrieve_appearances_by_id(scorekeeper_id: int,
             appearance_dict["shows"] = None
 
         return appearance_dict
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_appearances_by_slug(scorekeeper_slug: str,
                                  database_connection: mysql.connector.connect) -> List[Dict]:
     """Returns a list of OrderedDicts containing information about all of the scorekeeper's
-    appearances.
+    appearances
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database

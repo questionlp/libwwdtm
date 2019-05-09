@@ -2,6 +2,7 @@
 # Copyright (c) 2018-2019 Linh Pham
 # wwdtm is relased under the terms of the Apache License 2.0
 """Testing module for wwdtm.panelist"""
+
 import mysql.connector
 import wwdtm.panelist as panelist
 

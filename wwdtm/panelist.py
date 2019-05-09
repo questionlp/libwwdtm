@@ -8,11 +8,12 @@ Wait Wait... Don't Tell Me! Stats Page Database.
 import collections
 from typing import List, Dict
 import mysql.connector
+from mysql.connector.errors import DatabaseError, ProgrammingError
 import numpy
 
 def convert_slug_to_id(panelist_slug: str,
                        database_connection: mysql.connector.connect) -> int:
-    """Return panelist database ID from slug string.
+    """Return panelist database ID from slug string
 
     Arguments:
         panelist_slug (str): Panelist slug string
@@ -33,8 +34,10 @@ def convert_slug_to_id(panelist_slug: str,
             return result["panelistid"]
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def validate_id(panelist_id: int,
                 database_connection: mysql.connector.connect) -> bool:
@@ -61,8 +64,10 @@ def validate_id(panelist_id: int,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def validate_slug(panelist_slug: str,
                   database_connection: mysql.connector.connect) -> bool:
@@ -88,12 +93,14 @@ def validate_slug(panelist_slug: str,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def id_exists(panelist_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a panelist ID exists in the database.
+    """Return whether or not a panelist ID exists in the database
 
     Arguments:
         panelist_id (int): Panelist ID from database
@@ -105,7 +112,7 @@ def id_exists(panelist_id: int,
 
 def slug_exists(panelist_slug: str,
                 database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a panelist slug exists in the database.
+    """Return whether or not a panelist slug exists in the database
 
     Arguments:
         panelist_slug (int): Panelist slug from database
@@ -116,7 +123,7 @@ def slug_exists(panelist_slug: str,
     return validate_slug(panelist_slug, database_connection)
 
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return a list of OrderedDicts containing panelists and their details.
+    """Return a list of OrderedDicts containing panelists and their details
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
@@ -143,11 +150,13 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
             panelists.append(panelist)
 
         return panelists
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all panelist IDs, with IDs sorted in the order of panelist names.
+    """Return a list of all panelist IDs, with IDs sorted in the order of panelist names
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
@@ -168,13 +177,15 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
             panelists.append(row["panelistid"])
 
         return panelists
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_id(panelist_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with panelist details based on the panelist ID.
+    """Returns an OrderedDict with panelist details based on the panelist ID
 
     Arguments:
         panelist_id (int): Panelist ID from database
@@ -209,8 +220,10 @@ def retrieve_by_id(panelist_id: int,
             return panelist_dict
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_slug(panelist_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
@@ -233,7 +246,7 @@ def retrieve_appearances_by_id(panelist_id: int,
                                database_connection: mysql.connector.connect,
                                pre_validated_id: bool = False) -> List[Dict]:
     """Returns a list of OrderedDicts containing information about all of the panelist's
-    appearances.
+    appearances
 
     Arguments:
         panelist_id (int): Panelist ID from database
@@ -306,13 +319,15 @@ def retrieve_appearances_by_id(panelist_id: int,
             appearance_dict["shows"] = None
 
         return appearance_dict
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_appearances_by_slug(panelist_slug: str,
                                  database_connection: mysql.connector.connect) -> List[Dict]:
     """Returns a list of OrderedDicts containing information about all of the panelist's
-    appearances.
+    appearances
 
     Arguments:
         panelist_slug (str): Panelist slug string from database
@@ -327,26 +342,17 @@ def retrieve_appearances_by_slug(panelist_slug: str,
 
     return None
 
-def retrieve_statistics_by_id(panelist_id: int,
-                              database_connection: mysql.connector.connect,
-                              pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict containing panelist statistics, including ranking and
-    scoring data.
+def _retrieve_panelist_scores_by_id(panelist_id: int,
+                                    database_connection: mysql.connector.connect) -> List[int]:
+    """Returns a list of panelist scores from all the panelist's appearances
 
     Arguments:
         panelist_id (int): Panelist ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
     Returns:
-        OrderedDict: Returns an OrderedDict containing panelist statistics data
+        List[int]: List of panelist scores
     """
-    if not pre_validated_id:
-        valid_id = validate_id(panelist_id, database_connection)
-        if not valid_id:
-            return None
-
     scores = []
-    ranks = {}
     try:
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT s.showdate, pm.panelistscore FROM ww_showpnlmap pm "
@@ -362,10 +368,24 @@ def retrieve_statistics_by_id(panelist_id: int,
             if appearance["panelistscore"]:
                 scores.append(appearance["panelistscore"])
 
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+        return scores
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
+def _retrieve_panelist_rank_info_by_id(panelist_id: int,
+                                       database_connection: mysql.connector.connect) -> Dict:
+    """Returns a list of panelist ranking info
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        Dict: Panelist ranking data
+    """
     try:
+        ranks = {}
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT ( "
                  "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
@@ -400,8 +420,33 @@ def retrieve_statistics_by_id(panelist_id: int,
             ranks["second"] = appearance["2"]
             ranks["secondTied"] = appearance["2t"]
             ranks["third"] = appearance["3"]
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+
+        return ranks
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def retrieve_statistics_by_id(panelist_id: int,
+                              database_connection: mysql.connector.connect,
+                              pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict containing panelist statistics, including ranking and
+    scoring data
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
+    Returns:
+        OrderedDict: Returns an OrderedDict containing panelist statistics data
+    """
+    if not pre_validated_id:
+        valid_id = validate_id(panelist_id, database_connection)
+        if not valid_id:
+            return None
+
+    scores = _retrieve_panelist_scores_by_id(panelist_id, database_connection)
+    ranks = _retrieve_panelist_rank_info_by_id(panelist_id, database_connection)
 
     statistics = collections.OrderedDict()
     scoring = collections.OrderedDict()
@@ -433,7 +478,7 @@ def retrieve_statistics_by_id(panelist_id: int,
 def retrieve_statistics_by_slug(panelist_slug: str,
                                 database_connection: mysql.connector.connect) -> List[Dict]:
     """Returns an OrderedDict containing panelist statistics, including ranking and
-    scoring data.
+    scoring data
 
     Arguments:
         panelist_slug (str): Panelist slug string from database

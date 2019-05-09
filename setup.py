@@ -6,7 +6,7 @@
 from setuptools import setup
 
 setup(name="wwdtm",
-      version="0.5.0",
+      version="0.5.1",
       description="Wait Wait... Don't Tell Me! Data Access Library",
       long_description=("Provides show, host, scorekeeper, panelist and guest details "
                         "from an instance of the Wait Wait... Don't Tell Me! Stats Page "
@@ -36,6 +36,5 @@ setup(name="wwdtm",
           "python-dateutil",
           "python-slugify",
       ],
-      include_package_data=True,
-      zip_safe=False
+      include_package_data=True
      )

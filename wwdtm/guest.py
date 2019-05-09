@@ -8,6 +8,7 @@ Wait Wait... Don't Tell Me! Stats Page Database.
 import collections
 from typing import List, Dict
 import mysql.connector
+from mysql.connector.errors import DatabaseError, ProgrammingError
 
 def convert_slug_to_id(guest_slug: str,
                        database_connection: mysql.connector.connect) -> int:
@@ -32,8 +33,11 @@ def convert_slug_to_id(guest_slug: str,
             return result["guestid"]
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
 
 def validate_id(guest_id: int,
                 database_connection: mysql.connector.connect) -> bool:
@@ -60,8 +64,10 @@ def validate_id(guest_id: int,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def validate_slug(guest_slug: str,
                   database_connection: mysql.connector.connect) -> bool:
@@ -87,8 +93,10 @@ def validate_slug(guest_slug: str,
         cursor.close()
 
         return bool(result)
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def id_exists(guest_id: int,
               database_connection: mysql.connector.connect) -> bool:
@@ -140,8 +148,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
             guests.append(guest)
 
         return guests
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
     """Return a list of all guest IDs, with IDs sorted in the order of guest names.
@@ -164,8 +174,10 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
             panelists.append(row["guestid"])
 
         return panelists
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_id(guest_id: int,
                    database_connection: mysql.connector.connect,
@@ -201,8 +213,10 @@ def retrieve_by_id(guest_id: int,
             return guest_dict
 
         return None
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_by_slug(guest_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
@@ -288,8 +302,10 @@ def retrieve_appearances_by_id(guest_id: int,
             appearance_dict["shows"] = None
 
         return appearance_dict
-    except mysql.connector.Error:
-        raise Exception("Unable to query database: {}".format(mysql.connector.Error.with_traceback))
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
 
 def retrieve_appearances_by_slug(guest_slug: str,
                                  database_connection: mysql.connector.connect
