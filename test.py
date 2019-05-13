@@ -170,21 +170,21 @@ def test_show_module(database_connection: mysql.connector.connect):
     test_show.test_date_not_exists(database_connection)
 
     # Testing retrieve show details
-    test_show.test_retrieve_by_id(database_connection)
-    test_show.test_retrieve_by_invalid_id(database_connection)
+    test_show.test_retrieve_show_details_by_id(database_connection)
+    test_show.test_retrieve_show_details_by_invalid_id(database_connection)
 
-    test_show.test_retrieve_by_date(database_connection)
-    test_show.test_retrieve_by_invalid_date(database_connection)
+    test_show.test_retrieve_show_details_by_date(database_connection)
+    test_show.test_retrieve_show_details_by_invalid_date(database_connection)
 
-    test_show.test_retrieve_by_date_string(database_connection)
-    test_show.test_retrieve_by_invalid_date_string(database_connection)
+    test_show.test_retrieve_show_details_by_date_string(database_connection)
+    test_show.test_retrieve_show_details_by_invalid_date_string(database_connection)
 
     # Testing retrieve multiple show details
-    test_show.test_retrieve_by_year(database_connection)
-    test_show.test_retrieve_by_year_month(database_connection)
+    test_show.test_retrieve_show_details_by_year(database_connection)
+    test_show.test_retrieve_show_details_by_year_month(database_connection)
 
     # Testing retrieve recent show details
-    test_show.test_retrieve_recent(database_connection)
+    test_show.test_retrieve_recent_show_details(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()

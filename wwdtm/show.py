@@ -12,143 +12,7 @@ import dateutil.parser as parser
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 
-def validate_id(show_id: int,
-                database_connection: mysql.connector.connect) -> bool:
-    """Validate show ID against database
-
-    Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        bool: Returns True on success; otherwise returns False
-    """
-    try:
-        show_id = int(show_id)
-    except ValueError:
-        return False
-
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = "SELECT showid from ww_shows where showid = %s;"
-        cursor.execute(query, (show_id,))
-        result = cursor.fetchone()
-        cursor.close()
-
-        return bool(result)
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def convert_date_to_id(show_year: int,
-                       show_month: int,
-                       show_day: int,
-                       database_connection: mysql.connector.connect) -> int:
-    """Return show database ID from show year, month and day
-
-    Arguments:
-        show_year (int): Show's four digit year
-        show_month (int): Show's one or two digit month
-        show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        bool: Returns an OrderedDict with show information
-    """
-    show_date = None
-    try:
-        show_date = datetime.datetime(show_year, show_month, show_day)
-    except ValueError:
-        return None
-
-    try:
-        show_date_str = show_date.strftime("%Y-%m-%d")
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid from ww_shows WHERE showdate = %s;")
-        cursor.execute(query, (show_date_str,))
-        result = cursor.fetchone()
-        cursor.close()
-
-        if result:
-            return result["showid"]
-
-        return None
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def convert_id_to_date(show_id: int,
-                       database_connection: mysql.connector.connect) -> datetime.datetime:
-    """Return show date based on the show ID from the database
-
-    Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        datetime.datetime: Returns the corresponding date for a show ID
-    """
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = "SELECT showdate FROM ww_shows WHERE showid = %s;"
-        cursor.execute(query, (show_id,))
-        result = cursor.fetchone()
-        cursor.close()
-
-        if result:
-            return result["showdate"]
-
-        return None
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def id_exists(show_id: int,
-              database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a show ID exists in the database
-
-    Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        bool: Returns True if show ID exists, otherwise returns False
-    """
-    return validate_id(show_id, database_connection)
-
-def date_exists(show_year: int,
-                show_month: int,
-                show_day: int,
-                database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a show ID exists in the database
-
-    Arguments:
-        show_year (int): Show's four digit year
-        show_month (int): Show's one or two digit month
-        show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        bool: Returns True if show date exists, otherwise returns False
-    """
-    show_date = None
-    try:
-        show_date = datetime.datetime(show_year, show_month, show_day)
-    except ValueError:
-        return None
-
-    try:
-        show_date_str = show_date.strftime("%Y-%m-%d")
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid from ww_shows WHERE showdate = %s;")
-        cursor.execute(query, (show_date_str,))
-        result = cursor.fetchone()
-        cursor.close()
-
-        return bool(result)
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
+#region Internal Functions
 def _retrieve_show_core_info_by_id(show_id: int,
                                    database_connection: mysql.connector.connect) -> Dict:
     """Return core information about a show based on the show ID
@@ -393,9 +257,152 @@ def _retrieve_show_not_my_job_info_by_id(show_id: int,
     except DatabaseError as err:
         print("Unexpected error: {}".format(err))
 
-def retrieve_by_id(show_id: int,
-                   database_connection: mysql.connector.connect,
-                   pre_validated_id: bool = False) -> Dict:
+#endregion
+
+#region Utility Functions
+def validate_id(show_id: int,
+                database_connection: mysql.connector.connect) -> bool:
+    """Validate show ID against database
+
+    Arguments:
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        bool: Returns True on success; otherwise returns False
+    """
+    try:
+        show_id = int(show_id)
+    except ValueError:
+        return False
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = "SELECT showid from ww_shows where showid = %s;"
+        cursor.execute(query, (show_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        return bool(result)
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def convert_date_to_id(show_year: int,
+                       show_month: int,
+                       show_day: int,
+                       database_connection: mysql.connector.connect) -> int:
+    """Return show database ID from show year, month and day
+
+    Arguments:
+        show_year (int): Show's four digit year
+        show_month (int): Show's one or two digit month
+        show_day (int): Show's day of month
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        bool: Returns an OrderedDict with show information
+    """
+    show_date = None
+    try:
+        show_date = datetime.datetime(show_year, show_month, show_day)
+    except ValueError:
+        return None
+
+    try:
+        show_date_str = show_date.strftime("%Y-%m-%d")
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT showid from ww_shows WHERE showdate = %s;")
+        cursor.execute(query, (show_date_str,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return result["showid"]
+
+        return None
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def convert_id_to_date(show_id: int,
+                       database_connection: mysql.connector.connect) -> datetime.datetime:
+    """Return show date based on the show ID from the database
+
+    Arguments:
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        datetime.datetime: Returns the corresponding date for a show ID
+    """
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = "SELECT showdate FROM ww_shows WHERE showid = %s;"
+        cursor.execute(query, (show_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return result["showdate"]
+
+        return None
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def id_exists(show_id: int,
+              database_connection: mysql.connector.connect) -> bool:
+    """Return whether or not a show ID exists in the database
+
+    Arguments:
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        bool: Returns True if show ID exists, otherwise returns False
+    """
+    return validate_id(show_id, database_connection)
+
+def date_exists(show_year: int,
+                show_month: int,
+                show_day: int,
+                database_connection: mysql.connector.connect) -> bool:
+    """Return whether or not a show ID exists in the database
+
+    Arguments:
+        show_year (int): Show's four digit year
+        show_month (int): Show's one or two digit month
+        show_day (int): Show's day of month
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        bool: Returns True if show date exists, otherwise returns False
+    """
+    show_date = None
+    try:
+        show_date = datetime.datetime(show_year, show_month, show_day)
+    except ValueError:
+        return None
+
+    try:
+        show_date_str = show_date.strftime("%Y-%m-%d")
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT showid from ww_shows WHERE showdate = %s;")
+        cursor.execute(query, (show_date_str,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        return bool(result)
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+#endregion
+
+#region Show Details Retrieval Functions
+def retrieve_show_details_by_id(show_id: int,
+                                database_connection: mysql.connector.connect,
+                                pre_validated_id: bool = False) -> Dict:
     """Return show information based on the show ID in the database
 
     Arguments:
@@ -435,10 +442,10 @@ def retrieve_by_id(show_id: int,
 
     return None
 
-def retrieve_by_date(show_year: int,
-                     show_month: int,
-                     show_day: int,
-                     database_connection: mysql.connector.connect) -> Dict:
+def retrieve_show_details_by_date(show_year: int,
+                                  show_month: int,
+                                  show_day: int,
+                                  database_connection: mysql.connector.connect) -> Dict:
     """Return show information based on the show date in the database
 
     Arguments:
@@ -451,12 +458,12 @@ def retrieve_by_date(show_year: int,
     """
     show_id = convert_date_to_id(show_year, show_month, show_day, database_connection)
     if show_id:
-        return retrieve_by_id(show_id, database_connection)
+        return retrieve_show_details_by_id(show_id, database_connection)
 
     return None
 
-def retrieve_by_date_string(show_date: str,
-                            database_connection: mysql.connector.connect) -> Dict:
+def retrieve_show_details_by_date_string(show_date: str,
+                                         database_connection: mysql.connector.connect) -> Dict:
     """Return show information based on the show date string
 
     Arguments:
@@ -475,12 +482,12 @@ def retrieve_by_date_string(show_date: str,
                                  parsed_show_date.day,
                                  database_connection)
     if show_id:
-        return retrieve_by_id(show_id, database_connection)
+        return retrieve_show_details_by_id(show_id, database_connection)
 
     return None
 
-def retrieve_by_year(show_year: int,
-                     database_connection: mysql.connector.connect) -> List[Dict]:
+def retrieve_show_details_by_year(show_year: int,
+                                  database_connection: mysql.connector.connect) -> List[Dict]:
     """Return show information based on the show year provided
 
     Arguments:
@@ -507,9 +514,9 @@ def retrieve_by_year(show_year: int,
 
         shows = []
         for show in result:
-            show_detail = retrieve_by_id(show["showid"],
-                                         database_connection,
-                                         pre_validated_id=True)
+            show_detail = retrieve_show_details_by_id(show["showid"],
+                                                      database_connection,
+                                                      pre_validated_id=True)
             shows.append(show_detail)
 
         return shows
@@ -518,9 +525,9 @@ def retrieve_by_year(show_year: int,
     except DatabaseError as err:
         print("Unexpected error: {}".format(err))
 
-def retrieve_by_year_month(show_year: int,
-                           show_month: int,
-                           database_connection: mysql.connector.connect) -> List[Dict]:
+def retrieve_show_details_by_year_month(show_year: int,
+                                        show_month: int,
+                                        database_connection: mysql.connector.connect) -> List[Dict]:
     """Return show information based on the show year and month provided
 
     Arguments:
@@ -548,9 +555,9 @@ def retrieve_by_year_month(show_year: int,
 
         shows = []
         for show in result:
-            show_detail = retrieve_by_id(show["showid"],
-                                         database_connection,
-                                         pre_validated_id=True)
+            show_detail = retrieve_show_details_by_id(show["showid"],
+                                                      database_connection,
+                                                      pre_validated_id=True)
             shows.append(show_detail)
 
         return shows
@@ -559,9 +566,9 @@ def retrieve_by_year_month(show_year: int,
     except DatabaseError as err:
         print("Unexpected error: {}".format(err))
 
-def retrieve_recent(database_connection: mysql.connector.connect,
-                    include_days_ahead: int = 7,
-                    include_days_back: int = 32,) -> List[Dict]:
+def retrieve_recent_show_details(database_connection: mysql.connector.connect,
+                                 include_days_ahead: int = 7,
+                                 include_days_back: int = 32,) -> List[Dict]:
     """Return recent show information
 
     Arguments:
@@ -598,9 +605,9 @@ def retrieve_recent(database_connection: mysql.connector.connect,
 
         shows = []
         for show in result:
-            show_detail = retrieve_by_id(show["showid"],
-                                         database_connection,
-                                         pre_validated_id=True)
+            show_detail = retrieve_show_details_by_id(show["showid"],
+                                                      database_connection,
+                                                      pre_validated_id=True)
             shows.append(show_detail)
 
         return shows
@@ -608,3 +615,5 @@ def retrieve_recent(database_connection: mysql.connector.connect,
         print("Unable to query the database: {}".format(err))
     except DatabaseError as err:
         print("Unexpected error: {}".format(err))
+
+#endregion

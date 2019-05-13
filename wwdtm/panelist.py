@@ -11,6 +11,7 @@ import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 import numpy
 
+#region Utility Functions
 def convert_slug_to_id(panelist_slug: str,
                        database_connection: mysql.connector.connect) -> int:
     """Return panelist database ID from slug string
@@ -122,6 +123,9 @@ def slug_exists(panelist_slug: str,
     """
     return validate_slug(panelist_slug, database_connection)
 
+#endregion
+
+#region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     """Return a list of OrderedDicts containing panelists and their details
 
@@ -491,3 +495,5 @@ def retrieve_statistics_by_slug(panelist_slug: str,
         return retrieve_statistics_by_id(panelist_id, database_connection, True)
 
     return None
+
+#endregion

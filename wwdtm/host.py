@@ -10,6 +10,7 @@ from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 
+#region Utility Functions
 def convert_slug_to_id(host_slug: str,
                        database_connection: mysql.connector.connect) -> int:
     """Return host database ID from slug string.
@@ -121,6 +122,9 @@ def slug_exists(host_slug: str,
     """
     return validate_slug(host_slug, database_connection)
 
+#endregion
+
+#region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     """Return a list of OrderedDicts containing hosts and their details.
 
@@ -326,3 +330,5 @@ def retrieve_appearances_by_slug(host_slug: str,
         return retrieve_appearances_by_id(host_id, database_connection, True)
 
     return None
+
+#endregion
