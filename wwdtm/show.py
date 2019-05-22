@@ -399,11 +399,241 @@ def date_exists(show_year: int,
 
 #endregion
 
+#region Show Basic Info Retrieval Functions
+def retrieve_show_basic_info_by_id(show_id: int,
+                                   database_connection: mysql.connector.connect,
+                                   pre_validated_id: bool = False) -> Dict:
+    """Return basic show information based on the show ID in the database
+
+    Arguments:
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the show ID has been validated or not
+    Returns:
+        OrderedDict: Returns an OrderedDict containing show information
+    """
+
+    if not pre_validated_id:
+        valid_id = validate_id(show_id, database_connection)
+        if not valid_id:
+            return None
+
+    try:
+        show_info = collections.OrderedDict()
+
+        # Pull in base show information, including: show ID, date, Best Of flag and, if applicable,
+        # the show ID of the original show if it is a repeat
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT showid, showdate, bestof, repeatshowid "
+                 "FROM ww_shows "
+                 "WHERE showid = %s;")
+        cursor.execute(query, (show_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        if not result:
+            return None
+
+        show_info["id"] = result["showid"]
+        show_info["date"] = result["showdate"].strftime("%Y-%m-%d")
+        show_info["bestOf"] = bool(result["bestof"])
+        if result["repeatshowid"]:
+            show_info["isRepeat"] = True
+            original_show_date = convert_id_to_date(result["repeatshowid"], database_connection)
+            show_info["originalShowDate"] = original_show_date.strftime("%Y-%m-%d")
+        else:
+            show_info["isRepeat"] = False
+        return show_info
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def retrieve_show_basic_info_by_date(show_year: int,
+                                     show_month: int,
+                                     show_day: int,
+                                     database_connection: mysql.connector.connect) -> Dict:
+    """Return basic show information based on the show date in the database
+
+    Arguments:
+        show_year (int): Show's four digit year
+        show_month (int): Show's one or two digit month
+        show_day (int): Show's day of month
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        OrderedDict: Returns an OrderedDict containing show information
+    """
+    show_id = convert_date_to_id(show_year, show_month, show_day, database_connection)
+    if show_id:
+        return retrieve_show_basic_info_by_id(show_id, database_connection)
+
+    return None
+
+def retrieve_show_basic_info_by_date_string(show_date: str,
+                                            database_connection: mysql.connector.connect) -> Dict:
+    """Return basic show information based on the show date string
+
+    Arguments:
+        show_date (str): Show date in YYYY-MM-DD format
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        OrderedDict: Returns an OrderedDict containing show information
+    """
+    try:
+        parsed_show_date = parser.parse(show_date)
+    except ValueError:
+        return None
+
+    show_id = convert_date_to_id(parsed_show_date.year,
+                                 parsed_show_date.month,
+                                 parsed_show_date.day,
+                                 database_connection)
+    if show_id:
+        return retrieve_show_basic_info_by_id(show_id, database_connection)
+
+    return None
+
+def retrieve_show_basic_info_by_year(show_year: int,
+                                     database_connection: mysql.connector.connect) -> List[Dict]:
+    """Return basic show information based on the show year provided
+
+    Arguments:
+        show_year (int): Four digit year
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        List[OrderedDict]: Returns a list containing OrderedDicts with show
+        information
+    """
+    try:
+        parsed_show_year = parser.parse("{}".format(show_year))
+    except ValueError:
+        return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT showid FROM ww_shows WHERE YEAR(showdate) = %s "
+                 "ORDER BY showdate ASC;")
+        cursor.execute(query, (parsed_show_year.year,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        shows = []
+        for show in result:
+            show_info = retrieve_show_basic_info_by_id(show["showid"],
+                                                       database_connection,
+                                                       pre_validated_id=True)
+            shows.append(show_info)
+
+        return shows
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))    
+
+def retrieve_show_basic_info_by_year_month(show_year: int,
+                                           show_month: int,
+                                           database_connection: mysql.connector.connect
+                                          ) -> List[Dict]:
+    """Return basic show information based on the show year and month provided
+
+    Arguments:
+        show_year (int): Four digit year
+        show_month (int): One or two digit month
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        List[OrderedDict]: Returns a list containing OrderedDicts with show
+        information
+    """
+    try:
+        parsed_show_year_month = parser.parse("{}-{}".format(show_year, show_month))
+    except ValueError:
+        return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT showid FROM ww_shows WHERE YEAR(showdate) = %s "
+                 "AND MONTH(showdate) = %s ORDER BY showdate ASC;")
+        cursor.execute(query, (parsed_show_year_month.year, parsed_show_year_month.month,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        shows = []
+        for show in result:
+            show_info = retrieve_show_basic_info_by_id(show["showid"],
+                                                       database_connection,
+                                                       pre_validated_id=True)
+            shows.append(show_info)
+
+        return shows
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def retrieve_recent_show_basic_info(database_connection: mysql.connector.connect,
+                                    include_days_ahead: int = 7,
+                                    include_days_back: int = 32,) -> List[Dict]:
+    """Return recent basic show information
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect object
+        include_days_ahead (int): Number of days in the future to include
+        include_days_back (int): Number of days in the past to include
+    Returns:
+        List[OrderedDict]: Returns a list containing OrderedDicts with recent
+        show information
+    """
+    try:
+        past_days = int(include_days_back)
+        future_days = int(include_days_ahead)
+    except ValueError:
+        return None
+
+    try:
+        past_date = datetime.datetime.now() - datetime.timedelta(days=past_days)
+        future_date = datetime.datetime.now() + datetime.timedelta(days=future_days)
+    except OverflowError:
+        return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT showid FROM ww_shows WHERE showdate >= %s AND "
+                 "showdate <= %s ORDER BY showdate ASC;")
+        cursor.execute(query,
+                       (past_date.strftime("%Y-%m-%d"),
+                        future_date.strftime("%Y-%m-%d")))
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        shows = []
+        for show in result:
+            show_info = retrieve_show_basic_info_by_id(show["showid"],
+                                                       database_connection,
+                                                       pre_validated_id=True)
+            shows.append(show_info)
+
+        return shows
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+#endregion
+
 #region Show Details Retrieval Functions
 def retrieve_show_details_by_id(show_id: int,
                                 database_connection: mysql.connector.connect,
                                 pre_validated_id: bool = False) -> Dict:
-    """Return show information based on the show ID in the database
+    """Return detailed show information based on the show ID in the database
 
     Arguments:
         show_id (int): Show ID from database
@@ -508,6 +738,7 @@ def retrieve_show_details_by_year(show_year: int,
                  "ORDER BY showdate ASC;")
         cursor.execute(query, (parsed_show_year.year,))
         result = cursor.fetchall()
+        cursor.close()
 
         if not result:
             return None
@@ -549,6 +780,7 @@ def retrieve_show_details_by_year_month(show_year: int,
                  "AND MONTH(showdate) = %s ORDER BY showdate ASC;")
         cursor.execute(query, (parsed_show_year_month.year, parsed_show_year_month.month,))
         result = cursor.fetchall()
+        cursor.close()
 
         if not result:
             return None
@@ -599,6 +831,7 @@ def retrieve_recent_show_details(database_connection: mysql.connector.connect,
                        (past_date.strftime("%Y-%m-%d"),
                         future_date.strftime("%Y-%m-%d")))
         result = cursor.fetchall()
+        cursor.close()
 
         if not result:
             return None
