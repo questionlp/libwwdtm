@@ -10,6 +10,101 @@ from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 
+#region Internal Functions
+def _retrieve_appearances_by_id(guest_id: int,
+                                database_connection: mysql.connector.connect,
+                                pre_validated_id: bool = False) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the guest's
+    appearances.
+
+    Arguments:
+        guest_id (int): Guest ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
+    Returns:
+        list[OrderedDict]: Returns a list containing an OrderedDict with guest
+        appearance information
+    """
+    if not pre_validated_id:
+        valid_id = validate_id(guest_id, database_connection)
+        if not valid_id:
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT ( "
+                 "SELECT COUNT(gm.showid) FROM ww_showguestmap gm "
+                 "JOIN ww_shows s ON s.showid = gm.showid "
+                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
+                 "gm.guestid = %s ) AS regular, ( "
+                 "SELECT COUNT(gm.showid) FROM ww_showguestmap gm "
+                 "JOIN ww_shows s ON s.showid = gm.showid "
+                 "WHERE gm.guestid = %s ) AS allshows;")
+        cursor.execute(query, (guest_id, guest_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        appearance_counts = collections.OrderedDict()
+        appearance_counts["regularShows"] = result["regular"]
+        appearance_counts["allShows"] = result["allshows"]
+
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT gm.showid, s.showdate, s.bestof, s.repeatshowid, "
+                 "gm.guestscore, gm.exception FROM ww_showguestmap gm "
+                 "JOIN ww_guests g ON g.guestid = gm.guestid "
+                 "JOIN ww_shows s ON s.showid = gm.showid "
+                 "WHERE gm.guestid = %s "
+                 "ORDER BY s.showdate ASC;")
+
+        cursor.execute(query, (guest_id,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        appearance_dict = collections.OrderedDict()
+        if result:
+            appearances = []
+            for appearance in result:
+                appearance_info = {}
+                appearance_info["date"] = appearance["showdate"].isoformat()
+                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
+                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
+                appearance_info["score"] = appearance["guestscore"]
+                appearance_info["exception"] = bool(appearance["exception"])
+                appearances.append(appearance_info)
+
+            appearance_dict["count"] = appearance_counts
+            appearance_dict["shows"] = appearances
+        else:
+            appearance_dict["count"] = 0
+            appearance_dict["shows"] = None
+
+        return appearance_dict
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_appearances_by_slug(guest_slug: str,
+                                  database_connection: mysql.connector.connect
+                                 ) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the guest's
+    appearances.
+
+    Arguments:
+        guest_slug (str): Guest slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        list[OrderedDict]: Returns a list containing an OrderedDict with guest
+        appearance information
+    """
+    guest_id = convert_slug_to_id(guest_slug, database_connection)
+    if guest_id:
+        return _retrieve_appearances_by_id(guest_id, database_connection, True)
+
+    return None
+
+#endregion
+
 #region Utility Functions
 def convert_slug_to_id(guest_slug: str,
                        database_connection: mysql.connector.connect) -> int:
@@ -173,11 +268,11 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         result = cursor.fetchall()
         cursor.close()
 
-        panelists = []
+        guest = []
         for row in result:
-            panelists.append(row["guestid"])
+            guest.append(row["guestid"])
 
-        return panelists
+        return guest
     except ProgrammingError as err:
         print("Unable to query the database: {}".format(err))
     except DatabaseError as err:
@@ -186,7 +281,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(guest_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with guest details based on the guest ID.
+    """Returns an OrderedDict with guest information based on the guest ID.
 
     Arguments:
         guest_id (int): Guest ID from database
@@ -195,9 +290,10 @@ def retrieve_by_id(guest_id: int,
     Returns:
         OrderedDict: Returns a dict containing guest id, name, and slug string
     """
-    valid_id = validate_id(guest_id, database_connection)
-    if (not pre_validated_id and not valid_id):
-        return None
+    if not pre_validated_id:
+        valid_id = validate_id(guest_id, database_connection)
+        if not valid_id:
+            return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -224,7 +320,7 @@ def retrieve_by_id(guest_id: int,
 
 def retrieve_by_slug(guest_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with guest details based on the guest slug string
+    """Returns an OrderedDict with guest information based on the guest slug string
 
     Arguments:
         guest_slug (str): Guest slug string from database
@@ -234,100 +330,79 @@ def retrieve_by_slug(guest_slug: str,
     """
     guest_id = convert_slug_to_id(guest_slug, database_connection)
     if guest_id:
-        return retrieve_by_id(guest_id, database_connection, True)
+        return retrieve_by_id(guest_id,
+                              database_connection,
+                              pre_validated_id=True)
 
     return None
 
-def retrieve_appearances_by_id(guest_id: int,
-                               database_connection: mysql.connector.connect,
-                               pre_validated_id: bool = False) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the guest's
-    appearances.
+def retrieve_details_by_id(guest_id: int,
+                           database_connection: mysql.connector.connect,
+                           pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict with guest information and appearances based on
+    the guest ID
 
     Arguments:
         guest_id (int): Guest ID from database
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with guest
-        appearance information
+        OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
     """
     if not pre_validated_id:
         valid_id = validate_id(guest_id, database_connection)
         if not valid_id:
             return None
 
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT ( "
-                 "SELECT COUNT(gm.showid) FROM ww_showguestmap gm "
-                 "JOIN ww_shows s ON s.showid = gm.showid "
-                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
-                 "gm.guestid = %s ) AS regular, ( "
-                 "SELECT COUNT(gm.showid) FROM ww_showguestmap gm "
-                 "JOIN ww_shows s ON s.showid = gm.showid "
-                 "WHERE gm.guestid = %s ) AS allshows;")
-        cursor.execute(query, (guest_id, guest_id,))
-        result = cursor.fetchone()
-        cursor.close()
+    guest = retrieve_by_id(guest_id,
+                           database_connection,
+                           pre_validated_id=True)
+    guest["appearances"] = _retrieve_appearances_by_id(guest_id,
+                                                       database_connection,
+                                                       pre_validated_id=True)
+    return guest
 
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
-
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT gm.showid, s.showdate, s.bestof, s.repeatshowid, "
-                 "gm.guestscore, gm.exception FROM ww_showguestmap gm "
-                 "JOIN ww_guests g ON g.guestid = gm.guestid "
-                 "JOIN ww_shows s ON s.showid = gm.showid "
-                 "WHERE gm.guestid = %s "
-                 "ORDER BY s.showdate ASC;")
-
-        cursor.execute(query, (guest_id,))
-        result = cursor.fetchall()
-        cursor.close()
-
-        appearance_dict = collections.OrderedDict()
-        if result:
-            appearances = []
-            for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["score"] = appearance["guestscore"]
-                appearance_info["exception"] = bool(appearance["exception"])
-                appearances.append(appearance_info)
-
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
-
-        return appearance_dict
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def retrieve_appearances_by_slug(guest_slug: str,
-                                 database_connection: mysql.connector.connect
-                                ) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the guest's
-    appearances.
+def retrieve_details_by_slug(guest_slug: str,
+                             database_connection: mysql.connector.connect) -> Dict:
+    """Returns an OrderedDict with guest information and appearances based on
+    the guest slug string
 
     Arguments:
         guest_slug (str): Guest slug string from database
         database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with guest
-        appearance information
+        OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
     """
     guest_id = convert_slug_to_id(guest_slug, database_connection)
     if guest_id:
-        return retrieve_appearances_by_id(guest_id, database_connection, True)
+        return retrieve_details_by_id(guest_id,
+                                      database_connection,
+                                      pre_validated_id=True)
 
     return None
+
+def retrieve_all_details(database_connection: mysql.connector.connection) -> List[Dict]:
+    """Return detailed information for all guests in the database
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
+    Returns:
+        List[OrderedDict]: Returns a list of OrderedDicts containing guest details
+    """
+    guest_ids = retrieve_all_ids(database_connection)
+    if not guest_ids:
+        return None
+
+    guests = []
+    for guest_id in guest_ids:
+        guest_details = retrieve_details_by_id(guest_id,
+                                               database_connection,
+                                               pre_validated_id=True)
+        if guest_details:
+            guests.append(guest_details)
+
+    return guests
 
 #endregion

@@ -10,6 +10,99 @@ from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 
+#region Internal Functions
+def _retrieve_appearances_by_id(host_id: int,
+                                database_connection: mysql.connector.connect,
+                                pre_validated_id: bool = False) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the host's
+    appearances.
+
+    Arguments:
+        host_id (int): Host ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+    Returns:
+        list[OrderedDict]: Returns a list containing an OrderedDict with host
+        appearance information
+    """
+    if not pre_validated_id:
+        valid_id = validate_id(host_id, database_connection)
+        if not valid_id:
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT ( "
+                 "SELECT COUNT(hm.showid) FROM ww_showhostmap hm "
+                 "JOIN ww_shows s ON s.showid = hm.showid "
+                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
+                 "hm.hostid = %s ) AS regular, ( "
+                 "SELECT COUNT(hm.showid) FROM ww_showhostmap hm "
+                 "JOIN ww_shows s ON s.showid = hm.showid "
+                 "WHERE hm.hostid = %s ) AS allshows;")
+        cursor.execute(query, (host_id, host_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        appearance_counts = collections.OrderedDict()
+        appearance_counts["regularShows"] = result["regular"]
+        appearance_counts["allShows"] = result["allshows"]
+
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT hm.showid, s.showdate, s.bestof, s.repeatshowid, hm.guest "
+                 "FROM ww_showhostmap hm "
+                 "JOIN ww_hosts h ON h.hostid = hm.hostid "
+                 "JOIN ww_shows s ON s.showid = hm.showid "
+                 "WHERE hm.hostid = %s "
+                 "ORDER BY s.showdate ASC;")
+
+        cursor.execute(query, (host_id,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        appearance_dict = collections.OrderedDict()
+        if result:
+            appearances = []
+            for appearance in result:
+                appearance_info = {}
+                appearance_info["date"] = appearance["showdate"].isoformat()
+                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
+                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
+                appearance_info["exception"] = bool(appearance["guest"])
+                appearances.append(appearance_info)
+
+            appearance_dict["count"] = appearance_counts
+            appearance_dict["shows"] = appearances
+        else:
+            appearance_dict["count"] = 0
+            appearance_dict["shows"] = None
+
+        return appearance_dict
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_appearances_by_slug(host_slug: str,
+                                  database_connection: mysql.connector.connect) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the host's
+    appearances.
+
+    Arguments:
+        host_slug (str): Host slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with host
+        appearance information. Also returns a ReponseCode IntEnum
+    """
+    host_id = convert_slug_to_id(host_slug, database_connection)
+    if host_id:
+        return _retrieve_appearances_by_id(host_id, database_connection, True)
+
+    return None
+
+#endregion
+
 #region Utility Functions
 def convert_slug_to_id(host_slug: str,
                        database_connection: mysql.connector.connect) -> int:
@@ -238,96 +331,6 @@ def retrieve_by_slug(host_slug: str,
     host_id = convert_slug_to_id(host_slug, database_connection)
     if host_id:
         return retrieve_by_id(host_id, database_connection, True)
-
-    return None
-
-def retrieve_appearances_by_id(host_id: int,
-                               database_connection: mysql.connector.connect,
-                               pre_validated_id: bool = False) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the host's
-    appearances.
-
-    Arguments:
-        host_id (int): Host ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
-    Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with host
-        appearance information
-    """
-    if not pre_validated_id:
-        valid_id = validate_id(host_id, database_connection)
-        if not valid_id:
-            return None
-
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT ( "
-                 "SELECT COUNT(hm.showid) FROM ww_showhostmap hm "
-                 "JOIN ww_shows s ON s.showid = hm.showid "
-                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
-                 "hm.hostid = %s ) AS regular, ( "
-                 "SELECT COUNT(hm.showid) FROM ww_showhostmap hm "
-                 "JOIN ww_shows s ON s.showid = hm.showid "
-                 "WHERE hm.hostid = %s ) AS allshows;")
-        cursor.execute(query, (host_id, host_id,))
-        result = cursor.fetchone()
-        cursor.close()
-
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
-
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT hm.showid, s.showdate, s.bestof, s.repeatshowid, hm.guest "
-                 "FROM ww_showhostmap hm "
-                 "JOIN ww_hosts h ON h.hostid = hm.hostid "
-                 "JOIN ww_shows s ON s.showid = hm.showid "
-                 "WHERE hm.hostid = %s "
-                 "ORDER BY s.showdate ASC;")
-
-        cursor.execute(query, (host_id,))
-        result = cursor.fetchall()
-        cursor.close()
-
-        appearance_dict = collections.OrderedDict()
-        if result:
-            appearances = []
-            for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["exception"] = bool(appearance["guest"])
-                appearances.append(appearance_info)
-
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
-
-        return appearance_dict
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def retrieve_appearances_by_slug(host_slug: str,
-                                 database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the host's
-    appearances.
-
-    Arguments:
-        host_slug (str): Host slug string from database
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an OrderedDict with host
-        appearance information. Also returns a ReponseCode IntEnum
-    """
-    host_id = convert_slug_to_id(host_slug, database_connection)
-    if host_id:
-        return retrieve_appearances_by_id(host_id, database_connection, True)
 
     return None
 

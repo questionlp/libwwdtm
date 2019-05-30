@@ -28,20 +28,20 @@ def test_guest_module(database_connection: mysql.connector.connect):
     # Testing retrieve all guests
     test_guest.test_retrieve_all(database_connection)
     test_guest.test_retrieve_all_ids(database_connection)
+    test_guest.test_retrieve_all_details(database_connection)
 
     # Testing retrieve individual guest
     test_guest.test_retrieve_by_id(database_connection)
     test_guest.test_retrieve_by_slug(database_connection)
 
     # Testing retrieve guest appearances
-    test_guest.test_retrieve_appearances_by_id(database_connection)
-    test_guest.test_retrieve_appearances_by_slug(database_connection)
+    test_guest.test_retrieve_details_by_id(database_connection)
+    test_guest.test_retrieve_details_by_slug(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print("Time Elapsed: {}s\n".format(round(elapsed_time, 5)))
-    return
 
 def test_host_module(database_connection: mysql.connector.connect):
     """Run tests against host module"""
@@ -75,8 +75,6 @@ def test_host_module(database_connection: mysql.connector.connect):
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print("Time Elapsed: {}s\n".format(round(elapsed_time, 5)))
-    return
-
 
 def test_panelist_module(database_connection: mysql.connector.connect):
     """Run tests against panelist module"""
@@ -117,7 +115,6 @@ def test_panelist_module(database_connection: mysql.connector.connect):
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print("Time Elapsed: {}s\n".format(round(elapsed_time, 5)))
-    return
 
 def test_scorekeeper_module(database_connection: mysql.connector.connect):
     """Run tests against scorekeeper module"""
@@ -151,7 +148,6 @@ def test_scorekeeper_module(database_connection: mysql.connector.connect):
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print("Time Elapsed: {}s\n".format(round(elapsed_time, 5)))
-    return
 
 def test_show_module(database_connection: mysql.connector.connect):
     """Run tests against show module"""
@@ -170,44 +166,45 @@ def test_show_module(database_connection: mysql.connector.connect):
     test_show.test_date_not_exists(database_connection)
 
     # Testing retrieve basic show info
-    test_show.test_retrieve_show_basic_info_by_id(database_connection)
-    test_show.test_retrieve_show_basic_info_by_invalid_id(database_connection)
+    test_show.test_retrieve_basic_info_by_id(database_connection)
+    test_show.test_retrieve_basic_info_by_invalid_id(database_connection)
 
-    test_show.test_retrieve_show_basic_info_by_date(database_connection)
-    test_show.test_retrieve_show_basic_info_by_invalid_date(database_connection)
+    test_show.test_retrieve_basic_info_by_date(database_connection)
+    test_show.test_retrieve_basic_info_by_invalid_date(database_connection)
 
-    test_show.test_retrieve_show_basic_info_by_date_string(database_connection)
-    test_show.test_retrieve_show_basic_info_by_invalid_date_string(database_connection)
+    test_show.test_retrieve_basic_info_by_date_string(database_connection)
+    test_show.test_retrieve_basic_info_by_invalid_date_string(database_connection)
 
     # Testing retrieve multiple basic show info
-    test_show.test_retrieve_show_basic_info_by_year(database_connection)
-    test_show.test_retrieve_show_basic_info_by_year_month(database_connection)
+    test_show.test_retrieve_basic_info_by_year(database_connection)
+    test_show.test_retrieve_basic_info_by_year_month(database_connection)
+    test_show.test_retrieve_all_basic_info(database_connection)
 
     # Testing retrieve recent basic show info
-    test_show.test_retrieve_recent_show_basic_info(database_connection)
+    test_show.test_retrieve_recent_basic_info(database_connection)
 
     # Testing retrieve show details
-    test_show.test_retrieve_show_details_by_id(database_connection)
-    test_show.test_retrieve_show_details_by_invalid_id(database_connection)
+    test_show.test_retrieve_details_by_id(database_connection)
+    test_show.test_retrieve_details_by_invalid_id(database_connection)
 
-    test_show.test_retrieve_show_details_by_date(database_connection)
-    test_show.test_retrieve_show_details_by_invalid_date(database_connection)
+    test_show.test_retrieve_details_by_date(database_connection)
+    test_show.test_retrieve_details_by_invalid_date(database_connection)
 
-    test_show.test_retrieve_show_details_by_date_string(database_connection)
-    test_show.test_retrieve_show_details_by_invalid_date_string(database_connection)
+    test_show.test_retrieve_details_by_date_string(database_connection)
+    test_show.test_retrieve_details_by_invalid_date_string(database_connection)
 
     # Testing retrieve multiple show details
-    test_show.test_retrieve_show_details_by_year(database_connection)
-    test_show.test_retrieve_show_details_by_year_month(database_connection)
+    test_show.test_retrieve_details_by_year(database_connection)
+    test_show.test_retrieve_details_by_year_month(database_connection)
+    test_show.test_retrieve_all_details(database_connection)
 
     # Testing retrieve recent show details
-    test_show.test_retrieve_recent_show_details(database_connection)
+    test_show.test_retrieve_recent_details(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print("Time Elapsed: {}s\n".format(round(elapsed_time, 5)))
-    return
 
 def load_config(app_environment):
     """Load configuration file from config.json"""

@@ -48,14 +48,21 @@ def test_retrieve_by_slug(database_connection: mysql.connector.connect):
     assert guest_dict is not None
     assert "id" in guest_dict
 
-def test_retrieve_appearances_by_id(database_connection: mysql.connector.connect):
-    """Testing response from guest.retrieve_apperances_by_id"""
-    appearances = guest.retrieve_appearances_by_id(25, database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_id(database_connection: mysql.connector.connect):
+    """Testing response from guest.retrieve_details_by_id"""
+    guest_dict = guest.retrieve_details_by_id(25, database_connection)
+    assert guest_dict is not None
+    assert "id" in guest_dict
+    assert "appearances" in guest_dict
 
-def test_retrieve_appearances_by_slug(database_connection: mysql.connector.connect):
-    """Testing response from guest.retrieve_apperances_by_slug"""
-    appearances = guest.retrieve_appearances_by_slug("tom-hanks", database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_slug(database_connection: mysql.connector.connect):
+    """Testing response from guest.retrieve_details_by_slug"""
+    guest_dict = guest.retrieve_details_by_slug("tom-hanks", database_connection)
+    assert guest_dict is not None
+    assert "id" in guest_dict
+    assert "appearances" in guest_dict
+
+def test_retrieve_all_details(database_connection: mysql.connector.connect):
+    """Testing response from guest_retrieve_all_details"""
+    guests_dict = guest.retrieve_all_details(database_connection)
+    assert guests_dict is not None
