@@ -14,7 +14,7 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 
 #region Internal Functions
 def _retrieve_core_info_by_id(show_id: int,
-                                   database_connection: mysql.connector.connect) -> Dict:
+                              database_connection: mysql.connector.connect) -> Dict:
     """Return core information about a show based on the show ID
 
     Arguments:
@@ -82,7 +82,7 @@ def _retrieve_core_info_by_id(show_id: int,
         print("Unexpected error: {}".format(err))
 
 def _retrieve_location_by_id(show_id: int,
-                                  database_connection: mysql.connector.connect) -> Dict:
+                             database_connection: mysql.connector.connect) -> Dict:
     """Return show location information by show ID
 
     Arguments:
@@ -116,7 +116,7 @@ def _retrieve_location_by_id(show_id: int,
         print("Unexpected error: {}".format(err))
 
 def _retrieve_panelist_info_by_id(show_id: int,
-                                       database_connection: mysql.connector.connect) -> Dict:
+                                  database_connection: mysql.connector.connect) -> Dict:
     """Return show panelist information by show ID
 
     Arguments:
@@ -159,7 +159,7 @@ def _retrieve_panelist_info_by_id(show_id: int,
         print("Unexpected error: {}".format(err))
 
 def _retrieve_bluff_info_by_id(show_id: int,
-                                    database_connection: mysql.connector.connect) -> Dict:
+                               database_connection: mysql.connector.connect) -> Dict:
     """Return show panelist bluff information by show ID
 
     Arguments:
@@ -216,7 +216,7 @@ def _retrieve_bluff_info_by_id(show_id: int,
         print("Unexpected error: {}".format(err))
 
 def _retrieve_not_my_job_info_by_id(show_id: int,
-                                         database_connection: mysql.connector.connect) -> Dict:
+                                    database_connection: mysql.connector.connect) -> Dict:
     """Return show Not My Job information by show ID
 
     Arguments:
@@ -441,8 +441,7 @@ def retrieve_basic_info_by_id(show_id: int,
     """
 
     if not pre_validated_id:
-        valid_id = validate_id(show_id, database_connection)
-        if not valid_id:
+        if not validate_id(show_id, database_connection):
             return None
 
     try:
@@ -692,8 +691,7 @@ def retrieve_details_by_id(show_id: int,
         OrderedDict: Returns an OrderedDict containing show information
     """
     if not pre_validated_id:
-        valid_id = validate_id(show_id, database_connection)
-        if not valid_id:
+        if not validate_id(show_id, database_connection):
             return None
 
     show_details = collections.OrderedDict()

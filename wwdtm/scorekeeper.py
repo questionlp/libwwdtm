@@ -10,6 +10,99 @@ from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 
+#region Internal Functions
+def _retrieve_appearances_by_id(scorekeeper_id: int,
+                                database_connection: mysql.connector.connect,
+                                pre_validated_id: bool = False) -> List:
+    """Returns a list of OrderedDicts containing information about all of the scorekeeper's
+    appearances
+
+    Arguments:
+        scorekeeper_id (int): Scorekeeper ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
+    Returns:
+        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
+        appearance information
+    """
+    if not pre_validated_id:
+        if not validate_id(scorekeeper_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT ( "
+                 "SELECT COUNT(skm.showid) FROM ww_showskmap skm "
+                 "JOIN ww_shows s ON s.showid = skm.showid "
+                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
+                 "skm.scorekeeperid = %s ) AS regular, ( "
+                 "SELECT COUNT(skm.showid) FROM ww_showskmap skm "
+                 "JOIN ww_shows s ON s.showid = skm.showid "
+                 "WHERE skm.scorekeeperid = %s ) AS allshows;")
+        cursor.execute(query, (scorekeeper_id, scorekeeper_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        appearance_counts = collections.OrderedDict()
+        appearance_counts["regularShows"] = result["regular"]
+        appearance_counts["allShows"] = result["allshows"]
+
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT skm.showid, s.showdate, s.bestof, s.repeatshowid, skm.guest, "
+                 "skm.description FROM ww_showskmap skm "
+                 "JOIN ww_scorekeepers sk ON sk.scorekeeperid = skm.scorekeeperid "
+                 "JOIN ww_shows s ON s.showid = skm.showid "
+                 "WHERE skm.scorekeeperid = %s "
+                 "ORDER BY s.showdate ASC;")
+
+        cursor.execute(query, (scorekeeper_id,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        appearance_dict = collections.OrderedDict()
+        if result:
+            appearances = []
+            for appearance in result:
+                appearance_info = {}
+                appearance_info["date"] = appearance["showdate"].isoformat()
+                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
+                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
+                appearance_info["exception"] = bool(appearance["guest"])
+                appearance_info["description"] = appearance["description"]
+                appearances.append(appearance_info)
+
+            appearance_dict["count"] = appearance_counts
+            appearance_dict["shows"] = appearances
+        else:
+            appearance_dict["count"] = 0
+            appearance_dict["shows"] = None
+
+        return appearance_dict
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_appearances_by_slug(scorekeeper_slug: str,
+                                  database_connection: mysql.connector.connect) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the scorekeeper's
+    appearances
+
+    Arguments:
+        scorekeeper_slug (str): Scorekeeper slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
+        appearance information
+    """
+    scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
+    if scorekeeper_id:
+        return _retrieve_appearances_by_id(scorekeeper_id, database_connection, True)
+
+    return None
+
+#endregion
+
 #region Utility Functions
 def convert_slug_to_id(scorekeeper_slug: str,
                        database_connection: mysql.connector.connect) -> int:
@@ -188,7 +281,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(scorekeeper_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with scorekeeper details based on the scorekeeper ID
+    """Returns an OrderedDict with scorekeeper information based on the scorekeeper ID
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
@@ -198,8 +291,7 @@ def retrieve_by_id(scorekeeper_id: int,
         OrderedDict: Returns a dict containing scorekeeper id, name, and slug string
     """
     if not pre_validated_id:
-        valid_id = validate_id(scorekeeper_id, database_connection)
-        if not valid_id:
+        if not validate_id(scorekeeper_id, database_connection):
             return None
 
     try:
@@ -229,7 +321,7 @@ def retrieve_by_id(scorekeeper_id: int,
 
 def retrieve_by_slug(scorekeeper_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with scorekeeper details based on the scorekeeper slug string
+    """Returns an OrderedDict with scorekeeper information based on the scorekeeper slug string
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
@@ -243,95 +335,68 @@ def retrieve_by_slug(scorekeeper_slug: str,
 
     return None
 
-def retrieve_appearances_by_id(scorekeeper_id: int,
-                               database_connection: mysql.connector.connect,
-                               pre_validated_id: bool = False) -> List:
-    """Returns a list of OrderedDicts containing information about all of the scorekeeper's
-    appearances
+def retrieve_details_by_id(scorekeeper_id: int,
+                           database_connection: mysql.connector.connect,
+                           pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict with scorekeeper details based on the scorekeeper ID
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
-        appearance information
+        OrderedDict: Returns a dict containing scorekeeper id, name, slug string and appearances
     """
     if not pre_validated_id:
-        valid_id = validate_id(scorekeeper_id, database_connection)
-        if not valid_id:
+        if not validate_id(scorekeeper_id, database_connection):
             return None
 
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT ( "
-                 "SELECT COUNT(skm.showid) FROM ww_showskmap skm "
-                 "JOIN ww_shows s ON s.showid = skm.showid "
-                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
-                 "skm.scorekeeperid = %s ) AS regular, ( "
-                 "SELECT COUNT(skm.showid) FROM ww_showskmap skm "
-                 "JOIN ww_shows s ON s.showid = skm.showid "
-                 "WHERE skm.scorekeeperid = %s ) AS allshows;")
-        cursor.execute(query, (scorekeeper_id, scorekeeper_id,))
-        result = cursor.fetchone()
-        cursor.close()
+    scorekeeper = retrieve_by_id(scorekeeper_id,
+                                 database_connection,
+                                 pre_validated_id=True)
+    scorekeeper["appearances"] = _retrieve_appearances_by_id(scorekeeper_id,
+                                                             database_connection,
+                                                             pre_validated_id=True)
+    return scorekeeper
 
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
-
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT skm.showid, s.showdate, s.bestof, s.repeatshowid, skm.guest, "
-                 "skm.description FROM ww_showskmap skm "
-                 "JOIN ww_scorekeepers sk ON sk.scorekeeperid = skm.scorekeeperid "
-                 "JOIN ww_shows s ON s.showid = skm.showid "
-                 "WHERE skm.scorekeeperid = %s "
-                 "ORDER BY s.showdate ASC;")
-
-        cursor.execute(query, (scorekeeper_id,))
-        result = cursor.fetchall()
-        cursor.close()
-
-        appearance_dict = collections.OrderedDict()
-        if result:
-            appearances = []
-            for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["exception"] = bool(appearance["guest"])
-                appearance_info["description"] = appearance["description"]
-                appearances.append(appearance_info)
-
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
-
-        return appearance_dict
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def retrieve_appearances_by_slug(scorekeeper_slug: str,
-                                 database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the scorekeeper's
-    appearances
+def retrieve_details_by_slug(scorekeeper_slug: str,
+                             database_connection: mysql.connector.connect) -> Dict:
+    """Returns an OrderedDict with scorekeeper details based on the scorekeeper slug string
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
-        appearance information
+        OrderedDict: Returns a dict containing scorekeeper id, name, slug string and appearances
     """
     scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
     if scorekeeper_id:
-        return retrieve_appearances_by_id(scorekeeper_id, database_connection, True)
-
+        return retrieve_details_by_id(scorekeeper_id,
+                                      database_connection,
+                                      pre_validated_id=True)
     return None
+
+def retrieve_all_details(database_connection: mysql.connector.connect) -> List[Dict]:
+    """Return detailed information for all scorekeepers in the database
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        List[OrderedDict]: Returns a list of OrderedDicts containing scorekeeper information
+        and appearances
+    """
+    scorekeeper_ids = retrieve_all_ids(database_connection)
+    if not scorekeeper_ids:
+        return None
+
+    scorekeepers = []
+    for scorekeeper_id in scorekeeper_ids:
+        scorekeeper = retrieve_details_by_id(scorekeeper_id,
+                                             database_connection,
+                                             pre_validated_id=True)
+        if scorekeeper:
+            scorekeepers.append(scorekeeper)
+
+    return scorekeepers
 
 #endregion

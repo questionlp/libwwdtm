@@ -48,38 +48,21 @@ def test_retrieve_by_slug(database_connection: mysql.connector.connect):
     assert panelist_dict is not None
     assert "id" in panelist_dict
 
-def test_retrieve_appearances_by_id(database_connection: mysql.connector.connect):
-    """Testing response from panelist.retrieve_apperances_by_id"""
-    appearances = panelist.retrieve_appearances_by_id(10, database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_id(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_details_by_id"""
+    panelist_dict = panelist.retrieve_details_by_id(14, database_connection)
+    assert panelist_dict is not None
+    assert "statistics" in panelist_dict
+    assert "appearances" in panelist_dict
 
-def test_retrieve_appearances_by_slug(database_connection):
-    """Testing response from panelist.retrieve_apperances_by_slug"""
-    appearances = panelist.retrieve_appearances_by_slug("tom-bodett", database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_slug(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_details_by_slug"""
+    panelist_dict = panelist.retrieve_details_by_slug('maeve-higgins', database_connection)
+    assert panelist_dict is not None
+    assert "statistics" in panelist_dict
+    assert "appearances" in panelist_dict
 
-def test_retrieve_statistics_by_id(database_connection: mysql.connector.connect):
-    """Testing response from panelist.retrieve_statistics_by_id"""
-    statistics = panelist.retrieve_statistics_by_id(10, database_connection)
-    assert panelist is not None
-    assert "scoring" in statistics
-    assert "ranking" in statistics
-
-def test_retrieve_statistics_by_invalid_id(database_connection: mysql.connector.connect):
-    """Testing response from panelist.retrieve_statistics_by_id with an invalid ID"""
-    statistics = panelist.retrieve_statistics_by_id(-1, database_connection)
-    assert statistics is None
-
-def test_retrieve_statistics_by_slug(database_connection: mysql.connector.connect):
-    """Testing response from panelist.retrieve_statistics_by_slug"""
-    statistics = panelist.retrieve_statistics_by_slug("tom-bodett", database_connection)
-    assert statistics is not None
-    assert "scoring" in statistics
-    assert "ranking" in statistics
-
-def test_retrieve_statistics_by_invalid_slug(database_connection: mysql.connector.connect):
-    """Testing response from panelist.retrieve_statistics_by_slug with an invalid slug"""
-    statistics = panelist.retrieve_statistics_by_id("dom-bodet", database_connection)
-    assert statistics is None
+def test_retrieve_all_details(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_all_details"""
+    panelists_dict = panelist.retrieve_all_details(database_connection)
+    assert panelists_dict is not None

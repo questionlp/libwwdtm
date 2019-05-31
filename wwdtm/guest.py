@@ -291,8 +291,7 @@ def retrieve_by_id(guest_id: int,
         OrderedDict: Returns a dict containing guest id, name, and slug string
     """
     if not pre_validated_id:
-        valid_id = validate_id(guest_id, database_connection)
-        if not valid_id:
+        if not validate_id(guest_id, database_connection):
             return None
 
     try:
@@ -350,8 +349,7 @@ def retrieve_details_by_id(guest_id: int,
         OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
     """
     if not pre_validated_id:
-        valid_id = validate_id(guest_id, database_connection)
-        if not valid_id:
+        if not validate_id(guest_id, database_connection):
             return None
 
     guest = retrieve_by_id(guest_id,
@@ -387,7 +385,6 @@ def retrieve_all_details(database_connection: mysql.connector.connection) -> Lis
 
     Arguments:
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
     Returns:
         List[OrderedDict]: Returns a list of OrderedDicts containing guest details
     """

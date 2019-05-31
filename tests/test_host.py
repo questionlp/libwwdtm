@@ -48,14 +48,19 @@ def test_retrieve_by_slug(database_connection: mysql.connector.connect):
     assert host_dict is not None
     assert "id" in host_dict
 
-def test_retrieve_appearances_by_id(database_connection: mysql.connector.connect):
-    """Testing response from host.retrieve_apperances_by_id"""
-    appearances = host.retrieve_appearances_by_id(1, database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_id(database_connection: mysql.connector.connect):
+    """Testing response from host.retrieve_details_by_id"""
+    host_dict = host.retrieve_details_by_id(1, database_connection)
+    assert host_dict is not None
+    assert "appearances" in host_dict
 
-def test_retrieve_appearances_by_slug(database_connection: mysql.connector.connect):
-    """Testing response from host.retrieve_apperances_by_slug"""
-    appearances = host.retrieve_appearances_by_slug("luke-burbank", database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_slug(database_connection: mysql.connector.connect):
+    """Testing response from host.retrieve_details_by_slug"""
+    host_dict = host.retrieve_details_by_slug('luke-burbank', database_connection)
+    assert host_dict is not None
+    assert "appearances" in host_dict
+
+def test_retrieve_all_details(database_connection: mysql.connector.connect):
+    """Testing response from host.retrieve_all_detials"""
+    hosts_dict = host.retrieve_all_details(database_connection)
+    assert hosts_dict is not None

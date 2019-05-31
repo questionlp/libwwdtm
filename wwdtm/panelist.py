@@ -11,6 +11,259 @@ import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 import numpy
 
+#region Internal Functions
+def _retrieve_appearances_by_id(panelist_id: int,
+                                database_connection: mysql.connector.connect,
+                                pre_validated_id: bool = False) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the panelist's
+    appearances
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
+    Returns:
+        list[OrderedDict]: Returns a list containing an OrderedDict with panelist
+        appearance information
+    """
+    if not pre_validated_id:
+        if not validate_id(panelist_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT ( "
+                 "SELECT COUNT(pm.showid) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
+                 "pm.panelistid = %s ) AS regular, ( "
+                 "SELECT COUNT(pm.showid) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s ) AS allshows, ( "
+                 "SELECT COUNT(pm.panelistid) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON pm.showid = s.showid "
+                 "WHERE pm.panelistid = %s AND s.bestof = 0 AND "
+                 "s.repeatshowid IS NULL AND pm.panelistscore IS NOT NULL ) "
+                 "AS withscores;")
+        cursor.execute(query, (panelist_id, panelist_id, panelist_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        appearance_counts = collections.OrderedDict()
+        appearance_counts["regularShows"] = result["regular"]
+        appearance_counts["allShows"] = result["allshows"]
+        appearance_counts["showsWithScores"] = result["withscores"]
+
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT pm.showid, s.showdate, s.bestof, s.repeatshowid, "
+                 "pm.panelistlrndstart, pm.panelistlrndcorrect, pm.panelistscore,  "
+                 "pm.showpnlrank FROM ww_showpnlmap pm "
+                 "JOIN ww_panelists p ON p.panelistid = pm.panelistid "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s "
+                 "ORDER BY s.showdate ASC;")
+
+        cursor.execute(query, (panelist_id,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        appearance_dict = collections.OrderedDict()
+        if result:
+            appearances = []
+            for appearance in result:
+                appearance_info = {}
+                appearance_info["date"] = appearance["showdate"].isoformat()
+                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
+                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
+                appearance_info["lightningRoundStart"] = appearance["panelistlrndstart"]
+                appearance_info["lightningRoundCorrect"] = appearance["panelistlrndcorrect"]
+                appearance_info["score"] = appearance["panelistscore"]
+                appearance_info["rank"] = bool(appearance["showpnlrank"])
+                appearances.append(appearance_info)
+
+            appearance_dict["count"] = appearance_counts
+            appearance_dict["shows"] = appearances
+        else:
+            appearance_dict["count"] = 0
+            appearance_dict["shows"] = None
+
+        return appearance_dict
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_appearances_by_slug(panelist_slug: str,
+                                  database_connection: mysql.connector.connect) -> List[Dict]:
+    """Returns a list of OrderedDicts containing information about all of the panelist's
+    appearances
+
+    Arguments:
+        panelist_slug (str): Panelist slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        list[OrderedDict]: Return a list containing an OrderedDict with panelist
+        appearance information
+    """
+    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    if panelist_id:
+        return _retrieve_appearances_by_id(panelist_id, database_connection, True)
+
+    return None
+
+def _retrieve_scores_by_id(panelist_id: int,
+                                    database_connection: mysql.connector.connect) -> List[int]:
+    """Returns a list of panelist scores from all the panelist's appearances
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        List[int]: List of panelist scores
+    """
+    scores = []
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT s.showdate, pm.panelistscore FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE panelistid = %s "
+                 "AND s.bestof = 0 and s.repeatshowid IS NULL;")
+        cursor.execute(query, (panelist_id,))
+
+        result = cursor.fetchall()
+        cursor.close()
+
+        for appearance in result:
+            if appearance["panelistscore"]:
+                scores.append(appearance["panelistscore"])
+
+        return scores
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_rank_info_by_id(panelist_id: int,
+                                       database_connection: mysql.connector.connect) -> Dict:
+    """Returns a list of panelist ranking info
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        Dict: Panelist ranking data
+    """
+    try:
+        ranks = {}
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT ( "
+                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '1' AND "
+                 "s.bestof = 0 and s.repeatshowid IS NULL) as '1', ( "
+                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '1t' AND "
+                 "s.bestof = 0 and s.repeatshowid IS NULL) as '1t', ( "
+                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '2' AND "
+                 "s.bestof = 0 and s.repeatshowid IS NULL) as '2', ( "
+                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '2t' AND "
+                 "s.bestof = 0 and s.repeatshowid IS NULL) as '2t', ( "
+                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '3' AND "
+                 "s.bestof = 0 and s.repeatshowid IS NULL "
+                 ") as '3';")
+        cursor.execute(query, (panelist_id, panelist_id, panelist_id, panelist_id, panelist_id,))
+
+        result = cursor.fetchall()
+        cursor.close()
+
+        for appearance in result:
+            ranks["first"] = appearance["1"]
+            ranks["firstTied"] = appearance["1t"]
+            ranks["second"] = appearance["2"]
+            ranks["secondTied"] = appearance["2t"]
+            ranks["third"] = appearance["3"]
+
+        return ranks
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def _retrieve_statistics_by_id(panelist_id: int,
+                               database_connection: mysql.connector.connect,
+                               pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict containing panelist statistics, including ranking and
+    scoring data
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
+    Returns:
+        OrderedDict: Returns an OrderedDict containing panelist statistics data
+    """
+    if not pre_validated_id:
+        if not validate_id(panelist_id, database_connection):
+            return None
+
+    scores = _retrieve_scores_by_id(panelist_id, database_connection)
+    ranks = _retrieve_rank_info_by_id(panelist_id, database_connection)
+    if not scores or not ranks:
+        return None
+
+    statistics = collections.OrderedDict()
+    scoring = collections.OrderedDict()
+    ranking = collections.OrderedDict()
+
+    appearance_count = len(scores)
+    scoring["minimum"] = int(numpy.amin(scores))
+    scoring["maximum"] = int(numpy.amax(scores))
+    scoring["mean"] = round(numpy.mean(scores), 4)
+    scoring["median"] = int(numpy.median(scores))
+    scoring["standardDeviation"] = round(numpy.std(scores), 4)
+    scoring["total"] = int(numpy.sum(scores))
+
+    ranks_percentage = collections.OrderedDict()
+    ranks_percentage["first"] = round(100 * (ranks["first"] / appearance_count), 4)
+    ranks_percentage["firstTied"] = round(100 * (ranks["firstTied"] / appearance_count), 4)
+    ranks_percentage["second"] = round(100 * (ranks["second"] / appearance_count), 4)
+    ranks_percentage["secondTied"] = round(100 * (ranks["secondTied"] / appearance_count), 4)
+    ranks_percentage["third"] = round(100 * (ranks["third"] / appearance_count), 4)
+
+    ranking["rank"] = ranks
+    ranking["percentage"] = ranks_percentage
+
+    statistics["scoring"] = scoring
+    statistics["ranking"] = ranking
+
+    return statistics
+
+def _retrieve_statistics_by_slug(panelist_slug: str,
+                                 database_connection: mysql.connector.connect) -> List[Dict]:
+    """Returns an OrderedDict containing panelist statistics, including ranking and
+    scoring data
+
+    Arguments:
+        panelist_slug (str): Panelist slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        OrderedDict: Returns an OrderedDict containing panelist statistics data
+    """
+    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    if panelist_id:
+        return _retrieve_statistics_by_id(panelist_id, database_connection, True)
+
+    return None
+
+#endregion
+
 #region Utility Functions
 def convert_slug_to_id(panelist_slug: str,
                        database_connection: mysql.connector.connect) -> int:
@@ -200,8 +453,7 @@ def retrieve_by_id(panelist_id: int,
         and slug string
     """
     if not pre_validated_id:
-        valid_id = validate_id(panelist_id, database_connection)
-        if not valid_id:
+        if not validate_id(panelist_id, database_connection):
             return None
 
     try:
@@ -246,254 +498,74 @@ def retrieve_by_slug(panelist_slug: str,
 
     return None
 
-def retrieve_appearances_by_id(panelist_id: int,
-                               database_connection: mysql.connector.connect,
-                               pre_validated_id: bool = False) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the panelist's
-    appearances
+def retrieve_details_by_id(panelist_id: int,
+                           database_connection: mysql.connector.connect,
+                           pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict with panelist details based on the panelist ID
 
     Arguments:
         panelist_id (int): Panelist ID from database
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with panelist
-        appearance information
+        OrderedDict: Returns an OrderedDict containing panelist id, name, gender,
+        slug string, statistics and appearances
     """
     if not pre_validated_id:
-        valid_id = validate_id(panelist_id, database_connection)
-        if not valid_id:
+        if not validate_id(panelist_id, database_connection):
             return None
 
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT ( "
-                 "SELECT COUNT(pm.showid) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL AND "
-                 "pm.panelistid = %s ) AS regular, ( "
-                 "SELECT COUNT(pm.showid) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s ) AS allshows, ( "
-                 "SELECT COUNT(pm.panelistid) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON pm.showid = s.showid "
-                 "WHERE pm.panelistid = %s AND s.bestof = 0 AND "
-                 "s.repeatshowid IS NULL AND pm.panelistscore IS NOT NULL ) "
-                 "AS withscores;")
-        cursor.execute(query, (panelist_id, panelist_id, panelist_id,))
-        result = cursor.fetchone()
-        cursor.close()
+    panelist = retrieve_by_id(panelist_id,
+                              database_connection,
+                              pre_validated_id=True)
+    panelist["statistics"] = _retrieve_statistics_by_id(panelist_id,
+                                                        database_connection,
+                                                        pre_validated_id=True)
+    panelist["appearances"] = _retrieve_appearances_by_id(panelist_id,
+                                                          database_connection,
+                                                          pre_validated_id=True)
+    return panelist
 
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
-        appearance_counts["showsWithScores"] = result["withscores"]
-
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT pm.showid, s.showdate, s.bestof, s.repeatshowid, "
-                 "pm.panelistlrndstart, pm.panelistlrndcorrect, pm.panelistscore,  "
-                 "pm.showpnlrank FROM ww_showpnlmap pm "
-                 "JOIN ww_panelists p ON p.panelistid = pm.panelistid "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s "
-                 "ORDER BY s.showdate ASC;")
-
-        cursor.execute(query, (panelist_id,))
-        result = cursor.fetchall()
-        cursor.close()
-
-        appearance_dict = collections.OrderedDict()
-        if result:
-            appearances = []
-            for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["lightningRoundStart"] = appearance["panelistlrndstart"]
-                appearance_info["lightningRoundCorrect"] = appearance["panelistlrndcorrect"]
-                appearance_info["score"] = appearance["panelistscore"]
-                appearance_info["rank"] = bool(appearance["showpnlrank"])
-                appearances.append(appearance_info)
-
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
-
-        return appearance_dict
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def retrieve_appearances_by_slug(panelist_slug: str,
-                                 database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the panelist's
-    appearances
+def retrieve_details_by_slug(panelist_id: int,
+                             database_connection: mysql.connector.connect) -> Dict:
+    """Returns an OrderedDict with panelist details based on the panelist slug string
 
     Arguments:
         panelist_slug (str): Panelist slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        list[OrderedDict]: Return a list containing an OrderedDict with panelist
-        appearance information
+        OrderedDict): Returns an OrderedDict containing panelist id, name, gender,
+        slug string, statistics and appearances
     """
-    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
-    if panelist_id:
-        return retrieve_appearances_by_id(panelist_id, database_connection, True)
+    panelist_id = convert_slug_to_id(panelist_id, database_connection)
+    if not panelist_id:
+        return None
 
-    return None
+    return retrieve_details_by_id(panelist_id,
+                                  database_connection,
+                                  pre_validated_id=True)
 
-def _retrieve_panelist_scores_by_id(panelist_id: int,
-                                    database_connection: mysql.connector.connect) -> List[int]:
-    """Returns a list of panelist scores from all the panelist's appearances
+def retrieve_all_details(database_connection: mysql.connector.connect) -> List[Dict]:
+    """Return detailed information for all panelists in the database
 
     Arguments:
-        panelist_id (int): Panelist ID from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        List[int]: List of panelist scores
+        List[OrderedDict]: Returns a list of OrderedDicts containing panelist information,
+        statistics and appearances
     """
-    scores = []
-    try:
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT s.showdate, pm.panelistscore FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE panelistid = %s "
-                 "AND s.bestof = 0 and s.repeatshowid IS NULL;")
-        cursor.execute(query, (panelist_id,))
+    panelist_ids = retrieve_all_ids(database_connection)
+    if not panelist_ids:
+        return None
 
-        result = cursor.fetchall()
-        cursor.close()
+    panelists = []
+    for panelist_id in panelist_ids:
+        panelist = retrieve_details_by_id(panelist_id,
+                                          database_connection,
+                                          pre_validated_id=True)
+        if panelist:
+            panelists.append(panelist)
 
-        for appearance in result:
-            if appearance["panelistscore"]:
-                scores.append(appearance["panelistscore"])
-
-        return scores
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def _retrieve_panelist_rank_info_by_id(panelist_id: int,
-                                       database_connection: mysql.connector.connect) -> Dict:
-    """Returns a list of panelist ranking info
-
-    Arguments:
-        panelist_id (int): Panelist ID from database
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        Dict: Panelist ranking data
-    """
-    try:
-        ranks = {}
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT ( "
-                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '1' AND "
-                 "s.bestof = 0 and s.repeatshowid IS NULL) as '1', ( "
-                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '1t' AND "
-                 "s.bestof = 0 and s.repeatshowid IS NULL) as '1t', ( "
-                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '2' AND "
-                 "s.bestof = 0 and s.repeatshowid IS NULL) as '2', ( "
-                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '2t' AND "
-                 "s.bestof = 0 and s.repeatshowid IS NULL) as '2t', ( "
-                 "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE pm.panelistid = %s AND pm.showpnlrank = '3' AND "
-                 "s.bestof = 0 and s.repeatshowid IS NULL "
-                 ") as '3';")
-        cursor.execute(query, (panelist_id, panelist_id, panelist_id, panelist_id, panelist_id,))
-
-        result = cursor.fetchall()
-        cursor.close()
-
-        for appearance in result:
-            ranks["first"] = appearance["1"]
-            ranks["firstTied"] = appearance["1t"]
-            ranks["second"] = appearance["2"]
-            ranks["secondTied"] = appearance["2t"]
-            ranks["third"] = appearance["3"]
-
-        return ranks
-    except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
-    except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-
-def retrieve_statistics_by_id(panelist_id: int,
-                              database_connection: mysql.connector.connect,
-                              pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict containing panelist statistics, including ranking and
-    scoring data
-
-    Arguments:
-        panelist_id (int): Panelist ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
-    Returns:
-        OrderedDict: Returns an OrderedDict containing panelist statistics data
-    """
-    if not pre_validated_id:
-        valid_id = validate_id(panelist_id, database_connection)
-        if not valid_id:
-            return None
-
-    scores = _retrieve_panelist_scores_by_id(panelist_id, database_connection)
-    ranks = _retrieve_panelist_rank_info_by_id(panelist_id, database_connection)
-
-    statistics = collections.OrderedDict()
-    scoring = collections.OrderedDict()
-    ranking = collections.OrderedDict()
-
-    appearance_count = len(scores)
-    scoring["minimum"] = int(numpy.amin(scores))
-    scoring["maximum"] = int(numpy.amax(scores))
-    scoring["mean"] = round(numpy.mean(scores), 4)
-    scoring["median"] = int(numpy.median(scores))
-    scoring["standardDeviation"] = round(numpy.std(scores), 4)
-    scoring["total"] = int(numpy.sum(scores))
-
-    ranks_percentage = collections.OrderedDict()
-    ranks_percentage["first"] = round(100 * (ranks["first"] / appearance_count), 4)
-    ranks_percentage["firstTied"] = round(100 * (ranks["firstTied"] / appearance_count), 4)
-    ranks_percentage["second"] = round(100 * (ranks["second"] / appearance_count), 4)
-    ranks_percentage["secondTied"] = round(100 * (ranks["secondTied"] / appearance_count), 4)
-    ranks_percentage["third"] = round(100 * (ranks["third"] / appearance_count), 4)
-
-    ranking["rank"] = ranks
-    ranking["percentage"] = ranks_percentage
-
-    statistics["scoring"] = scoring
-    statistics["ranking"] = ranking
-
-    return statistics
-
-def retrieve_statistics_by_slug(panelist_slug: str,
-                                database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns an OrderedDict containing panelist statistics, including ranking and
-    scoring data
-
-    Arguments:
-        panelist_slug (str): Panelist slug string from database
-        database_connection (mysql.connector.connect): Database connect object
-    Returns:
-        OrderedDict: Returns an OrderedDict containing panelist statistics data
-    """
-    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
-    if panelist_id:
-        return retrieve_statistics_by_id(panelist_id, database_connection, True)
-
-    return None
+    return panelists
 
 #endregion

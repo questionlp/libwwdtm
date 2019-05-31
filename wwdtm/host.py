@@ -26,8 +26,7 @@ def _retrieve_appearances_by_id(host_id: int,
         appearance information
     """
     if not pre_validated_id:
-        valid_id = validate_id(host_id, database_connection)
-        if not valid_id:
+        if not validate_id(host_id, database_connection):
             return None
 
     try:
@@ -68,7 +67,7 @@ def _retrieve_appearances_by_id(host_id: int,
                 appearance_info["date"] = appearance["showdate"].isoformat()
                 appearance_info["isBestOfShow"] = bool(appearance["bestof"])
                 appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["exception"] = bool(appearance["guest"])
+                appearance_info["guest"] = bool(appearance["guest"])
                 appearances.append(appearance_info)
 
             appearance_dict["count"] = appearance_counts
@@ -279,7 +278,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(host_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with host details based on the host ID.
+    """Returns an OrderedDict with host information based on the host ID.
 
     Arguments:
         host_id (int): Host ID from database
@@ -289,8 +288,7 @@ def retrieve_by_id(host_id: int,
         OrderedDict: Returns an OrderedDict containing host id, name, and slug string
     """
     if not pre_validated_id:
-        valid_id = validate_id(host_id, database_connection)
-        if not valid_id:
+        if not validate_id(host_id, database_connection):
             return None
 
     try:
@@ -333,5 +331,67 @@ def retrieve_by_slug(host_slug: str,
         return retrieve_by_id(host_id, database_connection, True)
 
     return None
+
+def retrieve_details_by_id(host_id: int,
+                           database_connection: mysql.connector.connect,
+                           pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict with host information and appearances based on the host ID.
+
+    Arguments:
+        host_id (int): Host ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+    Returns:
+        OrderedDict: Returns an OrderedDict containing host id, name, and slug string
+    """
+    if not pre_validated_id:
+        if not validate_id(host_id, database_connection):
+            return None
+
+    host = retrieve_by_id(host_id, database_connection, pre_validated_id=True)
+    host["appearances"] = _retrieve_appearances_by_id(host_id,
+                                                      database_connection,
+                                                      pre_validated_id=True)
+    return host
+
+def retrieve_details_by_slug(host_slug: str, database_connection: mysql.connector.connect) -> Dict:
+    """Returns an OrderedDict with host information and appearances based on the host slug string
+
+    Arguments:
+        host_slug (str): Host slug string from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        (OrderedDict, ResponseCode): Returns an OrderedDict containing host id, name and slug
+        string
+    """
+    host_id = convert_slug_to_id(host_slug, database_connection)
+    if host_id:
+        return retrieve_details_by_id(host_id,
+                                      database_connection,
+                                      pre_validated_id=True)
+
+    return None
+
+def retrieve_all_details(database_connection: mysql.connector.connect) -> List[Dict]:
+    """Return detailed information for all hosts in the database
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        List[OrderedDict]: Returns a list of OrderedDicts containing host details
+    """
+    host_ids = retrieve_all_ids(database_connection)
+    if not host_ids:
+        return None
+
+    hosts = []
+    for host_id in host_ids:
+        host = retrieve_details_by_id(host_id,
+                                      database_connection,
+                                      pre_validated_id=True)
+        if host:
+            hosts.append(host)
+
+    return hosts
 
 #endregion

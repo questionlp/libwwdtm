@@ -62,14 +62,15 @@ def test_host_module(database_connection: mysql.connector.connect):
     # Testing retrieve all hosts
     test_host.test_retrieve_all(database_connection)
     test_host.test_retrieve_all_ids(database_connection)
+    test_host.test_retrieve_all_details(database_connection)
 
     # Testing retrieve individual host
     test_host.test_retrieve_by_id(database_connection)
     test_host.test_retrieve_by_slug(database_connection)
 
-    # Testing retrieve host appearances
-    test_host.test_retrieve_appearances_by_id(database_connection)
-    test_host.test_retrieve_appearances_by_slug(database_connection)
+    # Testing retrieve host details
+    test_host.test_retrieve_details_by_id(database_connection)
+    test_host.test_retrieve_details_by_slug(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()
@@ -95,21 +96,26 @@ def test_panelist_module(database_connection: mysql.connector.connect):
     # Testing retrieve all panelists
     test_panelist.test_retrieve_all(database_connection)
     test_panelist.test_retrieve_all_ids(database_connection)
+    test_panelist.test_retrieve_all_details(database_connection)
 
     # Testing retrieve individual panelist
     test_panelist.test_retrieve_by_id(database_connection)
     test_panelist.test_retrieve_by_slug(database_connection)
 
+    # Testing retrieve panelist details
+    test_panelist.test_retrieve_details_by_id(database_connection)
+    test_panelist.test_retrieve_details_by_slug(database_connection)
+
     # Testing retrieve panelist appearances
-    test_panelist.test_retrieve_appearances_by_id(database_connection)
-    test_panelist.test_retrieve_appearances_by_slug(database_connection)
+    #test_panelist.test_retrieve_appearances_by_id(database_connection)
+    #test_panelist.test_retrieve_appearances_by_slug(database_connection)
 
     # Testing retrieve panelist statistics
-    test_panelist.test_retrieve_statistics_by_id(database_connection)
-    test_panelist.test_retrieve_statistics_by_invalid_id(database_connection)
+    #test_panelist.test_retrieve_statistics_by_id(database_connection)
+    #test_panelist.test_retrieve_statistics_by_invalid_id(database_connection)
 
-    test_panelist.test_retrieve_statistics_by_slug(database_connection)
-    test_panelist.test_retrieve_statistics_by_invalid_slug(database_connection)
+    #test_panelist.test_retrieve_statistics_by_slug(database_connection)
+    #test_panelist.test_retrieve_statistics_by_invalid_slug(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()
@@ -135,14 +141,15 @@ def test_scorekeeper_module(database_connection: mysql.connector.connect):
     # Testing retrieve all scorekeepers
     test_scorekeeper.test_retrieve_all(database_connection)
     test_scorekeeper.test_retrieve_all_ids(database_connection)
+    test_scorekeeper.test_retrieve_all_details(database_connection)
 
     # Testing retrieve individual scorekeeper
     test_scorekeeper.test_retrieve_by_id(database_connection)
     test_scorekeeper.test_retrieve_by_slug(database_connection)
 
-    # Testing retrieve scorekeeper appearances
-    test_scorekeeper.test_retrieve_appearances_by_id(database_connection)
-    test_scorekeeper.test_retrieve_appearances_by_slug(database_connection)
+    # Testing retrieve scorekeeper details
+    test_scorekeeper.test_retrieve_details_by_id(database_connection)
+    test_scorekeeper.test_retrieve_details_by_slug(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()

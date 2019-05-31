@@ -48,14 +48,19 @@ def test_retrieve_by_slug(database_connection: mysql.connector.connect):
     assert scorekeeper_dict is not None
     assert "id" in scorekeeper_dict
 
-def test_retrieve_appearances_by_id(database_connection: mysql.connector.connect):
-    """Testing response from scorekeeper.retrieve_apperances_by_id"""
-    appearances = scorekeeper.retrieve_appearances_by_id(2, database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+def test_retrieve_details_by_id(database_connection: mysql.connector.connect):
+    """Testing response from scorekeeper.retrieve_details_by_id"""
+    scorekeeper_dict = scorekeeper.retrieve_details_by_id(2, database_connection)
+    assert scorekeeper_dict is not None
+    assert "appearances" in scorekeeper_dict
 
-def test_retrieve_appearances_by_slug(database_connection: mysql.connector.connect):
+def test_retrieve_details_by_slug(database_connection: mysql.connector.connect):
     """Testing response from scorekeeper.retrieve_apperances_by_slug"""
-    appearances = scorekeeper.retrieve_appearances_by_slug("korva-coleman", database_connection)
-    assert appearances is not None
-    assert "shows" in appearances
+    scorekeeper_dict = scorekeeper.retrieve_details_by_slug("korva-coleman", database_connection)
+    assert scorekeeper_dict is not None
+    assert "appearances" in scorekeeper_dict
+
+def test_retrieve_all_details(database_connection):
+    """Testing response from scorekeeper.retrieve_all_details"""
+    scorekeepers_dict = scorekeeper.retrieve_all_details(database_connection)
+    assert scorekeepers_dict is not None
