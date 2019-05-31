@@ -272,12 +272,11 @@ def convert_slug_to_id(panelist_slug: str,
     Arguments:
         panelist_slug (str): Panelist slug string
         database_connect (mysql.connector.connect): Database connect object
-
     Returns:
         int: Returns panelist ID on success, otherwise returns None
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT panelistid FROM ww_panelists WHERE panelistslug = %s;"
         cursor.execute(query, (panelist_slug,))
 
@@ -285,7 +284,7 @@ def convert_slug_to_id(panelist_slug: str,
         cursor.close()
 
         if result:
-            return result["panelistid"]
+            return result[0]
 
         return None
     except ProgrammingError as err:
@@ -300,9 +299,8 @@ def validate_id(panelist_id: int,
     Arguments:
         panelist_id (int); Panelist ID from database
         database_connection (mysql.connector.connect): Database connect object
-
     Returns:
-        bool: Returns True on success, otherwise returns False
+        bool: Returns True on valid location ID, otherwise returns False
     """
     try:
         panelist_id = int(panelist_id)
@@ -310,7 +308,7 @@ def validate_id(panelist_id: int,
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT panelistid FROM ww_panelists WHERE panelistid = %s;"
         cursor.execute(query, (panelist_id,))
 
@@ -330,16 +328,15 @@ def validate_slug(panelist_slug: str,
     Arguments:
         panelist_slug (str): Panelist slug string from database
         database_connection (mysql.connector.connect): Database connect object
-
     Returns:
-        bool: Returns True if panelist slug is valid, otherwise returns False
+        bool: Returns True on valid panelist slug, otherwise returns False
     """
     panelist_slug = panelist_slug.strip()
     if not panelist_slug:
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT panelistslug FROM ww_panelists WHERE panelistslug = %s;"
         cursor.execute(query, (panelist_slug,))
 

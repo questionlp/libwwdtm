@@ -115,7 +115,7 @@ def convert_slug_to_id(host_slug: str,
         int: Returns host ID on success; otherwise returns None
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT hostid FROM ww_hosts WHERE hostslug = %s;"
         cursor.execute(query, (host_slug,))
 
@@ -123,7 +123,7 @@ def convert_slug_to_id(host_slug: str,
         cursor.close()
 
         if result:
-            return result["hostid"]
+            return result[0]
 
         return None
     except ProgrammingError as err:
@@ -148,7 +148,7 @@ def validate_id(host_id: int,
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT hostid FROM ww_hosts WHERE hostid = %s;"
         cursor.execute(query, (host_id,))
 
@@ -177,7 +177,7 @@ def validate_slug(host_slug: str,
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT hostslug FROM ww_hosts WHERE hostslug = %s;"
         cursor.execute(query, (host_slug,))
 

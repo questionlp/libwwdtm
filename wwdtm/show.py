@@ -276,7 +276,7 @@ def validate_id(show_id: int,
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT showid from ww_shows where showid = %s;"
         cursor.execute(query, (show_id,))
         result = cursor.fetchone()
@@ -310,14 +310,14 @@ def convert_date_to_id(show_year: int,
 
     try:
         show_date_str = show_date.strftime("%Y-%m-%d")
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = ("SELECT showid from ww_shows WHERE showdate = %s;")
         cursor.execute(query, (show_date_str,))
         result = cursor.fetchone()
         cursor.close()
 
         if result:
-            return result["showid"]
+            return result[0]
 
         return None
     except ProgrammingError as err:
@@ -336,14 +336,14 @@ def convert_id_to_date(show_id: int,
         datetime.datetime: Returns the corresponding date for a show ID
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT showdate FROM ww_shows WHERE showid = %s;"
         cursor.execute(query, (show_id,))
         result = cursor.fetchone()
         cursor.close()
 
         if result:
-            return result["showdate"]
+            return result[0]
 
         return None
     except ProgrammingError as err:
@@ -385,7 +385,7 @@ def date_exists(show_year: int,
 
     try:
         show_date_str = show_date.strftime("%Y-%m-%d")
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = ("SELECT showid from ww_shows WHERE showdate = %s;")
         cursor.execute(query, (show_date_str,))
         result = cursor.fetchone()

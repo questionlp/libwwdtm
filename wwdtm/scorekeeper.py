@@ -116,7 +116,7 @@ def convert_slug_to_id(scorekeeper_slug: str,
         int: Returns scorekeeper ID on success; otherwise returns None
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT scorekeeperid FROM ww_scorekeepers WHERE scorekeeperslug = %s;"
         cursor.execute(query, (scorekeeper_slug,))
 
@@ -124,7 +124,7 @@ def convert_slug_to_id(scorekeeper_slug: str,
         cursor.close()
 
         if result:
-            return result["scorekeeperid"]
+            return result[0]
 
         return None
     except ProgrammingError as err:
@@ -149,7 +149,7 @@ def validate_id(scorekeeper_id: int,
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT scorekeeperid FROM ww_scorekeepers WHERE scorekeeperid = %s;"
         cursor.execute(query, (scorekeeper_id,))
 
@@ -178,7 +178,7 @@ def validate_slug(scorekeeper_slug: str,
         return False
 
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = "SELECT scorekeeperslug FROM ww_scorekeepers WHERE scorekeeperslug = %s;"
         cursor.execute(query, (scorekeeper_slug,))
 
