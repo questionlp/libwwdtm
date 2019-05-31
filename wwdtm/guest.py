@@ -261,7 +261,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         list[int]: Returns a list containing guest IDs
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = ("SELECT guestid FROM ww_guests WHERE guestslug != 'none' ORDER BY guest ASC;")
         cursor.execute(query)
 
@@ -270,7 +270,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         guest = []
         for row in result:
-            guest.append(row["guestid"])
+            guest.append(row[0])
 
         return guest
     except ProgrammingError as err:

@@ -7,7 +7,7 @@ import time
 import json
 import os
 import mysql.connector
-from tests import test_guest, test_host, test_panelist, test_scorekeeper, test_show
+from tests import test_guest, test_host, test_location, test_panelist, test_scorekeeper, test_show
 
 def test_guest_module(database_connection: mysql.connector.connect):
     """Run tests against guest module"""
@@ -71,6 +71,38 @@ def test_host_module(database_connection: mysql.connector.connect):
     # Testing retrieve host details
     test_host.test_retrieve_details_by_id(database_connection)
     test_host.test_retrieve_details_by_slug(database_connection)
+
+    # Calculate time elapsed
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print("Time Elapsed: {}s\n".format(round(elapsed_time, 5)))
+
+def test_location_module(database_connection: mysql.connector.connect):
+    """Run tests against location module"""
+
+    print("Testing wwdtm.location module")
+
+    # Start Time
+    start_time = time.perf_counter()
+
+    # Testing location.id_exists
+    test_location.test_id_exists(database_connection)
+    test_location.test_id_not_exists(database_connection)
+
+    # Testing location.retrieve_all
+    test_location.test_retrieve_all(database_connection)
+
+    # Testing location.retrieve_all_ids
+    test_location.test_retrieve_all_ids(database_connection)
+
+    # Testing location.retrieve_by_id
+    test_location.test_retrieve_by_id(database_connection)
+
+    # Testing location.retrieve_recordings_by_id
+    test_location.test_retrieve_recordings_by_id(database_connection)
+
+    # Testing location.retrieve_all_recordings
+    test_location.test_retrieve_all_recordings(database_connection)
 
     # Calculate time elapsed
     end_time = time.perf_counter()
@@ -251,6 +283,7 @@ def main():
 
     test_guest_module(database_connection)
     test_host_module(database_connection)
+    test_location_module(database_connection)
     test_panelist_module(database_connection)
     test_scorekeeper_module(database_connection)
     test_show_module(database_connection)

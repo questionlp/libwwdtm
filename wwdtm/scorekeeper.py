@@ -260,7 +260,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         list[int]: Returns a list containing scorekeeper IDs
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = ("SELECT scorekeeperid FROM ww_scorekeepers WHERE scorekeeperslug != 'tbd' "
                  "ORDER BY scorekeeper ASC;")
         cursor.execute(query)
@@ -270,7 +270,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         panelists = []
         for row in result:
-            panelists.append(row["scorekeeperid"])
+            panelists.append(row[0])
 
         return panelists
     except ProgrammingError as err:
@@ -288,7 +288,7 @@ def retrieve_by_id(scorekeeper_id: int,
         database_connection (mysql.connector.connect): Database connect object
         pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
     Returns:
-        OrderedDict: Returns a dict containing scorekeeper id, name, and slug string
+        OrderedDict: Returns an OrderedDict containing scorekeeper id, name, and slug string
     """
     if not pre_validated_id:
         if not validate_id(scorekeeper_id, database_connection):
@@ -327,7 +327,7 @@ def retrieve_by_slug(scorekeeper_slug: str,
         scorekeeper_slug (str): Scorekeeper slug string from database
         database_connection (mysql.connector.connect): Database connect object
     Returns:
-        OrderedDict: Returns a dict containing scorekeeper id, name and slug string
+        OrderedDict: Returns an OrderedDict containing scorekeeper id, name and slug string
     """
     scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
     if scorekeeper_id:

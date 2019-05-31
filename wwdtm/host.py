@@ -258,7 +258,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         list[int]: Returns a list containing host IDs
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = ("SELECT hostid FROM ww_hosts WHERE hostslug != 'none' ORDER BY host ASC;")
         cursor.execute(query)
 
@@ -267,7 +267,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         panelists = []
         for row in result:
-            panelists.append(row["hostid"])
+            panelists.append(row[0])
 
         return panelists
     except ProgrammingError as err:

@@ -418,7 +418,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         list[int]: List containing panelist IDs
     """
     try:
-        cursor = database_connection.cursor(dictionary=True)
+        cursor = database_connection.cursor()
         query = ("SELECT panelistid FROM ww_panelists WHERE panelistslug != 'multiple' "
                  "ORDER BY panelist ASC;")
         cursor.execute(query)
@@ -428,7 +428,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         panelists = []
         for row in result:
-            panelists.append(row["panelistid"])
+            panelists.append(row[0])
 
         return panelists
     except ProgrammingError as err:
