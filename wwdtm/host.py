@@ -20,7 +20,7 @@ def _retrieve_appearances_by_id(host_id: int,
     Arguments:
         host_id (int): Host ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the host ID has been validated
     Returns:
         list[OrderedDict]: Returns a list containing an OrderedDict with host
         appearance information
@@ -283,7 +283,7 @@ def retrieve_by_id(host_id: int,
     Arguments:
         host_id (int): Host ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the host ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing host id, name, and slug string
     """
@@ -340,7 +340,7 @@ def retrieve_details_by_id(host_id: int,
     Arguments:
         host_id (int): Host ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the host ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the host ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing host id, name, and slug string
     """

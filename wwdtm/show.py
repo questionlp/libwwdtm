@@ -48,12 +48,12 @@ def _retrieve_core_info_by_id(show_id: int,
             return None
 
         show_info["id"] = show_id
-        show_info["date"] = result["showdate"].strftime("%Y-%m-%d")
+        show_info["date"] = result["showdate"].isoformat()
         show_info["bestOf"] = bool(result["bestof"])
         if result["repeatshowid"]:
             show_info["isRepeat"] = True
             original_show_date = convert_id_to_date(result["repeatshowid"], database_connection)
-            show_info["originalShowDate"] = original_show_date.strftime("%Y-%m-%d")
+            show_info["originalShowDate"] = original_show_date.isoformat()
         else:
             show_info["isRepeat"] = False
 
@@ -309,7 +309,7 @@ def convert_date_to_id(show_year: int,
         return None
 
     try:
-        show_date_str = show_date.strftime("%Y-%m-%d")
+        show_date_str = show_date.isoformat()
         cursor = database_connection.cursor()
         query = ("SELECT showid from ww_shows WHERE showdate = %s;")
         cursor.execute(query, (show_date_str,))
@@ -384,7 +384,7 @@ def date_exists(show_year: int,
         return None
 
     try:
-        show_date_str = show_date.strftime("%Y-%m-%d")
+        show_date_str = show_date.isoformat()
         cursor = database_connection.cursor()
         query = ("SELECT showid from ww_shows WHERE showdate = %s;")
         cursor.execute(query, (show_date_str,))
@@ -435,7 +435,7 @@ def retrieve_by_id(show_id: int,
     Arguments:
         show_id (int): Show ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the show ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the show ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
@@ -461,12 +461,12 @@ def retrieve_by_id(show_id: int,
             return None
 
         show_info["id"] = result["showid"]
-        show_info["date"] = result["showdate"].strftime("%Y-%m-%d")
+        show_info["date"] = result["showdate"].isoformat()
         show_info["bestOf"] = bool(result["bestof"])
         if result["repeatshowid"]:
             show_info["isRepeat"] = True
             original_show_date = convert_id_to_date(result["repeatshowid"], database_connection)
-            show_info["originalShowDate"] = original_show_date.strftime("%Y-%m-%d")
+            show_info["originalShowDate"] = original_show_date.isoformat()
         else:
             show_info["isRepeat"] = False
         return show_info
@@ -654,8 +654,8 @@ def retrieve_recent(database_connection: mysql.connector.connect,
         query = ("SELECT showid FROM ww_shows WHERE showdate >= %s AND "
                  "showdate <= %s ORDER BY showdate ASC;")
         cursor.execute(query,
-                       (past_date.strftime("%Y-%m-%d"),
-                        future_date.strftime("%Y-%m-%d")))
+                       (past_date.isoformat(),
+                        future_date.isoformat()))
         result = cursor.fetchall()
         cursor.close()
 
@@ -686,7 +686,7 @@ def retrieve_details_by_id(show_id: int,
     Arguments:
         show_id (int): Show ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the show ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the show ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
@@ -899,8 +899,8 @@ def retrieve_recent_details(database_connection: mysql.connector.connect,
         query = ("SELECT showid FROM ww_shows WHERE showdate >= %s AND "
                  "showdate <= %s ORDER BY showdate ASC;")
         cursor.execute(query,
-                       (past_date.strftime("%Y-%m-%d"),
-                        future_date.strftime("%Y-%m-%d")))
+                       (past_date.isoformat(),
+                        future_date.isoformat()))
         result = cursor.fetchall()
         cursor.close()
 

@@ -57,7 +57,7 @@ def test_retrieve_details_by_id(database_connection: mysql.connector.connect):
 
 def test_retrieve_details_by_slug(database_connection: mysql.connector.connect):
     """Testing response from panelist.retrieve_details_by_slug"""
-    panelist_dict = panelist.retrieve_details_by_slug('maeve-higgins', database_connection)
+    panelist_dict = panelist.retrieve_details_by_slug("maeve-higgins", database_connection)
     assert panelist_dict is not None
     assert "statistics" in panelist_dict
     assert "appearances" in panelist_dict
@@ -66,3 +66,29 @@ def test_retrieve_all_details(database_connection: mysql.connector.connect):
     """Testing response from panelist.retrieve_all_details"""
     panelists_dict = panelist.retrieve_all_details(database_connection)
     assert panelists_dict is not None
+
+def test_retrieve_scores_list_by_id(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_scores_list_by_id"""
+    score_list = panelist.retrieve_scores_list_by_id(14, database_connection)
+    assert score_list is not None
+    assert "shows" in score_list
+    assert "scores" in score_list
+    assert len(score_list["shows"]) == len(score_list["scores"])
+
+def test_retrieve_scores_list_by_slug(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_scores_list_by_slug"""
+    score_list = panelist.retrieve_scores_list_by_slug("faith-salie", database_connection)
+    assert score_list is not None
+    assert "shows" in score_list
+    assert "scores" in score_list
+    assert len(score_list["shows"]) == len(score_list["scores"])
+
+def test_retrieve_scores_ordered_pair_by_id(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_scores_ordered_pair_by_id"""
+    score_list = panelist.retrieve_scores_ordered_pair_by_id(14, database_connection)
+    assert score_list is not None
+
+def test_retrieve_scores_ordered_pair_by_slug(database_connection: mysql.connector.connect):
+    """Testing response from panelist.retrieve_scores_ordered_pair_by_slug"""
+    score_list = panelist.retrieve_scores_ordered_pair_by_slug("maeve-higgins", database_connection)
+    assert score_list is not None

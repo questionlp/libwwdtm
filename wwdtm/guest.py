@@ -20,7 +20,7 @@ def _retrieve_appearances_by_id(guest_id: int,
     Arguments:
         guest_id (int): Guest ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated
     Returns:
         list[OrderedDict]: Returns a list containing an OrderedDict with guest
         appearance information
@@ -286,7 +286,7 @@ def retrieve_by_id(guest_id: int,
     Arguments:
         guest_id (int): Guest ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated
     Returns:
         OrderedDict: Returns a dict containing guest id, name, and slug string
     """
@@ -344,7 +344,7 @@ def retrieve_details_by_id(guest_id: int,
     Arguments:
         guest_id (int): Guest ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
     """
@@ -368,7 +368,7 @@ def retrieve_details_by_slug(guest_slug: str,
     Arguments:
         guest_slug (str): Guest slug string from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the guest ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
     """

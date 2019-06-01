@@ -20,7 +20,7 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated
     Returns:
         list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
         appearance information
@@ -286,7 +286,7 @@ def retrieve_by_id(scorekeeper_id: int,
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing scorekeeper id, name, and slug string
     """
@@ -343,7 +343,7 @@ def retrieve_details_by_id(scorekeeper_id: int,
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated
     Returns:
         OrderedDict: Returns a dict containing scorekeeper id, name, slug string and appearances
     """

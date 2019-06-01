@@ -138,6 +138,12 @@ def test_panelist_module(database_connection: mysql.connector.connect):
     test_panelist.test_retrieve_details_by_id(database_connection)
     test_panelist.test_retrieve_details_by_slug(database_connection)
 
+    # Testing retrieve panelist scores
+    test_panelist.test_retrieve_scores_list_by_id(database_connection)
+    test_panelist.test_retrieve_scores_list_by_slug(database_connection)
+    test_panelist.test_retrieve_scores_ordered_pair_by_id(database_connection)
+    test_panelist.test_retrieve_scores_ordered_pair_by_slug(database_connection)
+
     # Testing retrieve panelist appearances
     #test_panelist.test_retrieve_appearances_by_id(database_connection)
     #test_panelist.test_retrieve_appearances_by_slug(database_connection)

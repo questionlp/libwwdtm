@@ -112,7 +112,7 @@ def _retrieve_appearances_by_slug(panelist_slug: str,
     return None
 
 def _retrieve_scores_by_id(panelist_id: int,
-                                    database_connection: mysql.connector.connect) -> List[int]:
+                           database_connection: mysql.connector.connect) -> List[int]:
     """Returns a list of panelist scores from all the panelist's appearances
 
     Arguments:
@@ -144,7 +144,7 @@ def _retrieve_scores_by_id(panelist_id: int,
         print("Unexpected error: {}".format(err))
 
 def _retrieve_rank_info_by_id(panelist_id: int,
-                                       database_connection: mysql.connector.connect) -> Dict:
+                              database_connection: mysql.connector.connect) -> Dict:
     """Returns a list of panelist ranking info
 
     Arguments:
@@ -444,7 +444,7 @@ def retrieve_by_id(panelist_id: int,
     Arguments:
         panelist_id (int): Panelist ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing panelist id, name, gender
         and slug string
@@ -503,7 +503,7 @@ def retrieve_details_by_id(panelist_id: int,
     Arguments:
         panelist_id (int): Panelist ID from database
         database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the panelist ID has been validated or not
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing panelist id, name, gender,
         slug string, statistics and appearances
@@ -564,5 +564,141 @@ def retrieve_all_details(database_connection: mysql.connector.connect) -> List[D
             panelists.append(panelist)
 
     return panelists
+
+def retrieve_scores_list_by_id(panelist_id: int,
+                               database_connection: mysql.connector.connect,
+                               pre_validated_id: bool = False) -> Dict:
+    """Return an OrderedDict containing two lists, one with show dates and one with
+    corresponding scores for the requested panelist ID
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated
+    Returns:
+        OrderedDict: Returns an OrderedDict containing a list of show dates and a list of
+        corresponding scores
+    """
+    if not pre_validated_id:
+        if not validate_id(panelist_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT s.showdate, pm.panelistscore "
+                 "FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s "
+                 "AND s.bestof = 0 and s.repeatshowid IS NULL "
+                 "AND pm.panelistscore IS NOT NULL "
+                 "ORDER BY s.showdate ASC;")
+        cursor.execute(query, (panelist_id,))
+
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        scores = collections.OrderedDict()
+        show_list = []
+        score_list = []
+        for shows in result:
+            show_list.append(shows["showdate"].strftime("%Y-%m-%d"))
+            score_list.append(shows["panelistscore"])
+
+        scores["shows"] = show_list
+        scores["scores"] = score_list
+        return scores
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def retrieve_scores_list_by_slug(panelist_slug: str,
+                                 database_connection: mysql.connector.connect) -> Dict:
+    """Return an OrderedDict containing two lists, one with show dates and one with
+    corresponding scores for the requested panelist slug
+
+    Arguments:
+        panelist_slug (str): Panelist slug from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        OrderedDict: Returns an OrderedDict containing a list of show dates and a list of
+        corresponding scores
+    """
+    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    if not panelist_id:
+        return None
+
+    return retrieve_scores_list_by_id(panelist_id,
+                                      database_connection,
+                                      pre_validated_id=True)
+
+def retrieve_scores_ordered_pair_by_id(panelist_id: int,
+                                       database_connection: mysql.connector.connect,
+                                       pre_validated_id: bool = False) -> List[tuple]:
+    """Return an list of tuples containing show date and corresponding score for the requested
+    panelist ID
+
+    Arguments:
+        panelist_id (int): Panelist ID from database
+        database_connection (mysql.connector.connect): Database connect object
+        pre_validated_id (bool): Flag whether or not the panelist ID has been validated
+    Returns:
+        list[tuple]: Returns a list of tuples containing show date and the corresponding score
+    """
+    if not pre_validated_id:
+        if not validate_id(panelist_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT s.showdate, pm.panelistscore "
+                 "FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s "
+                 "AND s.bestof = 0 and s.repeatshowid IS NULL "
+                 "AND pm.panelistscore IS NOT NULL "
+                 "ORDER BY s.showdate ASC;")
+        cursor.execute(query, (panelist_id,))
+
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        scores = []
+        for show in result:
+            show_date = show["showdate"].strftime("%Y-%m-%d")
+            score = show["panelistscore"]
+            scores.append((show_date, score))
+
+        return scores
+    except ProgrammingError as err:
+        print("Unable to query the database: {}".format(err))
+    except DatabaseError as err:
+        print("Unexpected error: {}".format(err))
+
+def retrieve_scores_ordered_pair_by_slug(panelist_slug: str,
+                                         database_connection: mysql.connector.connect
+                                        ) -> List[tuple]:
+    """Return an list of tuples containing show date and corresponding score for the requested
+    panelist slug
+
+    Arguments:
+        panelist_slug (str): Panelist slug from database
+        database_connection (mysql.connector.connect): Database connect object
+    Returns:
+        list[tuple]: Returns a list of tuples containing show date and the corresponding score
+    """
+    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    if not panelist_id:
+        return None
+
+    return retrieve_scores_ordered_pair_by_id(panelist_id,
+                                              database_connection,
+                                              pre_validated_id=True)
 
 #endregion
