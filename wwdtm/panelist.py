@@ -604,7 +604,7 @@ def retrieve_scores_list_by_id(panelist_id: int,
         show_list = []
         score_list = []
         for shows in result:
-            show_list.append(shows["showdate"].strftime("%Y-%m-%d"))
+            show_list.append(shows["showdate"].isoformat()
             score_list.append(shows["panelistscore"])
 
         scores["shows"] = show_list
@@ -671,7 +671,7 @@ def retrieve_scores_ordered_pair_by_id(panelist_id: int,
 
         scores = []
         for show in result:
-            show_date = show["showdate"].strftime("%Y-%m-%d")
+            show_date = show["showdate"].isoformat()
             score = show["panelistscore"]
             scores.append((show_date, score))
 
