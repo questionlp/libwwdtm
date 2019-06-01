@@ -205,22 +205,22 @@ def test_show_module(database_connection: mysql.connector.connect):
     test_show.test_date_not_exists(database_connection)
 
     # Testing retrieve basic show info
-    test_show.test_retrieve_basic_info_by_id(database_connection)
-    test_show.test_retrieve_basic_info_by_invalid_id(database_connection)
+    test_show.test_retrieve_by_id(database_connection)
+    test_show.test_retrieve_by_invalid_id(database_connection)
 
-    test_show.test_retrieve_basic_info_by_date(database_connection)
-    test_show.test_retrieve_basic_info_by_invalid_date(database_connection)
+    test_show.test_retrieve_by_date(database_connection)
+    test_show.test_retrieve_by_invalid_date(database_connection)
 
-    test_show.test_retrieve_basic_info_by_date_string(database_connection)
-    test_show.test_retrieve_basic_info_by_invalid_date_string(database_connection)
+    test_show.test_retrieve_by_date_string(database_connection)
+    test_show.test_retrieve_by_invalid_date_string(database_connection)
 
     # Testing retrieve multiple basic show info
-    test_show.test_retrieve_basic_info_by_year(database_connection)
-    test_show.test_retrieve_basic_info_by_year_month(database_connection)
-    test_show.test_retrieve_all_basic_info(database_connection)
+    test_show.test_retrieve_by_year(database_connection)
+    test_show.test_retrieve_by_year_month(database_connection)
+    test_show.test_retrieve_all(database_connection)
 
     # Testing retrieve recent basic show info
-    test_show.test_retrieve_recent_basic_info(database_connection)
+    test_show.test_retrieve_recent(database_connection)
 
     # Testing retrieve show details
     test_show.test_retrieve_details_by_id(database_connection)

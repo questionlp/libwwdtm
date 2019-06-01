@@ -26,63 +26,63 @@ def test_date_not_exists(database_connection: mysql.connector.connect):
     response = show.date_exists(2006, 8, 18, database_connection)
     assert not response
 
-def test_retrieve_basic_info_by_id(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_basic_info_by_id"""
-    show_info = show.retrieve_basic_info_by_id(1074, database_connection)
+def test_retrieve_by_id(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_by_id"""
+    show_info = show.retrieve_by_id(1074, database_connection)
     assert show_info is not None
     assert show_info["bestOf"]
     assert show_info["isRepeat"]
     assert "originalShowDate" in show_info
 
-def test_retrieve_basic_info_by_invalid_id(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_basic_info_by_id with invalid ID"""
-    show_info = show.retrieve_basic_info_by_id(-1, database_connection)
+def test_retrieve_by_invalid_id(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_by_id with invalid ID"""
+    show_info = show.retrieve_by_id(-1, database_connection)
     assert show_info is None
 
-def test_retrieve_basic_info_by_date(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_basic_info_by_date"""
-    show_info = show.retrieve_basic_info_by_date(2018, 10, 27, database_connection)
+def test_retrieve_by_date(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_by_date"""
+    show_info = show.retrieve_by_date(2018, 10, 27, database_connection)
     assert show_info is not None
     assert not show_info["bestOf"]
     assert not show_info["isRepeat"]
     assert "originalShowDate" not in show_info
 
-def test_retrieve_basic_info_by_invalid_date(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_basic_info_by_date with incorrect date"""
-    show_info = show.retrieve_basic_info_by_date(2018, 10, 28, database_connection)
+def test_retrieve_by_invalid_date(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_by_date with incorrect date"""
+    show_info = show.retrieve_by_date(2018, 10, 28, database_connection)
     assert show_info is None
 
-def test_retrieve_basic_info_by_date_string(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_basic_info_by_date_string"""
-    show_info = show.retrieve_basic_info_by_date_string("2018-10-27", database_connection)
+def test_retrieve_by_date_string(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_by_date_string"""
+    show_info = show.retrieve_by_date_string("2018-10-27", database_connection)
     assert show_info is not None
     assert not show_info["bestOf"]
     assert not show_info["isRepeat"]
     assert "orignalShowDate" not in show_info
 
-def test_retrieve_basic_info_by_invalid_date_string(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_basic_info_by_date_string with incorrect date"""
-    show_info = show.retrieve_basic_info_by_date_string("2018-10-28", database_connection)
+def test_retrieve_by_invalid_date_string(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_by_date_string with incorrect date"""
+    show_info = show.retrieve_by_date_string("2018-10-28", database_connection)
     assert show_info is None
 
-def test_retrieve_basic_info_by_year(database_connection: mysql.connector.connect):
-    """Testing response form show.retrieve_basic_info_by_year"""
-    show_info = show.retrieve_basic_info_by_year(2017, database_connection)
+def test_retrieve_by_year(database_connection: mysql.connector.connect):
+    """Testing response form show.retrieve_by_year"""
+    show_info = show.retrieve_by_year(2017, database_connection)
     assert show_info is not None
 
-def test_retrieve_basic_info_by_year_month(database_connection: mysql.connector.connect):
-    """Testing response form show.retrieve_basic_info_by_year"""
-    show_info = show.retrieve_basic_info_by_year_month(2018, 10, database_connection)
+def test_retrieve_by_year_month(database_connection: mysql.connector.connect):
+    """Testing response form show.retrieve_by_year_month"""
+    show_info = show.retrieve_by_year_month(2018, 10, database_connection)
     assert show_info is not None
 
-def test_retrieve_all_basic_info(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_all_basic_info"""
-    show_info = show.retrieve_all_basic_info(database_connection)
+def test_retrieve_all(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_all"""
+    show_info = show.retrieve_all(database_connection)
     assert show_info is not None
 
-def test_retrieve_recent_basic_info(database_connection: mysql.connector.connect):
-    """Testing response from show.retrieve_recent_basic_info"""
-    show_info = show.retrieve_recent_basic_info(database_connection)
+def test_retrieve_recent(database_connection: mysql.connector.connect):
+    """Testing response from show.retrieve_recent"""
+    show_info = show.retrieve_recent(database_connection)
     assert show_info is not None
 
 def test_retrieve_details_by_id(database_connection: mysql.connector.connect):
