@@ -79,9 +79,9 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
 
         return appearance_dict
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_appearances_by_slug(scorekeeper_slug: str,
                                   database_connection: mysql.connector.connect) -> List[Dict]:
@@ -128,9 +128,9 @@ def convert_slug_to_id(scorekeeper_slug: str,
 
         return None
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def validate_id(scorekeeper_id: int,
                 database_connection: mysql.connector.connect) -> bool:
@@ -158,9 +158,9 @@ def validate_id(scorekeeper_id: int,
 
         return bool(result)
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def validate_slug(scorekeeper_slug: str,
                   database_connection: mysql.connector.connect) -> bool:
@@ -187,9 +187,9 @@ def validate_slug(scorekeeper_slug: str,
 
         return bool(result)
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def id_exists(scorekeeper_id: int,
               database_connection: mysql.connector.connect) -> bool:
@@ -247,9 +247,9 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         return scorekeepers
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
     """Return a list of all scorekeeper IDs, with IDs sorted in the order of scorekeeper names
@@ -274,9 +274,9 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         return panelists
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_by_id(scorekeeper_id: int,
                    database_connection: mysql.connector.connect,
@@ -315,9 +315,9 @@ def retrieve_by_id(scorekeeper_id: int,
 
         return None
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_by_slug(scorekeeper_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:

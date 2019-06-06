@@ -50,9 +50,9 @@ def _retrieve_recordings_by_id(location_id: int,
 
         return recordings
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 #endregion
 
@@ -77,9 +77,9 @@ def validate_id(location_id: int,
 
         return bool(result)
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def id_exists(location_id: int,
               database_connection: mysql.connector.connect) -> bool:
@@ -129,9 +129,9 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         return locations
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
     """Return a list of all location ID sorted in the order of state, city and venue
@@ -158,9 +158,9 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         return locations
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_by_id(location_id: int,
                    database_connection: mysql.connector.connect,
@@ -197,10 +197,9 @@ def retrieve_by_id(location_id: int,
 
         return location_info
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
-    return None
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_recordings_by_id(location_id: int,
                               database_connection: mysql.connector.connect,

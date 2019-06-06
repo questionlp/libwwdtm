@@ -77,9 +77,9 @@ def _retrieve_core_info_by_id(show_id: int,
 
         return show_info
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_location_by_id(show_id: int,
                              database_connection: mysql.connector.connect) -> Dict:
@@ -111,9 +111,9 @@ def _retrieve_location_by_id(show_id: int,
 
         return location_info
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_panelist_info_by_id(show_id: int,
                                   database_connection: mysql.connector.connect) -> Dict:
@@ -154,9 +154,9 @@ def _retrieve_panelist_info_by_id(show_id: int,
 
         return panelists
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_bluff_info_by_id(show_id: int,
                                database_connection: mysql.connector.connect) -> Dict:
@@ -211,9 +211,9 @@ def _retrieve_bluff_info_by_id(show_id: int,
 
         return bluff_info
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_not_my_job_info_by_id(show_id: int,
                                     database_connection: mysql.connector.connect) -> Dict:
@@ -253,9 +253,9 @@ def _retrieve_not_my_job_info_by_id(show_id: int,
 
         return guests
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 #endregion
 
@@ -284,9 +284,9 @@ def validate_id(show_id: int,
 
         return bool(result)
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def convert_date_to_id(show_year: int,
                        show_month: int,
@@ -321,9 +321,9 @@ def convert_date_to_id(show_year: int,
 
         return None
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def convert_id_to_date(show_id: int,
                        database_connection: mysql.connector.connect) -> datetime.datetime:
@@ -347,9 +347,9 @@ def convert_id_to_date(show_id: int,
 
         return None
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def id_exists(show_id: int,
               database_connection: mysql.connector.connect) -> bool:
@@ -393,9 +393,9 @@ def date_exists(show_year: int,
 
         return bool(result)
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 #endregion
 
@@ -422,9 +422,9 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 
         return show_ids
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 
 def retrieve_by_id(show_id: int,
@@ -471,9 +471,9 @@ def retrieve_by_id(show_id: int,
             show_info["isRepeat"] = False
         return show_info
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     """Return basic show information for all shows in the database
@@ -577,9 +577,9 @@ def retrieve_by_year(show_year: int,
 
         return shows
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))    
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_by_year_month(show_year: int,
                            show_month: int,
@@ -620,9 +620,9 @@ def retrieve_by_year_month(show_year: int,
 
         return shows
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_recent(database_connection: mysql.connector.connect,
                     include_days_ahead: int = 7,
@@ -671,9 +671,9 @@ def retrieve_recent(database_connection: mysql.connector.connect,
 
         return shows
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 #endregion
 
@@ -823,9 +823,9 @@ def retrieve_details_by_year(show_year: int,
 
         return shows
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_details_by_year_month(show_year: int,
                                    show_month: int,
@@ -865,9 +865,9 @@ def retrieve_details_by_year_month(show_year: int,
 
         return shows
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_recent_details(database_connection: mysql.connector.connect,
                             include_days_ahead: int = 7,
@@ -916,8 +916,8 @@ def retrieve_recent_details(database_connection: mysql.connector.connect,
 
         return shows
     except ProgrammingError as err:
-        print("Unable to query the database: {}".format(err))
+        raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
-        print("Unexpected error: {}".format(err))
+        raise DatabaseError("Unexpected database error") from err
 
 #endregion
