@@ -115,7 +115,6 @@ def convert_slug_to_id(host_slug: str,
         host_slug (str): Host slug string
         database_connect (mysql.connector.connect): Database connect
         object
-
     Returns:
         int: Returns host ID on success; otherwise returns None
     """
@@ -144,7 +143,6 @@ def validate_id(host_id: int,
         host_id (int); Host ID from database
         database_connection (mysql.connector.connect): Database connect
         object
-
     Returns:
         bool: Returns True on success, otherwise returns False
     """
@@ -175,7 +173,6 @@ def validate_slug(host_slug: str,
         host_slug (str): Host slug string from database
         database_connection (mysql.connector.connect): Database connect
         object
-
     Returns:
         bool: Returns True if host slug is valid, otherwise returns False
     """

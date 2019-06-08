@@ -246,12 +246,15 @@ def retrieve_recordings_by_id(location_id: int,
     return location
 
 def retrieve_all_recordings(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns a list of OrderedDicts with location information and recordings based on location ID
+    """Returns a list of OrderedDicts with location information and
+    recordings based on location ID
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        list[OrderedDict]: Returns a list of OrderedDicts containing location city, state, venue and recordings
+        list[OrderedDict]: Returns a list of OrderedDicts containing
+        location city, state, venue and recordings
     """
     location_ids = retrieve_all_ids(database_connection)
     if not location_ids:
