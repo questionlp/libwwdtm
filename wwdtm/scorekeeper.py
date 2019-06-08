@@ -14,16 +14,18 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 def _retrieve_appearances_by_id(scorekeeper_id: int,
                                 database_connection: mysql.connector.connect,
                                 pre_validated_id: bool = False) -> List:
-    """Returns a list of OrderedDicts containing information about all of the scorekeeper's
-    appearances
+    """Returns a list of OrderedDicts containing information about all
+    of the scorekeeper's appearances
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID
+        has been validated
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
-        appearance information
+        list[OrderedDict]: Returns a list containing an OrderedDict with
+        scorekeeper appearance information
     """
     if not pre_validated_id:
         if not validate_id(scorekeeper_id, database_connection):
@@ -48,9 +50,11 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
         appearance_counts["allShows"] = result["allshows"]
 
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT skm.showid, s.showdate, s.bestof, s.repeatshowid, skm.guest, "
-                 "skm.description FROM ww_showskmap skm "
-                 "JOIN ww_scorekeepers sk ON sk.scorekeeperid = skm.scorekeeperid "
+        query = ("SELECT skm.showid, s.showdate, s.bestof, "
+                 "s.repeatshowid, skm.guest, skm.description "
+                 "FROM ww_showskmap skm "
+                 "JOIN ww_scorekeepers sk ON "
+                 "sk.scorekeeperid = skm.scorekeeperid "
                  "JOIN ww_shows s ON s.showid = skm.showid "
                  "WHERE skm.scorekeeperid = %s "
                  "ORDER BY s.showdate ASC;")
@@ -85,15 +89,16 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
 
 def _retrieve_appearances_by_slug(scorekeeper_slug: str,
                                   database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the scorekeeper's
-    appearances
+    """Returns a list of OrderedDicts containing information about all
+    of the scorekeeper's appearances
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with scorekeeper
-        appearance information
+        list[OrderedDict]: Returns a list containing an OrderedDict with
+        scorekeeper appearance information
     """
     scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
     if scorekeeper_id:
@@ -110,14 +115,16 @@ def convert_slug_to_id(scorekeeper_slug: str,
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string
-        database_connect (mysql.connector.connect): Database connect object
-
+        database_connect (mysql.connector.connect): Database connect
+        object
     Returns:
-        int: Returns scorekeeper ID on success; otherwise returns None
+        int: Returns scorekeeper ID on success; otherwise returns
+        None
     """
     try:
         cursor = database_connection.cursor()
-        query = "SELECT scorekeeperid FROM ww_scorekeepers WHERE scorekeeperslug = %s;"
+        query = ("SELECT scorekeeperid FROM ww_scorekeepers "
+                 "WHERE scorekeeperslug = %s;")
         cursor.execute(query, (scorekeeper_slug,))
 
         result = cursor.fetchone()
@@ -138,8 +145,8 @@ def validate_id(scorekeeper_id: int,
 
     Arguments:
         scorekeeper_id (int); Scorekeeper ID from database
-        database_connection (mysql.connector.connect): Database connect object
-
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True on success; otherwise returns False
     """
@@ -150,7 +157,8 @@ def validate_id(scorekeeper_id: int,
 
     try:
         cursor = database_connection.cursor()
-        query = "SELECT scorekeeperid FROM ww_scorekeepers WHERE scorekeeperid = %s;"
+        query = ("SELECT scorekeeperid FROM ww_scorekeepers "
+                 "WHERE scorekeeperid = %s;")
         cursor.execute(query, (scorekeeper_id,))
 
         result = cursor.fetchone()
@@ -168,10 +176,11 @@ def validate_slug(scorekeeper_slug: str,
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
-        database_connection (mysql.connector.connect): Database connect object
-
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        bool: Returns True if scorekeeper slug is valid, otherwise returns False
+        bool: Returns True if scorekeeper slug is valid, otherwise
+        returns False
     """
     scorekeeper_slug = scorekeeper_slug.strip()
     if not scorekeeper_slug:
@@ -179,7 +188,8 @@ def validate_slug(scorekeeper_slug: str,
 
     try:
         cursor = database_connection.cursor()
-        query = "SELECT scorekeeperslug FROM ww_scorekeepers WHERE scorekeeperslug = %s;"
+        query = ("SELECT scorekeeperslug FROM ww_scorekeepers "
+                 "WHERE scorekeeperslug = %s;")
         cursor.execute(query, (scorekeeper_slug,))
 
         result = cursor.fetchone()
@@ -197,9 +207,11 @@ def id_exists(scorekeeper_id: int,
 
     Arguments:
         scorekeeper_id (int): Host ID from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        bool: Returns True if scorekeeper ID exists, otherwise returns False
+        bool: Returns True if scorekeeper ID exists, otherwise returns
+        False
     """
     return validate_id(scorekeeper_id, database_connection)
 
@@ -209,9 +221,11 @@ def slug_exists(scorekeeper_slug: str,
 
     Arguments:
         scorekeeper_slug (int): Host slug from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        bool: Returns True if scorekeeper slug exists, otherwise returns False
+        bool: Returns True if scorekeeper slug exists, otherwise
+        returns False
     """
     return validate_slug(scorekeeper_slug, database_connection)
 
@@ -219,18 +233,22 @@ def slug_exists(scorekeeper_slug: str,
 
 #region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return a list of OrderedDicts containing scorekeepers and their details
+    """Return a list of OrderedDicts containing scorekeepers and
+    their details
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict of scorekeeper
-        details
+        list[OrderedDict]: Returns a list containing an OrderedDict of
+        scorekeeper details
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT scorekeeperid, scorekeeper, scorekeeperslug, scorekeepergender "
-                 "FROM ww_scorekeepers where scorekeeperslug != 'tbd' ORDER BY scorekeeper ASC;")
+        query = ("SELECT scorekeeperid, scorekeeper, scorekeeperslug, "
+                 "scorekeepergender "
+                 "FROM ww_scorekeepers where scorekeeperslug != 'tbd' "
+                 "ORDER BY scorekeeper ASC;")
         cursor.execute(query)
 
         result = cursor.fetchall()
@@ -252,16 +270,19 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         raise DatabaseError("Unexpected database error") from err
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all scorekeeper IDs, with IDs sorted in the order of scorekeeper names
+    """Return a list of all scorekeeper IDs, with IDs sorted in the
+    order of scorekeeper names
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         list[int]: Returns a list containing scorekeeper IDs
     """
     try:
         cursor = database_connection.cursor()
-        query = ("SELECT scorekeeperid FROM ww_scorekeepers WHERE scorekeeperslug != 'tbd' "
+        query = ("SELECT scorekeeperid FROM ww_scorekeepers "
+                 "WHERE scorekeeperslug != 'tbd' "
                  "ORDER BY scorekeeper ASC;")
         cursor.execute(query)
 
@@ -281,14 +302,18 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(scorekeeper_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with scorekeeper information based on the scorekeeper ID
+    """Returns an OrderedDict with scorekeeper information based on
+    the scorekeeper ID
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID
+        has been validated
     Returns:
-        OrderedDict: Returns an OrderedDict containing scorekeeper id, name, and slug string
+        OrderedDict: Returns an OrderedDict containing scorekeeper id,
+        name, and slug string
     """
     if not pre_validated_id:
         if not validate_id(scorekeeper_id, database_connection):
@@ -296,7 +321,9 @@ def retrieve_by_id(scorekeeper_id: int,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT scorekeeper, scorekeeperslug, scorekeepergender FROM ww_scorekeepers "
+        query = ("SELECT scorekeeper, scorekeeperslug, "
+                 "scorekeepergender "
+                 "FROM ww_scorekeepers "
                  "WHERE scorekeeperid = %s;")
 
         cursor.execute(query, (scorekeeper_id,))
@@ -321,13 +348,16 @@ def retrieve_by_id(scorekeeper_id: int,
 
 def retrieve_by_slug(scorekeeper_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with scorekeeper information based on the scorekeeper slug string
+    """Returns an OrderedDict with scorekeeper information based on
+    the scorekeeper slug string
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        OrderedDict: Returns an OrderedDict containing scorekeeper id, name and slug string
+        OrderedDict: Returns an OrderedDict containing scorekeeper id,
+        name and slug string
     """
     scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
     if scorekeeper_id:
@@ -338,14 +368,18 @@ def retrieve_by_slug(scorekeeper_slug: str,
 def retrieve_details_by_id(scorekeeper_id: int,
                            database_connection: mysql.connector.connect,
                            pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with scorekeeper details based on the scorekeeper ID
+    """Returns an OrderedDict with scorekeeper details based on the
+    scorekeeper ID
 
     Arguments:
         scorekeeper_id (int): Scorekeeper ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the scorekeeper ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the scorekeeper ID
+        has been validated
     Returns:
-        OrderedDict: Returns a dict containing scorekeeper id, name, slug string and appearances
+        OrderedDict: Returns a dict containing scorekeeper id, name,
+        slug string and appearances
     """
     if not pre_validated_id:
         if not validate_id(scorekeeper_id, database_connection):
@@ -361,13 +395,16 @@ def retrieve_details_by_id(scorekeeper_id: int,
 
 def retrieve_details_by_slug(scorekeeper_slug: str,
                              database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with scorekeeper details based on the scorekeeper slug string
+    """Returns an OrderedDict with scorekeeper details based on the
+    scorekeeper slug string
 
     Arguments:
         scorekeeper_slug (str): Scorekeeper slug string from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        OrderedDict: Returns a dict containing scorekeeper id, name, slug string and appearances
+        OrderedDict: Returns a dict containing scorekeeper id, name,
+        slug string and appearances
     """
     scorekeeper_id = convert_slug_to_id(scorekeeper_slug, database_connection)
     if scorekeeper_id:
@@ -380,10 +417,11 @@ def retrieve_all_details(database_connection: mysql.connector.connect) -> List[D
     """Return detailed information for all scorekeepers in the database
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list of OrderedDicts containing scorekeeper information
-        and appearances
+        List[OrderedDict]: Returns a list of OrderedDicts containing
+        scorekeeper information and appearances
     """
     scorekeeper_ids = retrieve_all_ids(database_connection)
     if not scorekeeper_ids:

@@ -14,13 +14,15 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 def _retrieve_appearances_by_id(guest_id: int,
                                 database_connection: mysql.connector.connect,
                                 pre_validated_id: bool = False) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the guest's
-    appearances.
+    """Returns a list of OrderedDicts containing information about all
+    of the guest's appearances
 
     Arguments:
         guest_id (int): Guest ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the guest ID has
+        been validated
     Returns:
         list[OrderedDict]: Returns a list containing an OrderedDict with guest
         appearance information
@@ -87,15 +89,16 @@ def _retrieve_appearances_by_id(guest_id: int,
 def _retrieve_appearances_by_slug(guest_slug: str,
                                   database_connection: mysql.connector.connect
                                  ) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all of the guest's
-    appearances.
+    """Returns a list of OrderedDicts containing information about all
+    of the guest's appearances
 
     Arguments:
         guest_slug (str): Guest slug string from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with guest
-        appearance information
+        list[OrderedDict]: Returns a list containing an OrderedDict with
+        guest appearance information
     """
     guest_id = convert_slug_to_id(guest_slug, database_connection)
     if guest_id:
@@ -108,12 +111,12 @@ def _retrieve_appearances_by_slug(guest_slug: str,
 #region Utility Functions
 def convert_slug_to_id(guest_slug: str,
                        database_connection: mysql.connector.connect) -> int:
-    """Return guest database ID from slug string.
+    """Return guest database ID from slug string
 
     Arguments:
         guest_slug (str): Guest slug string
-        database_connect (mysql.connector.connect): Database connect object
-
+        database_connect (mysql.connector.connect): Database connect
+        object
     Returns:
         int: Returns guest ID on success; otherwise returns None
     """
@@ -141,8 +144,8 @@ def validate_id(guest_id: int,
 
     Arguments:
         guest_id (int); Guest ID from database
-        database_connection (mysql.connector.connect): Database connect object
-
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True on success; otherwise returns False
     """
@@ -171,8 +174,8 @@ def validate_slug(guest_slug: str,
 
     Arguments:
         guest_slug (str): Guest slug string from database
-        database_connection (mysql.connector.connect): Database connect object
-
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True if guest slug is valid, otherwise returns False
     """
@@ -196,11 +199,12 @@ def validate_slug(guest_slug: str,
 
 def id_exists(guest_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a guest ID exists in the database.
+    """Return whether or not a guest ID exists in the database
 
     Arguments:
         guest_id (int): Guest ID from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True if guest ID exists, otherwise returns False
     """
@@ -208,11 +212,12 @@ def id_exists(guest_id: int,
 
 def slug_exists(guest_slug: str,
                 database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a guest slug exists in the database.
+    """Return whether or not a guest slug exists in the database
 
     Arguments:
         guest_slug (int): Guest slug from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True if guest slug exists, otherwise returns False
     """
@@ -222,16 +227,19 @@ def slug_exists(guest_slug: str,
 
 #region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return a list of OrderedDicts containing guests and their details.
+    """Return a list of OrderedDicts containing guests and their details
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict of guest details
+        list[OrderedDict]: Returns a list containing an OrderedDict of
+        guest details
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT guestid, guest, guestslug FROM ww_guests WHERE guestslug != 'none' "
+        query = ("SELECT guestid, guest, guestslug FROM ww_guests "
+                 "WHERE guestslug != 'none' "
                  "ORDER BY guest ASC;")
         cursor.execute(query)
 
@@ -253,16 +261,19 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         raise DatabaseError("Unexpected database error") from err
 
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all guest IDs, with IDs sorted in the order of guest names.
+    """Return a list of all guest IDs, with IDs sorted in the order of
+    guest names
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         list[int]: Returns a list containing guest IDs
     """
     try:
         cursor = database_connection.cursor()
-        query = ("SELECT guestid FROM ww_guests WHERE guestslug != 'none' ORDER BY guest ASC;")
+        query = ("SELECT guestid FROM ww_guests WHERE guestslug != 'none' "
+                 "ORDER BY guest ASC;")
         cursor.execute(query)
 
         result = cursor.fetchall()
@@ -281,14 +292,18 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(guest_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with guest information based on the guest ID.
+    """Returns an OrderedDict with guest information based on the
+    guest ID
 
     Arguments:
         guest_id (int): Guest ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the guest ID has
+        been validated
     Returns:
-        OrderedDict: Returns a dict containing guest id, name, and slug string
+        OrderedDict: Returns a dict containing guest id, name, and slug
+        string
     """
     if not pre_validated_id:
         if not validate_id(guest_id, database_connection):
@@ -319,13 +334,16 @@ def retrieve_by_id(guest_id: int,
 
 def retrieve_by_slug(guest_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with guest information based on the guest slug string
+    """Returns an OrderedDict with guest information based on the guest
+    slug string
 
     Arguments:
         guest_slug (str): Guest slug string from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        OrderedDict: Returns an OrderedDict containing guest id, name and slug string
+        OrderedDict: Returns an OrderedDict containing guest id, name
+        and slug string
     """
     guest_id = convert_slug_to_id(guest_slug, database_connection)
     if guest_id:
@@ -338,15 +356,18 @@ def retrieve_by_slug(guest_slug: str,
 def retrieve_details_by_id(guest_id: int,
                            database_connection: mysql.connector.connect,
                            pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with guest information and appearances based on
-    the guest ID
+    """Returns an OrderedDict with guest information and appearances
+    based on the guest ID
 
     Arguments:
         guest_id (int): Guest ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the guest ID has
+        been validated
     Returns:
-        OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
+        OrderedDict: Returns an OrderedDict containing guest id, name,
+        slug string and appearances
     """
     if not pre_validated_id:
         if not validate_id(guest_id, database_connection):
@@ -362,15 +383,18 @@ def retrieve_details_by_id(guest_id: int,
 
 def retrieve_details_by_slug(guest_slug: str,
                              database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with guest information and appearances based on
-    the guest slug string
+    """Returns an OrderedDict with guest information and appearances
+    based on the guest slug string
 
     Arguments:
         guest_slug (str): Guest slug string from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the guest ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the guest ID has
+        been validated
     Returns:
-        OrderedDict: Returns an OrderedDict containing guest id, name, slug string and appearances
+        OrderedDict: Returns an OrderedDict containing guest id, name,
+          slug string and appearances
     """
     guest_id = convert_slug_to_id(guest_slug, database_connection)
     if guest_id:
@@ -384,9 +408,11 @@ def retrieve_all_details(database_connection: mysql.connector.connection) -> Lis
     """Return detailed information for all guests in the database
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list of OrderedDicts containing guest details
+        List[OrderedDict]: Returns a list of OrderedDicts containing
+        guest details
     """
     guest_ids = retrieve_all_ids(database_connection)
     if not guest_ids:

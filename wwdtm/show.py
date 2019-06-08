@@ -19,26 +19,30 @@ def _retrieve_core_info_by_id(show_id: int,
 
     Arguments:
         show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        OrderedDict: Core information from a show, including host, scorekeeper and
-                     description
+        OrderedDict: Core information from a show, including host,
+        scorekeeper and description
     """
     try:
         show_info = collections.OrderedDict()
 
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT s.showid, s.showdate, s.bestof, s.repeatshowid, "
-                 "h.hostid, h.host, h.hostslug, hm.guest as hostguest, sk.scorekeeperid, "
-                 "sk.scorekeeper, sk.scorekeeperslug, skm.guest as scorekeeperguest, "
+        query = ("SELECT s.showid, s.showdate, s.bestof, "
+                 "s.repeatshowid, h.hostid, h.host, h.hostslug, "
+                 "hm.guest as hostguest, sk.scorekeeperid, "
+                 "sk.scorekeeper, sk.scorekeeperslug, "
+                 "skm.guest AS scorekeeperguest, "
                  "skm.description, sd.showdescription, sn.shownotes "
                  "FROM ww_shows s "
                  "JOIN ww_showhostmap hm ON hm.showid = s.showid "
-                 "JOIN ww_hosts h on h.hostid = hm.hostid "
+                 "JOIN ww_hosts h ON h.hostid = hm.hostid "
                  "JOIN ww_showskmap skm ON skm.showid = s.showid "
-                 "JOIN ww_scorekeepers sk on sk.scorekeeperid = skm.scorekeeperid "
-                 "JOIN ww_showdescriptions sd on sd.showid = s.showid "
-                 "JOIN ww_shownotes sn on sn.showid = s.showid "
+                 "JOIN ww_scorekeepers sk ON "
+                 "sk.scorekeeperid = skm.scorekeeperid "
+                 "JOIN ww_showdescriptions sd ON sd.showid = s.showid "
+                 "JOIN ww_shownotes sn ON sn.showid = s.showid "
                  "WHERE s.showid = %s;")
         cursor.execute(query, (show_id,))
         result = cursor.fetchone()
@@ -52,7 +56,8 @@ def _retrieve_core_info_by_id(show_id: int,
         show_info["bestOf"] = bool(result["bestof"])
         if result["repeatshowid"]:
             show_info["isRepeat"] = True
-            original_show_date = convert_id_to_date(result["repeatshowid"], database_connection)
+            original_show_date = convert_id_to_date(result["repeatshowid"],
+                                                    database_connection)
             show_info["originalShowDate"] = original_show_date.isoformat()
         else:
             show_info["isRepeat"] = False
@@ -86,8 +91,9 @@ def _retrieve_location_by_id(show_id: int,
     """Return show location information by show ID
 
     Arguments:
-        show_id (int):
-        database_connection (mysql.connector.connect): Database connection object
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connection
+        object
     Returns:
         OrderedDict: Returns show location info
     """
@@ -120,15 +126,17 @@ def _retrieve_panelist_info_by_id(show_id: int,
     """Return show panelist information by show ID
 
     Arguments:
-        show_id (int):
-        database_connection (mysql.connector.connect): Database connection object
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connection
+        object
     Returns:
         OrderedDict: Returns show panelist info
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT pm.panelistid, p.panelist, p.panelistslug, pm.panelistlrndstart, "
-                 "pm.panelistlrndcorrect, pm.panelistscore, pm.showpnlrank "
+        query = ("SELECT pm.panelistid, p.panelist, p.panelistslug, "
+                 "pm.panelistlrndstart, pm.panelistlrndcorrect, "
+                 "pm.panelistscore, pm.showpnlrank "
                  "FROM ww_showpnlmap pm "
                  "JOIN ww_panelists p on p.panelistid = pm.panelistid "
                  "WHERE pm.showid = %s "
@@ -163,18 +171,21 @@ def _retrieve_bluff_info_by_id(show_id: int,
     """Return show panelist bluff information by show ID
 
     Arguments:
-        show_id (int):
-        database_connection (mysql.connector.connect): Database connection object
+        show_id (int): Show ID from database
+        database_connection (mysql.connector.connect): Database connection
+        object
     Returns:
         OrderedDict: Returns show panelist bluff info
     """
     try:
         bluff_info = collections.OrderedDict()
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT blm.chosenbluffpnlid, p.panelist, p.panelistslug "
+        query = ("SELECT blm.chosenbluffpnlid, p.panelist, "
+                 "p.panelistslug "
                  "FROM ww_showbluffmap blm "
                  "JOIN ww_shows s ON s.showid = blm.showid "
-                 "JOIN ww_panelists p ON p.panelistid = blm.chosenbluffpnlid "
+                 "JOIN ww_panelists p ON "
+                 "p.panelistid = blm.chosenbluffpnlid "
                  "WHERE s.showid = %s;")
         cursor.execute(query, (show_id,))
         chosen_result = cursor.fetchone()
@@ -189,10 +200,12 @@ def _retrieve_bluff_info_by_id(show_id: int,
             chosen_bluff_info = None
 
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT blm.correctbluffpnlid, p.panelist, p.panelistslug "
+        query = ("SELECT blm.correctbluffpnlid, p.panelist, "
+                 "p.panelistslug "
                  "FROM ww_showbluffmap blm "
                  "JOIN ww_shows s ON s.showid = blm.showid "
-                 "JOIN ww_panelists p ON p.panelistid = blm.correctbluffpnlid "
+                 "JOIN ww_panelists p ON "
+                 "p.panelistid = blm.correctbluffpnlid "
                  "WHERE s.showid = %s;")
         cursor.execute(query, (show_id,))
         correct_result = cursor.fetchone()
@@ -221,13 +234,15 @@ def _retrieve_not_my_job_info_by_id(show_id: int,
 
     Arguments:
         show_id (int):
-        database_connection (mysql.connector.connect): Database connection object
+        database_connection (mysql.connector.connect): Database connection
+        object
     Returns:
         OrderedDict: Returns show Not My Job info
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT gm.guestid, g.guest, g.guestslug, gm.guestscore, gm.exception "
+        query = ("SELECT gm.guestid, g.guest, g.guestslug, "
+                 "gm.guestscore, gm.exception "
                  "FROM ww_showguestmap gm "
                  "JOIN ww_guests g on g.guestid = gm.guestid "
                  "JOIN ww_shows s on s.showid = gm.showid "
@@ -266,7 +281,8 @@ def validate_id(show_id: int,
 
     Arguments:
         show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True on success; otherwise returns False
     """
@@ -298,7 +314,8 @@ def convert_date_to_id(show_year: int,
         show_year (int): Show's four digit year
         show_month (int): Show's one or two digit month
         show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns an OrderedDict with show information
     """
@@ -311,7 +328,7 @@ def convert_date_to_id(show_year: int,
     try:
         show_date_str = show_date.isoformat()
         cursor = database_connection.cursor()
-        query = ("SELECT showid from ww_shows WHERE showdate = %s;")
+        query = "SELECT showid from ww_shows WHERE showdate = %s;"
         cursor.execute(query, (show_date_str,))
         result = cursor.fetchone()
         cursor.close()
@@ -331,7 +348,8 @@ def convert_id_to_date(show_id: int,
 
     Arguments:
         show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         datetime.datetime: Returns the corresponding date for a show ID
     """
@@ -357,7 +375,8 @@ def id_exists(show_id: int,
 
     Arguments:
         show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True if show ID exists, otherwise returns False
     """
@@ -373,7 +392,8 @@ def date_exists(show_year: int,
         show_year (int): Show's four digit year
         show_month (int): Show's one or two digit month
         show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         bool: Returns True if show date exists, otherwise returns False
     """
@@ -386,7 +406,7 @@ def date_exists(show_year: int,
     try:
         show_date_str = show_date.isoformat()
         cursor = database_connection.cursor()
-        query = ("SELECT showid from ww_shows WHERE showdate = %s;")
+        query = "SELECT showid from ww_shows WHERE showdate = %s;"
         cursor.execute(query, (show_date_str,))
         result = cursor.fetchone()
         cursor.close()
@@ -401,16 +421,19 @@ def date_exists(show_year: int,
 
 #region Show Basic Info Retrieval Functions
 def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all show IDs in the database, sorted by show date
+    """Return a list of all show IDs in the database, sorted by show
+    date
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        list[int]: Return a list containing all show IDs from the database
+        list[int]: Return a list containing all show IDs from the
+        database
     """
     try:
         cursor = database_connection.cursor()
-        query = ("SELECT showid FROM ww_shows ORDER BY showdate ASC;")
+        query = "SELECT showid FROM ww_shows ORDER BY showdate ASC;"
         cursor.execute(query)
 
         result = cursor.fetchall()
@@ -430,12 +453,15 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(show_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Return basic show information based on the show ID in the database
+    """Return basic show information based on the show ID in the
+    database
 
     Arguments:
         show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the show ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the show ID has
+        been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
@@ -447,8 +473,9 @@ def retrieve_by_id(show_id: int,
     try:
         show_info = collections.OrderedDict()
 
-        # Pull in base show information, including: show ID, date, Best Of flag and, if applicable,
-        # the show ID of the original show if it is a repeat
+        # Pull in base show information, including: show ID, date,
+        # Best Of flag and, if applicable, the show ID of the original
+        # show if it is a repeat
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT showid, showdate, bestof, repeatshowid "
                  "FROM ww_shows "
@@ -465,7 +492,8 @@ def retrieve_by_id(show_id: int,
         show_info["bestOf"] = bool(result["bestof"])
         if result["repeatshowid"]:
             show_info["isRepeat"] = True
-            original_show_date = convert_id_to_date(result["repeatshowid"], database_connection)
+            original_show_date = convert_id_to_date(result["repeatshowid"],
+                                                    database_connection)
             show_info["originalShowDate"] = original_show_date.isoformat()
         else:
             show_info["isRepeat"] = False
@@ -479,10 +507,11 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     """Return basic show information for all shows in the database
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with show
-        information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        show information
     """
     show_ids = retrieve_all_ids(database_connection)
     if not show_ids:
@@ -507,11 +536,15 @@ def retrieve_by_date(show_year: int,
         show_year (int): Show's four digit year
         show_month (int): Show's one or two digit month
         show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
-    show_id = convert_date_to_id(show_year, show_month, show_day, database_connection)
+    show_id = convert_date_to_id(show_year,
+                                 show_month,
+                                 show_day,
+                                 database_connection)
     if show_id:
         return retrieve_by_id(show_id, database_connection)
 
@@ -523,7 +556,8 @@ def retrieve_by_date_string(show_date: str,
 
     Arguments:
         show_date (str): Show date in YYYY-MM-DD format
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
@@ -547,10 +581,11 @@ def retrieve_by_year(show_year: int,
 
     Arguments:
         show_year (int): Four digit year
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with show
-        information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        show information
     """
     try:
         parsed_show_year = parser.parse("{}".format(show_year))
@@ -559,7 +594,8 @@ def retrieve_by_year(show_year: int,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid FROM ww_shows WHERE YEAR(showdate) = %s "
+        query = ("SELECT showid FROM ww_shows "
+                 "WHERE YEAR(showdate) = %s "
                  "ORDER BY showdate ASC;")
         cursor.execute(query, (parsed_show_year.year,))
         result = cursor.fetchall()
@@ -585,26 +621,31 @@ def retrieve_by_year_month(show_year: int,
                            show_month: int,
                            database_connection: mysql.connector.connect
                           ) -> List[Dict]:
-    """Return basic show information based on the show year and month provided
+    """Return basic show information based on the show year and month
+    provided
 
     Arguments:
         show_year (int): Four digit year
         show_month (int): One or two digit month
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with show
-        information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        show information
     """
     try:
-        parsed_show_year_month = parser.parse("{}-{}".format(show_year, show_month))
+        parsed_show_year_month = parser.parse("{}-{}".format(show_year,
+                                                             show_month))
     except ValueError:
         return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid FROM ww_shows WHERE YEAR(showdate) = %s "
+        query = ("SELECT showid FROM ww_shows "
+                 "WHERE YEAR(showdate) = %s "
                  "AND MONTH(showdate) = %s ORDER BY showdate ASC;")
-        cursor.execute(query, (parsed_show_year_month.year, parsed_show_year_month.month,))
+        cursor.execute(query, (parsed_show_year_month.year,
+                               parsed_show_year_month.month,))
         result = cursor.fetchall()
         cursor.close()
 
@@ -630,12 +671,14 @@ def retrieve_recent(database_connection: mysql.connector.connect,
     """Return recent basic show information
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
-        include_days_ahead (int): Number of days in the future to include
+        database_connection (mysql.connector.connect): Database connect
+        object
+        include_days_ahead (int): Number of days in the future to
+        include
         include_days_back (int): Number of days in the past to include
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with recent
-        show information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        recent show information
     """
     try:
         past_days = int(include_days_back)
@@ -651,7 +694,8 @@ def retrieve_recent(database_connection: mysql.connector.connect,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid FROM ww_shows WHERE showdate >= %s AND "
+        query = ("SELECT showid FROM ww_shows "
+                 "WHERE showdate >= %s AND "
                  "showdate <= %s ORDER BY showdate ASC;")
         cursor.execute(query,
                        (past_date.isoformat(),
@@ -681,12 +725,15 @@ def retrieve_recent(database_connection: mysql.connector.connect,
 def retrieve_details_by_id(show_id: int,
                            database_connection: mysql.connector.connect,
                            pre_validated_id: bool = False) -> Dict:
-    """Return detailed show information based on the show ID in the database
+    """Return detailed show information based on the show ID in the
+    database
 
     Arguments:
         show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect object
-        pre_validated_id (bool): Flag whether or not the show ID has been validated
+        database_connection (mysql.connector.connect): Database connect
+        object
+        pre_validated_id (bool): Flag whether or not the show ID has
+        been validated
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
@@ -710,10 +757,14 @@ def retrieve_details_by_id(show_id: int,
         show_details["host"] = show_info["host"]
         show_details["scorekeeper"] = show_info["scorekeeper"]
 
-        show_details["location"] = _retrieve_location_by_id(show_id, database_connection)
-        show_details["panelists"] = _retrieve_panelist_info_by_id(show_id, database_connection)
-        show_details["bluff"] = _retrieve_bluff_info_by_id(show_id, database_connection)
-        show_details["guests"] = _retrieve_not_my_job_info_by_id(show_id, database_connection)
+        show_details["location"] = _retrieve_location_by_id(show_id,
+                                                            database_connection)
+        show_details["panelists"] = _retrieve_panelist_info_by_id(show_id,
+                                                                  database_connection)
+        show_details["bluff"] = _retrieve_bluff_info_by_id(show_id,
+                                                           database_connection)
+        show_details["guests"] = _retrieve_not_my_job_info_by_id(show_id,
+                                                                 database_connection)
 
         return show_details
 
@@ -723,10 +774,11 @@ def retrieve_all_details(database_connection: mysql.connector.connect) -> List[D
     """Return show information for all shows in the database
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with show
-        information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        show information
     """
     show_ids = retrieve_all_ids(database_connection)
     if not show_ids:
@@ -753,11 +805,15 @@ def retrieve_details_by_date(show_year: int,
         show_year (int): Show's four digit year
         show_month (int): Show's one or two digit month
         show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
-    show_id = convert_date_to_id(show_year, show_month, show_day, database_connection)
+    show_id = convert_date_to_id(show_year,
+                                 show_month,
+                                 show_day,
+                                 database_connection)
     if show_id:
         return retrieve_details_by_id(show_id, database_connection)
 
@@ -769,7 +825,8 @@ def retrieve_details_by_date_string(show_date: str,
 
     Arguments:
         show_date (str): Show date in YYYY-MM-DD format
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
         OrderedDict: Returns an OrderedDict containing show information
     """
@@ -793,10 +850,11 @@ def retrieve_details_by_year(show_year: int,
 
     Arguments:
         show_year (int): Four digit year
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with show
-        information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        show information
     """
     try:
         parsed_show_year = parser.parse("{}".format(show_year))
@@ -805,7 +863,8 @@ def retrieve_details_by_year(show_year: int,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid FROM ww_shows WHERE YEAR(showdate) = %s "
+        query = ("SELECT showid FROM ww_shows "
+                 "WHERE YEAR(showdate) = %s "
                  "ORDER BY showdate ASC;")
         cursor.execute(query, (parsed_show_year.year,))
         result = cursor.fetchall()
@@ -830,26 +889,32 @@ def retrieve_details_by_year(show_year: int,
 def retrieve_details_by_year_month(show_year: int,
                                    show_month: int,
                                    database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return show information based on the show year and month provided
+    """Return show information based on the show year and month
+    provided
 
     Arguments:
         show_year (int): Four digit year
         show_month (int): One or two digit month
-        database_connection (mysql.connector.connect): Database connect object
+        database_connection (mysql.connector.connect): Database connect
+        object
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with show
-        information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        show information
     """
     try:
-        parsed_show_year_month = parser.parse("{}-{}".format(show_year, show_month))
+        parsed_show_year_month = parser.parse("{}-{}".format(show_year,
+                                                             show_month))
     except ValueError:
         return None
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid FROM ww_shows WHERE YEAR(showdate) = %s "
-                 "AND MONTH(showdate) = %s ORDER BY showdate ASC;")
-        cursor.execute(query, (parsed_show_year_month.year, parsed_show_year_month.month,))
+        query = ("SELECT showid FROM ww_shows "
+                 "WHERE YEAR(showdate) = %s "
+                 "AND MONTH(showdate) = %s "
+                 "ORDER BY showdate ASC;")
+        cursor.execute(query, (parsed_show_year_month.year,
+                               parsed_show_year_month.month,))
         result = cursor.fetchall()
         cursor.close()
 
@@ -875,12 +940,14 @@ def retrieve_recent_details(database_connection: mysql.connector.connect,
     """Return recent show information
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect object
-        include_days_ahead (int): Number of days in the future to include
+        database_connection (mysql.connector.connect): Database connect
+        object
+        include_days_ahead (int): Number of days in the future to
+        include
         include_days_back (int): Number of days in the past to include
     Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with recent
-        show information
+        List[OrderedDict]: Returns a list containing OrderedDicts with
+        recent show information
     """
     try:
         past_days = int(include_days_back)
@@ -896,7 +963,8 @@ def retrieve_recent_details(database_connection: mysql.connector.connect,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT showid FROM ww_shows WHERE showdate >= %s AND "
+        query = ("SELECT showid FROM ww_shows "
+                 "WHERE showdate >= %s AND "
                  "showdate <= %s ORDER BY showdate ASC;")
         cursor.execute(query,
                        (past_date.isoformat(),
