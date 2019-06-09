@@ -121,6 +121,24 @@ def test_retrieve_by_invalid_date_string(show_date: str,
     if print_response:
         print(json.dumps(show_info, indent=2))
 
+def test_retrieve_months_by_year(show_year: int,
+                                 database_connection: mysql.connector.connect,
+                                 print_response: bool = False):
+    """Testing response from show.retrieve_months_by_year"""
+    show_months = show.retrieve_months_by_year(show_year,
+                                               database_connection)
+    assert show_months is not None
+    if print_response:
+        print(json.dumps(show_months, indent=2))
+
+def test_retrieve_years(database_connection: mysql.connector.connect,
+                        print_response: bool = False):
+    """Testing response from show.retrieve_years"""
+    show_years = show.retrieve_years(database_connection)
+    assert show_years is not None
+    if print_response:
+        print(json.dumps(show_years, indent=2))
+
 def test_retrieve_by_year(show_year: int,
                           database_connection: mysql.connector.connect,
                           print_response: bool = False):

@@ -575,6 +575,78 @@ def retrieve_by_date_string(show_date: str,
 
     return None
 
+def retrieve_months_by_year(show_year: int,
+                            database_connection: mysql.connector.connect
+                           ) -> List[int]:
+    """Return available show months for the requested year
+
+    Arguments:
+        show_year (int): Four digit year
+        database_connection (mysql.connector.connect): Database connect
+        object
+    Returns:
+        List[int]: Returns a list of months available for the requested
+        year
+    """
+    try:
+        _ = parser.parse("{}".format(show_year))
+    except ValueError:
+        return None
+
+    try:
+        cursor = database_connection.cursor()
+        query = ("SELECT DISTINCT MONTH(showdate) "
+                 "FROM ww_shows "
+                 "WHERE YEAR(showdate) = %s "
+                 "ORDER BY MONTH(showdate) ASC;")
+        cursor.execute(query, (show_year,))
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        months = []
+        for row in result:
+            months.append(row[0])
+
+        return months
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+def retrieve_years(database_connection: mysql.connector.connect) -> List[int]:
+    """Return available show years from the database
+
+    Arguments:
+        database_connection (mysql.connector.connect): Database connect
+        object
+    Returns:
+        List[int]: Returns a list of years available from the database
+    """
+    try:
+        cursor = database_connection.cursor()
+        query = ("SELECT DISTINCT YEAR(showdate) "
+                 "FROM ww_shows "
+                 "ORDER BY YEAR(showdate) ASC;")
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+
+        if not result:
+            return None
+
+        years = []
+        for row in result:
+            years.append(row[0])
+
+        return years
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
 def retrieve_by_year(show_year: int,
                      database_connection: mysql.connector.connect) -> List[Dict]:
     """Return basic show information based on the show year provided
