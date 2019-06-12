@@ -321,7 +321,9 @@ def convert_date_to_id(show_year: int,
     """
     show_date = None
     try:
-        show_date = datetime.datetime(show_year, show_month, show_day)
+        show_date = datetime.datetime(year=show_year,
+                                      month=show_month,
+                                      day=show_day)
     except ValueError as err:
         raise ValueError("Invalid year, month and/or day value") from err
 
