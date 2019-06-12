@@ -71,7 +71,7 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
                 appearance_info["date"] = appearance["showdate"].isoformat()
                 appearance_info["isBestOfShow"] = bool(appearance["bestof"])
                 appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["exception"] = bool(appearance["guest"])
+                appearance_info["guest"] = bool(appearance["guest"])
                 appearance_info["description"] = appearance["description"]
                 appearances.append(appearance_info)
 
