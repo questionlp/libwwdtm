@@ -95,13 +95,16 @@ def test_retrieve_by_invalid_date(show_year: int,
                                   database_connection: mysql.connector.connect,
                                   print_response: bool = False):
     """Testing response from show.retrieve_by_date with incorrect date"""
-    show_info = show.retrieve_by_date(show_year,
-                                      show_month,
-                                      show_day,
-                                      database_connection)
-    assert show_info is None
-    if print_response:
-        print(json.dumps(show_info, indent=2))
+    try:
+        show_info = show.retrieve_by_date(show_year,
+                                          show_month,
+                                          show_day,
+                                          database_connection)
+        assert show_info is None
+        if print_response:
+            print(json.dumps(show_info, indent=2))
+    except ValueError:
+        assert True
 
 def test_retrieve_by_date_string(show_date: str,
                                  database_connection: mysql.connector.connect,
@@ -116,10 +119,13 @@ def test_retrieve_by_invalid_date_string(show_date: str,
                                          database_connection: mysql.connector.connect,
                                          print_response: bool = False):
     """Testing response from show.retrieve_by_date_string with incorrect date"""
-    show_info = show.retrieve_by_date_string(show_date, database_connection)
-    assert show_info is None
-    if print_response:
-        print(json.dumps(show_info, indent=2))
+    try:
+        show_info = show.retrieve_by_date_string(show_date, database_connection)
+        assert show_info is None
+        if print_response:
+            print(json.dumps(show_info, indent=2))
+    except ValueError:
+        assert True
 
 def test_retrieve_months_by_year(show_year: int,
                                  database_connection: mysql.connector.connect,

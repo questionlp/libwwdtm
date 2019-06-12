@@ -322,8 +322,8 @@ def convert_date_to_id(show_year: int,
     show_date = None
     try:
         show_date = datetime.datetime(show_year, show_month, show_day)
-    except ValueError:
-        return None
+    except ValueError as err:
+        raise ValueError("Invalid year, month and/or day value") from err
 
     try:
         show_date_str = show_date.isoformat()
@@ -400,8 +400,8 @@ def date_exists(show_year: int,
     show_date = None
     try:
         show_date = datetime.datetime(show_year, show_month, show_day)
-    except ValueError:
-        return None
+    except ValueError as err:
+        raise ValueError("Invalid year, month and/or day value") from err
 
     try:
         show_date_str = show_date.isoformat()
@@ -563,8 +563,8 @@ def retrieve_by_date_string(show_date: str,
     """
     try:
         parsed_show_date = parser.parse(show_date)
-    except ValueError:
-        return None
+    except ValueError as err:
+        raise ValueError("Invalid date string") from err
 
     show_id = convert_date_to_id(parsed_show_date.year,
                                  parsed_show_date.month,
@@ -590,8 +590,8 @@ def retrieve_months_by_year(show_year: int,
     """
     try:
         _ = parser.parse("{}".format(show_year))
-    except ValueError:
-        return None
+    except ValueError as err:
+        raise ValueError("Invalid year value") from err
 
     try:
         cursor = database_connection.cursor()
@@ -661,8 +661,8 @@ def retrieve_by_year(show_year: int,
     """
     try:
         parsed_show_year = parser.parse("{}".format(show_year))
-    except ValueError:
-        return None
+    except ValueError as err:
+        raise ValueError("Invalid year value") from err
 
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -708,8 +708,8 @@ def retrieve_by_year_month(show_year: int,
     try:
         parsed_show_year_month = parser.parse("{}-{}".format(show_year,
                                                              show_month))
-    except ValueError:
-        return None
+    except ValueError as err:
+        raise ValueError("Invalid year and month value") from err
 
     try:
         cursor = database_connection.cursor(dictionary=True)
