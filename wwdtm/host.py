@@ -43,20 +43,17 @@ def _retrieve_appearances_by_id(host_id: int,
                  "WHERE hm.hostid = %s ) AS allshows;")
         cursor.execute(query, (host_id, host_id,))
         result = cursor.fetchone()
-        cursor.close()
 
         appearance_counts = collections.OrderedDict()
         appearance_counts["regularShows"] = result["regular"]
         appearance_counts["allShows"] = result["allshows"]
 
-        cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT hm.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "hm.guest FROM ww_showhostmap hm "
                  "JOIN ww_hosts h ON h.hostid = hm.hostid "
                  "JOIN ww_shows s ON s.showid = hm.showid "
                  "WHERE hm.hostid = %s "
                  "ORDER BY s.showdate ASC;")
-
         cursor.execute(query, (host_id,))
         result = cursor.fetchall()
         cursor.close()
@@ -122,7 +119,6 @@ def convert_slug_to_id(host_slug: str,
         cursor = database_connection.cursor()
         query = "SELECT hostid FROM ww_hosts WHERE hostslug = %s;"
         cursor.execute(query, (host_slug,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -155,7 +151,6 @@ def validate_id(host_id: int,
         cursor = database_connection.cursor()
         query = "SELECT hostid FROM ww_hosts WHERE hostid = %s;"
         cursor.execute(query, (host_id,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -184,7 +179,6 @@ def validate_slug(host_slug: str,
         cursor = database_connection.cursor()
         query = "SELECT hostslug FROM ww_hosts WHERE hostslug = %s;"
         cursor.execute(query, (host_slug,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -238,7 +232,6 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         query = ("SELECT hostid, host, hostslug, hostgender FROM ww_hosts "
                  "WHERE hostslug != 'tbd' ORDER BY host ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -272,7 +265,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         query = ("SELECT hostid FROM ww_hosts WHERE hostslug != 'none' "
                  "ORDER BY host ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -310,7 +302,6 @@ def retrieve_by_id(host_id: int,
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT host, hostslug, hostgender FROM ww_hosts "
                  "WHERE hostid = %s;")
-
         cursor.execute(query, (host_id,))
         result = cursor.fetchone()
         cursor.close()

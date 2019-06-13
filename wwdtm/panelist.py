@@ -425,7 +425,6 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
                  "WHERE panelistslug != 'multiple' "
                  "ORDER BY panelist ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -460,7 +459,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
                  "WHERE panelistslug != 'multiple' "
                  "ORDER BY panelist ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -499,7 +497,6 @@ def retrieve_by_id(panelist_id: int,
         query = ("SELECT panelist, panelistgender, panelistslug "
                  "FROM ww_panelists "
                  "WHERE panelistid = %s;")
-
         cursor.execute(query, (panelist_id,))
         result = cursor.fetchone()
         cursor.close()
@@ -645,7 +642,6 @@ def retrieve_scores_list_by_id(panelist_id: int,
                  "AND pm.panelistscore IS NOT NULL "
                  "ORDER BY s.showdate ASC;")
         cursor.execute(query, (panelist_id,))
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -718,7 +714,6 @@ def retrieve_scores_ordered_pair_by_id(panelist_id: int,
                  "AND pm.panelistscore IS NOT NULL "
                  "ORDER BY s.showdate ASC;")
         cursor.execute(query, (panelist_id,))
-
         result = cursor.fetchall()
         cursor.close()
 

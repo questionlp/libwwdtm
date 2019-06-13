@@ -107,6 +107,7 @@ def _retrieve_location_by_id(show_id: int,
                  "WHERE s.showid = %s;")
         cursor.execute(query, (show_id,))
         result = cursor.fetchone()
+        cursor.close()
 
         if not result:
             return None
@@ -189,7 +190,6 @@ def _retrieve_bluff_info_by_id(show_id: int,
                  "WHERE s.showid = %s;")
         cursor.execute(query, (show_id,))
         chosen_result = cursor.fetchone()
-        cursor.close()
 
         chosen_bluff_info = collections.OrderedDict()
         if chosen_result:
@@ -199,7 +199,6 @@ def _retrieve_bluff_info_by_id(show_id: int,
         else:
             chosen_bluff_info = None
 
-        cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT blm.correctbluffpnlid, p.panelist, "
                  "p.panelistslug "
                  "FROM ww_showbluffmap blm "
@@ -249,7 +248,6 @@ def _retrieve_not_my_job_info_by_id(show_id: int,
                  "WHERE gm.showid = %s "
                  "ORDER by gm.showguestmapid ASC;")
         cursor.execute(query, (show_id,))
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -437,7 +435,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
         cursor = database_connection.cursor()
         query = "SELECT showid FROM ww_shows ORDER BY showdate ASC;"
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 

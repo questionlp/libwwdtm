@@ -75,7 +75,6 @@ def validate_id(location_id: int,
         cursor = database_connection.cursor()
         query = "SELECT locationid FROM ww_locations WHERE locationid = %s;"
         cursor.execute(query, (location_id,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -124,7 +123,6 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
                  "WHERE locationid NOT IN (3) "
                  "ORDER BY state ASC, city ASC, venue ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -160,7 +158,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
                  "WHERE locationid NOT IN (3) "
                  "ORDER BY state ASC, city ASC, venue ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -201,7 +198,6 @@ def retrieve_by_id(location_id: int,
                  "FROM ww_locations "
                  "WHERE locationid = %s; ")
         cursor.execute(query, (location_id,))
-
         result = cursor.fetchone()
         cursor.close()
 

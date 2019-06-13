@@ -43,13 +43,11 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
                  "WHERE skm.scorekeeperid = %s ) AS allshows;")
         cursor.execute(query, (scorekeeper_id, scorekeeper_id,))
         result = cursor.fetchone()
-        cursor.close()
 
         appearance_counts = collections.OrderedDict()
         appearance_counts["regularShows"] = result["regular"]
         appearance_counts["allShows"] = result["allshows"]
 
-        cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT skm.showid, s.showdate, s.bestof, "
                  "s.repeatshowid, skm.guest, skm.description "
                  "FROM ww_showskmap skm "
@@ -126,7 +124,6 @@ def convert_slug_to_id(scorekeeper_slug: str,
         query = ("SELECT scorekeeperid FROM ww_scorekeepers "
                  "WHERE scorekeeperslug = %s;")
         cursor.execute(query, (scorekeeper_slug,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -160,7 +157,6 @@ def validate_id(scorekeeper_id: int,
         query = ("SELECT scorekeeperid FROM ww_scorekeepers "
                  "WHERE scorekeeperid = %s;")
         cursor.execute(query, (scorekeeper_id,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -191,7 +187,6 @@ def validate_slug(scorekeeper_slug: str,
         query = ("SELECT scorekeeperslug FROM ww_scorekeepers "
                  "WHERE scorekeeperslug = %s;")
         cursor.execute(query, (scorekeeper_slug,))
-
         result = cursor.fetchone()
         cursor.close()
 
@@ -250,7 +245,6 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
                  "FROM ww_scorekeepers where scorekeeperslug != 'tbd' "
                  "ORDER BY scorekeeper ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -285,7 +279,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
                  "WHERE scorekeeperslug != 'tbd' "
                  "ORDER BY scorekeeper ASC;")
         cursor.execute(query)
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -325,7 +318,6 @@ def retrieve_by_id(scorekeeper_id: int,
                  "scorekeepergender "
                  "FROM ww_scorekeepers "
                  "WHERE scorekeeperid = %s;")
-
         cursor.execute(query, (scorekeeper_id,))
         result = cursor.fetchone()
         cursor.close()
