@@ -68,7 +68,11 @@ def _retrieve_core_info_by_id(show_id: int,
         location_info["venue"] = result["venue"]
         show_info["location"] = location_info
 
-        show_info["description"] = str(result["showdescription"]).strip()
+        if result["showdescription"]:
+            show_info["description"] = str(result["showdescription"]).strip()
+        else:
+            show_info["description"] = None
+
         if result["shownotes"]:
             show_info["notes"] = str(result["shownotes"]).strip()
         else:
