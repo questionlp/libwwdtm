@@ -69,7 +69,10 @@ def _retrieve_core_info_by_id(show_id: int,
         show_info["location"] = location_info
 
         show_info["description"] = str(result["showdescription"]).strip()
-        show_info["notes"] = str(result["shownotes"]).strip()
+        if result["shownotes"]:
+            show_info["notes"] = str(result["shownotes"]).strip()
+        else:
+            show_info["notes"] = None
 
         show_host = collections.OrderedDict()
         show_host["id"] = result["hostid"]
