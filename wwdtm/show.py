@@ -14,28 +14,29 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 
 #region Internal Functions
 def _retrieve_core_info_by_id(show_id: int,
-                              database_connection: mysql.connector.connect) -> Dict:
-    """Return core information about a show based on the show ID
+                              database_connection: mysql.connector.connect
+                             ) -> Dict:
+    """Returns an OrderedDict with core information for the requested
+    show ID
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        OrderedDict: Core information from a show, including host,
-        scorekeeper and description
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         show_info = collections.OrderedDict()
+        location_info = collections.OrderedDict()
 
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT s.showid, s.showdate, s.bestof, "
-                 "s.repeatshowid, h.hostid, h.host, h.hostslug, "
-                 "hm.guest as hostguest, sk.scorekeeperid, "
-                 "sk.scorekeeper, sk.scorekeeperslug, "
-                 "skm.guest AS scorekeeperguest, "
-                 "skm.description, sd.showdescription, sn.shownotes "
+                 "s.repeatshowid, l.city, l.state, l.venue, "
+                 "h.hostid, h.host, h.hostslug, hm.guest as hostguest, "
+                 "sk.scorekeeperid, sk.scorekeeper, sk.scorekeeperslug, "
+                 "skm.guest AS scorekeeperguest, skm.description, "
+                 "sd.showdescription, sn.shownotes "
                  "FROM ww_shows s "
+                 "JOIN ww_showlocationmap lm ON lm.showid = s.showid "
+                 "JOIN ww_locations l ON l.locationid = lm.locationid "
                  "JOIN ww_showhostmap hm ON hm.showid = s.showid "
                  "JOIN ww_hosts h ON h.hostid = hm.hostid "
                  "JOIN ww_showskmap skm ON skm.showid = s.showid "
@@ -62,6 +63,11 @@ def _retrieve_core_info_by_id(show_id: int,
         else:
             show_info["isRepeat"] = False
 
+        location_info["city"] = result["city"]
+        location_info["state"] = result["state"]
+        location_info["venue"] = result["venue"]
+        show_info["location"] = location_info
+
         show_info["description"] = str(result["showdescription"]).strip()
         show_info["notes"] = str(result["shownotes"]).strip()
 
@@ -86,52 +92,15 @@ def _retrieve_core_info_by_id(show_id: int,
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def _retrieve_location_by_id(show_id: int,
-                             database_connection: mysql.connector.connect) -> Dict:
-    """Return show location information by show ID
-
-    Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connection
-        object
-    Returns:
-        OrderedDict: Returns show location info
-    """
-    try:
-        location_info = collections.OrderedDict()
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT l.city, l.state, l.venue FROM "
-                 "ww_showlocationmap lm "
-                 "JOIN ww_shows s on s.showid = lm.showid "
-                 "JOIN ww_locations l on l.locationid = lm.locationid "
-                 "WHERE s.showid = %s;")
-        cursor.execute(query, (show_id,))
-        result = cursor.fetchone()
-        cursor.close()
-
-        if not result:
-            return None
-
-        location_info["city"] = result["city"]
-        location_info["state"] = result["state"]
-        location_info["venue"] = result["venue"]
-
-        return location_info
-    except ProgrammingError as err:
-        raise ProgrammingError("Unable to query the database") from err
-    except DatabaseError as err:
-        raise DatabaseError("Unexpected database error") from err
-
 def _retrieve_panelist_info_by_id(show_id: int,
-                                  database_connection: mysql.connector.connect) -> Dict:
-    """Return show panelist information by show ID
+                                  database_connection: mysql.connector.connect
+                                 ) -> List[Dict]:
+    """Returns a list of OrderedDicts containing panelist information
+    for the requested show ID
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connection
-        object
-    Returns:
-        OrderedDict: Returns show panelist info
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -168,15 +137,14 @@ def _retrieve_panelist_info_by_id(show_id: int,
         raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_bluff_info_by_id(show_id: int,
-                               database_connection: mysql.connector.connect) -> Dict:
-    """Return show panelist bluff information by show ID
+                               database_connection: mysql.connector.connect
+                              ) -> Dict:
+    """Returns an OrderedDicts containing panelist bluff information
+    for the requested show ID
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connection
-        object
-    Returns:
-        OrderedDict: Returns show panelist bluff info
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         bluff_info = collections.OrderedDict()
@@ -228,15 +196,14 @@ def _retrieve_bluff_info_by_id(show_id: int,
         raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_not_my_job_info_by_id(show_id: int,
-                                    database_connection: mysql.connector.connect) -> Dict:
-    """Return show Not My Job information by show ID
+                                    database_connection: mysql.connector.connect
+                                   ) -> List[Dict]:
+    """Returns a list of OrderedDicts containing Not My Job information
+    for the requested show ID
 
     Arguments:
-        show_id (int):
-        database_connection (mysql.connector.connect): Database connection
-        object
-    Returns:
-        OrderedDict: Returns show Not My Job info
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -275,14 +242,11 @@ def _retrieve_not_my_job_info_by_id(show_id: int,
 #region Utility Functions
 def validate_id(show_id: int,
                 database_connection: mysql.connector.connect) -> bool:
-    """Validate show ID against database
+    """Returns true or false based on wheter or not a show ID is valid
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True on success; otherwise returns False
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         show_id = int(show_id)
@@ -306,16 +270,13 @@ def convert_date_to_id(show_year: int,
                        show_month: int,
                        show_day: int,
                        database_connection: mysql.connector.connect) -> int:
-    """Return show database ID from show year, month and day
+    """Returns a show's ID based on the show's year, month and day
 
     Arguments:
-        show_year (int): Show's four digit year
-        show_month (int): Show's one or two digit month
-        show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns an OrderedDict with show information
+        show_year (int): Four digit year is required
+        show_month (int)
+        show_day (int)
+        database_connection (mysql.connector.connect)
     """
     show_date = None
     try:
@@ -343,15 +304,13 @@ def convert_date_to_id(show_year: int,
         raise DatabaseError("Unexpected database error") from err
 
 def convert_id_to_date(show_id: int,
-                       database_connection: mysql.connector.connect) -> datetime.datetime:
-    """Return show date based on the show ID from the database
+                       database_connection: mysql.connector.connect
+                      ) -> datetime.datetime:
+    """Returns a show's date based on the show's ID
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        datetime.datetime: Returns the corresponding date for a show ID
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -371,14 +330,11 @@ def convert_id_to_date(show_id: int,
 
 def id_exists(show_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a show ID exists in the database
+    """Returns true or false based on whether or not a show ID exists
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True if show ID exists, otherwise returns False
+        show_id (int)
+        database_connection (mysql.connector.connect)
     """
     return validate_id(show_id, database_connection)
 
@@ -386,16 +342,14 @@ def date_exists(show_year: int,
                 show_month: int,
                 show_day: int,
                 database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a show ID exists in the database
+    """Returns true or false based on whether or not a show exists for
+    the requested year, month and day
 
     Arguments:
-        show_year (int): Show's four digit year
-        show_month (int): Show's one or two digit month
-        show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True if show date exists, otherwise returns False
+        show_year (int): Four digit year is required
+        show_month (int)
+        show_day (int)
+        database_connection (mysql.connector.connect)
     """
     show_date = None
     try:
@@ -420,16 +374,12 @@ def date_exists(show_year: int,
 #endregion
 
 #region Show Basic Info Retrieval Functions
-def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all show IDs in the database, sorted by show
-    date
+def retrieve_all_ids(database_connection: mysql.connector.connect
+                    ) -> List[int]:
+    """Returns a list of all show IDs, sorted by show date
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        list[int]: Return a list containing all show IDs from the
-        database
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -452,17 +402,14 @@ def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
 def retrieve_by_id(show_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
-    """Return basic show information based on the show ID in the
-    database
+    """Returns an OrderedDict with show information for the requested
+    show ID
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        show_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the show ID has
         been validated
-    Returns:
-        OrderedDict: Returns an OrderedDict containing show information
     """
 
     if not pre_validated_id:
@@ -503,14 +450,11 @@ def retrieve_by_id(show_id: int,
         raise DatabaseError("Unexpected database error") from err
 
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return basic show information for all shows in the database
+    """Returns a list of OrderedDicts with show information for all
+    shows
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        show information
+        database_connection (mysql.connector.connect)
     """
     show_ids = retrieve_all_ids(database_connection)
     if not show_ids:
@@ -529,16 +473,14 @@ def retrieve_by_date(show_year: int,
                      show_month: int,
                      show_day: int,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Return basic show information based on the show date in the database
+    """Returns an OrderedDict with show information based on the
+    show's year, month and day
 
     Arguments:
-        show_year (int): Show's four digit year
-        show_month (int): Show's one or two digit month
-        show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        OrderedDict: Returns an OrderedDict containing show information
+        show_year (int): Four digit year is required
+        show_month (int)
+        show_day (int)
+        database_connection (mysql.connector.connect)
     """
     show_id = convert_date_to_id(show_year,
                                  show_month,
@@ -551,14 +493,12 @@ def retrieve_by_date(show_year: int,
 
 def retrieve_by_date_string(show_date: str,
                             database_connection: mysql.connector.connect) -> Dict:
-    """Return basic show information based on the show date string
+    """Returns an OrderedDict with show information based on the show's
+    date string
 
     Arguments:
         show_date (str): Show date in YYYY-MM-DD format
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        OrderedDict: Returns an OrderedDict containing show information
+        database_connection (mysql.connector.connect)
     """
     try:
         parsed_show_date = parser.parse(show_date)
@@ -577,15 +517,11 @@ def retrieve_by_date_string(show_date: str,
 def retrieve_months_by_year(show_year: int,
                             database_connection: mysql.connector.connect
                            ) -> List[int]:
-    """Return available show months for the requested year
+    """Returns a list of show months available for the requested year
 
     Arguments:
-        show_year (int): Four digit year
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[int]: Returns a list of months available for the requested
-        year
+        show_year (int): Four digit year is required
+        database_connection (mysql.connector.connect)
     """
     try:
         _ = parser.parse("{}".format(show_year))
@@ -616,13 +552,10 @@ def retrieve_months_by_year(show_year: int,
         raise DatabaseError("Unexpected database error") from err
 
 def retrieve_years(database_connection: mysql.connector.connect) -> List[int]:
-    """Return available show years from the database
+    """Returns list of available show years
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[int]: Returns a list of years available from the database
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -648,15 +581,12 @@ def retrieve_years(database_connection: mysql.connector.connect) -> List[int]:
 
 def retrieve_by_year(show_year: int,
                      database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return basic show information based on the show year provided
+    """Returns a list of OrderedDicts with show information for the
+    requested show year
 
     Arguments:
-        show_year (int): Four digit year
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        show information
+        show_year (int): Four digit year is required
+        database_connection (mysql.connector.connect)
     """
     try:
         parsed_show_year = parser.parse("{}".format(show_year))
@@ -692,17 +622,13 @@ def retrieve_by_year_month(show_year: int,
                            show_month: int,
                            database_connection: mysql.connector.connect
                           ) -> List[Dict]:
-    """Return basic show information based on the show year and month
-    provided
+    """Returns a list of OrderedDicts with show information for the
+    requested show year and month
 
     Arguments:
-        show_year (int): Four digit year
-        show_month (int): One or two digit month
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        show information
+        show_year (int): Four digit year is required
+        show_month (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         parsed_show_year_month = parser.parse("{}-{}".format(show_year,
@@ -739,17 +665,15 @@ def retrieve_by_year_month(show_year: int,
 def retrieve_recent(database_connection: mysql.connector.connect,
                     include_days_ahead: int = 7,
                     include_days_back: int = 32,) -> List[Dict]:
-    """Return recent basic show information
+    """Returns a list of OrderedDicts with show information for recent
+    shows
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
+        database_connection (mysql.connector.connect)
         include_days_ahead (int): Number of days in the future to
-        include
+        include (default: 7)
         include_days_back (int): Number of days in the past to include
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        recent show information
+        (default: 32)
     """
     try:
         past_days = int(include_days_back)
@@ -796,17 +720,14 @@ def retrieve_recent(database_connection: mysql.connector.connect,
 def retrieve_details_by_id(show_id: int,
                            database_connection: mysql.connector.connect,
                            pre_validated_id: bool = False) -> Dict:
-    """Return detailed show information based on the show ID in the
-    database
+    """Returns an OrderedDicts with show details for the requested show
+    ID
 
     Arguments:
-        show_id (int): Show ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        show_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the show ID has
         been validated
-    Returns:
-        OrderedDict: Returns an OrderedDict containing show information
     """
     if not pre_validated_id:
         if not validate_id(show_id, database_connection):
@@ -823,33 +744,26 @@ def retrieve_details_by_id(show_id: int,
         show_details["isRepeat"] = show_info["isRepeat"]
         if show_details["isRepeat"]:
             show_details["originalShowDate"] = show_info["originalShowDate"]
+        show_details["location"] = show_info["location"]
         show_details["description"] = show_info["description"]
         show_details["notes"] = show_info["notes"]
         show_details["host"] = show_info["host"]
         show_details["scorekeeper"] = show_info["scorekeeper"]
-
-        show_details["location"] = _retrieve_location_by_id(show_id,
-                                                            database_connection)
         show_details["panelists"] = _retrieve_panelist_info_by_id(show_id,
                                                                   database_connection)
         show_details["bluff"] = _retrieve_bluff_info_by_id(show_id,
                                                            database_connection)
         show_details["guests"] = _retrieve_not_my_job_info_by_id(show_id,
                                                                  database_connection)
-
         return show_details
 
     return None
 
 def retrieve_all_details(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return show information for all shows in the database
+    """Returns a list of OrderedDicts with show details for all shows
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        show information
+        database_connection (mysql.connector.connect)
     """
     show_ids = retrieve_all_ids(database_connection)
     if not show_ids:
@@ -870,16 +784,14 @@ def retrieve_details_by_date(show_year: int,
                              show_month: int,
                              show_day: int,
                              database_connection: mysql.connector.connect) -> Dict:
-    """Return show information based on the show date in the database
+    """Returns an OrderedDicts with show details for the requested show
+    year, month and day
 
     Arguments:
-        show_year (int): Show's four digit year
-        show_month (int): Show's one or two digit month
-        show_day (int): Show's day of month
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        OrderedDict: Returns an OrderedDict containing show information
+        show_year (int): Four digit year required
+        show_month (int)
+        show_day (int)
+        database_connection (mysql.connector.connect)
     """
     show_id = convert_date_to_id(show_year,
                                  show_month,
@@ -892,14 +804,12 @@ def retrieve_details_by_date(show_year: int,
 
 def retrieve_details_by_date_string(show_date: str,
                                     database_connection: mysql.connector.connect) -> Dict:
-    """Return show information based on the show date string
+    """Returns an OrderedDicts with show details for the requested show
+    date string
 
     Arguments:
         show_date (str): Show date in YYYY-MM-DD format
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        OrderedDict: Returns an OrderedDict containing show information
+        database_connection (mysql.connector.connect)
     """
     try:
         parsed_show_date = parser.parse(show_date)
@@ -917,15 +827,12 @@ def retrieve_details_by_date_string(show_date: str,
 
 def retrieve_details_by_year(show_year: int,
                              database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return show information based on the show year provided
+    """Returns a list of OrderedDicts with show details for the
+    requested show year
 
     Arguments:
-        show_year (int): Four digit year
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        show information
+        show_year (int): Four digit year is required
+        database_connection (mysql.connector.connect)
     """
     try:
         parsed_show_year = parser.parse("{}".format(show_year))
@@ -960,17 +867,13 @@ def retrieve_details_by_year(show_year: int,
 def retrieve_details_by_year_month(show_year: int,
                                    show_month: int,
                                    database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return show information based on the show year and month
-    provided
+    """Returns a list of OrderedDicts with show details for the
+    requested show year and month
 
     Arguments:
-        show_year (int): Four digit year
-        show_month (int): One or two digit month
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        show information
+        show_year (int): Four digit year is required
+        show_month (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         parsed_show_year_month = parser.parse("{}-{}".format(show_year,
@@ -1008,17 +911,15 @@ def retrieve_details_by_year_month(show_year: int,
 def retrieve_recent_details(database_connection: mysql.connector.connect,
                             include_days_ahead: int = 7,
                             include_days_back: int = 32,) -> List[Dict]:
-    """Return recent show information
+    """Returns a list of OrderedDicts with show details for recent
+    shows
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
+        database_connection (mysql.connector.connect)
         include_days_ahead (int): Number of days in the future to
-        include
+        include (default: 7)
         include_days_back (int): Number of days in the past to include
-    Returns:
-        List[OrderedDict]: Returns a list containing OrderedDicts with
-        recent show information
+        (default: 32)
     """
     try:
         past_days = int(include_days_back)

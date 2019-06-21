@@ -14,18 +14,14 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 def _retrieve_recordings_by_id(location_id: int,
                                database_connection: mysql.connector.connect,
                                pre_validated_id: bool = False) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all
-    of the show recordings made the requested location ID
+    """Returns a list of OrderedDicts containing recording information
+    for the requested location ID
 
     Arguments:
-        location_id (int): Location ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        location_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the location ID
         has been validated
-    Returns:
-        list[OrderedDict]: Returns a list of OrderedDicts with location
-        show recording information
     """
     if not pre_validated_id:
         if not validate_id(location_id, database_connection):
@@ -61,15 +57,12 @@ def _retrieve_recordings_by_id(location_id: int,
 #region Utility Functions
 def validate_id(location_id: int,
                 database_connection: mysql.connector.connect) -> bool:
-    """Validate location ID against database
+    """Returns true or false based on whether or not a location ID is
+    valid
 
     Arguments:
-        location_id (int): Location ID from database
-        database_connection (mysql.connector.connect): Datbase connect
-        object
-    Returns:
-        bool: Returns True on valid location ID, otherwise returns
-        False
+        location_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -86,15 +79,12 @@ def validate_id(location_id: int,
 
 def id_exists(location_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a location ID exists in the database
+    """Returns true or false based on whether or not a location ID
+    exists
 
     Arguments:
-        location_id (int): Location ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True if location ID exists, otherwise returns
-        False
+        location_id (int)
+        database_connection (mysql.connector.connect)
     """
     return validate_id(location_id, database_connection)
 
@@ -102,18 +92,12 @@ def id_exists(location_id: int,
 
 #region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns an OrderedDict with location information based on
-    location ID
+    """Returns a list of OrderedDicts with location information for all
+    locations, ordered by state, then city, then venue
 
     Arguments:
-        location_id (int): Location ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-        pre_validated_id (bool): Flag whether or not the location ID
-        has been validated
-    Returns:
-        list[OrderedDict]: Returns an list of OrderedDicts containing
-        location city, state and venue
+        location_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -141,15 +125,13 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all location ID sorted in the order of state,
-    city and venue
+def retrieve_all_ids(database_connection: mysql.connector.connect
+                    ) -> List[int]:
+    """Returns a list of location IDs for all locations, ordered by
+    state, then city, then venue
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        list[int]: List containing location IDs
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -175,17 +157,13 @@ def retrieve_by_id(location_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
     """Returns an OrderedDict with location information based on
-    location ID
+    requested location ID
 
     Arguments:
-        location_id (int): Location ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        location_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the location ID
         has been validated
-    Returns:
-        OrderedDict: Returns an OrderedDict containing location city,
-        state and venue
     """
     if not pre_validated_id:
         if not validate_id(location_id, database_connection):
@@ -216,18 +194,14 @@ def retrieve_by_id(location_id: int,
 def retrieve_recordings_by_id(location_id: int,
                               database_connection: mysql.connector.connect,
                               pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with location information and recordings
-    based on location ID
+    """Returns an OrderedDict with location recordings based on the
+    requested location ID
 
     Arguments:
-        location_id (int): Location ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        location_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the location ID
         has been validated
-    Returns:
-        OrderedDict: Returns an OrderedDict containing location city,
-        state, venue and recordings
     """
     if not pre_validated_id:
         if not validate_id(location_id, database_connection):
@@ -241,7 +215,8 @@ def retrieve_recordings_by_id(location_id: int,
                                                         pre_validated_id=True)
     return location
 
-def retrieve_all_recordings(database_connection: mysql.connector.connect) -> List[Dict]:
+def retrieve_all_recordings(database_connection: mysql.connector.connect
+                           ) -> List[Dict]:
     """Returns a list of OrderedDicts with location information and
     recordings based on location ID
 

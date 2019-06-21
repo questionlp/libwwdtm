@@ -14,18 +14,14 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 def _retrieve_appearances_by_id(host_id: int,
                                 database_connection: mysql.connector.connect,
                                 pre_validated_id: bool = False) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all
-    of the host's appearances
+    """Returns a list of OrderedDicts containing appearance information
+    for the requested Host ID
 
     Arguments:
-        host_id (int): Host ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        host_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the host ID has
         been validated
-    Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict with host
-        appearance information
     """
     if not pre_validated_id:
         if not validate_id(host_id, database_connection):
@@ -82,18 +78,14 @@ def _retrieve_appearances_by_id(host_id: int,
         raise DatabaseError("Unexpected database error") from err
 
 def _retrieve_appearances_by_slug(host_slug: str,
-                                  database_connection: mysql.connector.connect) -> List[Dict]:
-    """Returns a list of OrderedDicts containing information about all
-    of the host's appearances
+                                  database_connection: mysql.connector.connect
+                                 ) -> List[Dict]:
+    """Returns a list of OrderedDicts containing appearence information
+    for the requested host slug
 
     Arguments:
-        host_slug (str): Host slug string from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        (list[OrderedDict], ResponseCode): Returns a list containing an
-        OrderedDict with host appearance information. Also returns a
-        ReponseCode IntEnum
+        host_slug (str)
+        database_connection (mysql.connector.connect)
     """
     host_id = convert_slug_to_id(host_slug, database_connection)
     if host_id:
@@ -106,14 +98,11 @@ def _retrieve_appearances_by_slug(host_slug: str,
 #region Utility Functions
 def convert_slug_to_id(host_slug: str,
                        database_connection: mysql.connector.connect) -> int:
-    """Return host database ID from slug string
+    """Returns a host ID based on the requested host slug
 
     Arguments:
-        host_slug (str): Host slug string
-        database_connect (mysql.connector.connect): Database connect
-        object
-    Returns:
-        int: Returns host ID on success; otherwise returns None
+        host_slug (str)
+        database_connect (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -133,14 +122,12 @@ def convert_slug_to_id(host_slug: str,
 
 def validate_id(host_id: int,
                 database_connection: mysql.connector.connect) -> bool:
-    """Validate host ID against database
+    """Returns true or false based on whether or not the requested host
+    ID is valid
 
     Arguments:
-        host_id (int); Host ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True on success, otherwise returns False
+        host_id (int)
+        database_connection (mysql.connector.connect)
     """
     try:
         host_id = int(host_id)
@@ -162,14 +149,12 @@ def validate_id(host_id: int,
 
 def validate_slug(host_slug: str,
                   database_connection: mysql.connector.connect) -> bool:
-    """Validate host slug string against database
+    """Returns true or false based on whether or not the requested host
+    slug is valid
 
     Arguments:
-        host_slug (str): Host slug string from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True if host slug is valid, otherwise returns False
+        host_slug (str)
+        database_connection (mysql.connector.connect)
     """
     host_slug = host_slug.strip()
     if not host_slug:
@@ -190,27 +175,22 @@ def validate_slug(host_slug: str,
 
 def id_exists(host_id: int,
               database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a host ID exists in the database.
+    """Returns true or falsed based on whether or not a host ID exists
 
     Arguments:
-        host_id (int): Host ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True if host ID exists, otherwise returns False
+        host_id (int)
+        database_connection (mysql.connector.connect)
     """
     return validate_id(host_id, database_connection)
 
 def slug_exists(host_slug: str,
                 database_connection: mysql.connector.connect) -> bool:
-    """Return whether or not a host slug exists in the database.
+    """Returns true or falsed based on whether or not a host slug
+    exists
 
     Arguments:
-        host_slug (int): Host slug from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        bool: Returns True if host slug exists, otherwise returns False
+        host_slug (str)
+        database_connection (mysql.connector.connect)
     """
     return validate_slug(host_slug, database_connection)
 
@@ -218,14 +198,11 @@ def slug_exists(host_slug: str,
 
 #region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return a list of OrderedDicts containing hosts and their details
+    """Returns a list of OrderedDicts containing host information for
+    all hosts
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        list[OrderedDict]: Returns a list containing an OrderedDict of
-        host details
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor(dictionary=True)
@@ -250,15 +227,12 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def retrieve_all_ids(database_connection: mysql.connector.connect) -> List[int]:
-    """Return a list of all host IDs, with IDs sorted in the order
-    of host names
+def retrieve_all_ids(database_connection: mysql.connector.connect
+                    ) -> List[int]:
+    """Returns a list of all host IDs, sorted by host names
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        list[int]: Returns a list containing host IDs
+        database_connection (mysql.connector.connect)
     """
     try:
         cursor = database_connection.cursor()
@@ -282,17 +256,13 @@ def retrieve_by_id(host_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:
     """Returns an OrderedDict with host information based on the
-    host ID
+    requested host ID
 
     Arguments:
-        host_id (int): Host ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        host_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the host ID has
         been validated
-    Returns:
-        OrderedDict: Returns an OrderedDict containing host id, name,
-        and slug string
     """
     if not pre_validated_id:
         if not validate_id(host_id, database_connection):
@@ -324,16 +294,12 @@ def retrieve_by_id(host_id: int,
 
 def retrieve_by_slug(host_slug: str,
                      database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with host details based on the host slug
-    string
+    """Returns an OrderedDict with host information based on the
+    requested host slug
 
     Arguments:
-        host_slug (str): Host slug string from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        (OrderedDict, ResponseCode): Returns an OrderedDict containing
-        host id, name and slug string
+        host_slug (str)
+        database_connection (mysql.connector.connect)
     """
     host_id = convert_slug_to_id(host_slug, database_connection)
     if host_id:
@@ -344,18 +310,14 @@ def retrieve_by_slug(host_slug: str,
 def retrieve_details_by_id(host_id: int,
                            database_connection: mysql.connector.connect,
                            pre_validated_id: bool = False) -> Dict:
-    """Returns an OrderedDict with host information and appearances
-    based on the host ID
+    """Returns an OrderedDict with host details based on the requested
+    host ID
 
     Arguments:
-        host_id (int): Host ID from database
-        database_connection (mysql.connector.connect): Database connect
-        object
+        host_id (int)
+        database_connection (mysql.connector.connect)
         pre_validated_id (bool): Flag whether or not the host ID has
         been validated
-    Returns:
-        OrderedDict: Returns an OrderedDict containing host id, name,
-        and slug string
     """
     if not pre_validated_id:
         if not validate_id(host_id, database_connection):
@@ -367,17 +329,15 @@ def retrieve_details_by_id(host_id: int,
                                                       pre_validated_id=True)
     return host
 
-def retrieve_details_by_slug(host_slug: str, database_connection: mysql.connector.connect) -> Dict:
-    """Returns an OrderedDict with host information and appearances
-    based on the host slug string
+def retrieve_details_by_slug(host_slug: str,
+                             database_connection: mysql.connector.connect
+                            ) -> Dict:
+    """Returns an OrderedDict with host details based on the requested
+    host slug
 
     Arguments:
-        host_slug (str): Host slug string from database
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        (OrderedDict, ResponseCode): Returns an OrderedDict containing
-        host id, name and slug string
+        host_slug (str)
+        database_connection (mysql.connector.connect)
     """
     host_id = convert_slug_to_id(host_slug, database_connection)
     if host_id:
@@ -387,15 +347,12 @@ def retrieve_details_by_slug(host_slug: str, database_connection: mysql.connecto
 
     return None
 
-def retrieve_all_details(database_connection: mysql.connector.connect) -> List[Dict]:
-    """Return detailed information for all hosts in the database
+def retrieve_all_details(database_connection: mysql.connector.connect
+                        ) -> List[Dict]:
+    """Returns a list of OrderedDicts with host details for all hosts
 
     Arguments:
-        database_connection (mysql.connector.connect): Database connect
-        object
-    Returns:
-        List[OrderedDict]: Returns a list of OrderedDicts containing
-        host details
+        database_connection (mysql.connector.connect)
     """
     host_ids = retrieve_all_ids(database_connection)
     if not host_ids:
