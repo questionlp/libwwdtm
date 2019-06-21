@@ -90,7 +90,11 @@ def _retrieve_core_info_by_id(show_id: int,
         show_scorekeeper["name"] = result["scorekeeper"]
         show_scorekeeper["slug"] = result["scorekeeperslug"]
         show_scorekeeper["guest"] = bool(result["scorekeeperguest"])
-        show_scorekeeper["description"] = result["description"]
+        if result["description"]:
+            show_scorekeeper["description"] = result["description"]
+        else:
+            show_scorekeeper["description"] = None
+
         show_info["scorekeeper"] = show_scorekeeper
 
         return show_info
