@@ -70,13 +70,17 @@ def _retrieve_appearances_by_id(panelist_id: int,
         if result:
             appearances = []
             for appearance in result:
+                rank = appearance["showpnlrank"]
+                if not rank:
+                    rank = None
+
                 appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
                                               isBestOfShow=bool(appearance["bestof"]),
                                               isShowRepeat=bool(appearance["repeatshowid"]),
                                               lightningRoundStart=appearance["start"],
                                               lightningRoundCorrect=appearance["correct"],
                                               score=appearance["panelistscore"],
-                                              rank=appearance["showpnlrank"])
+                                              rank=rank)
                 appearances.append(appearance_info)
 
             return OrderedDict(count=appearance_counts, shows=appearances)
