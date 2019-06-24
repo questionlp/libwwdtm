@@ -5,7 +5,7 @@
 Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
-import collections
+from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
@@ -40,9 +40,8 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
         cursor.execute(query, (scorekeeper_id, scorekeeper_id,))
         result = cursor.fetchone()
 
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
+        appearance_counts = OrderedDict(regularShows=result["regular"],
+                                        allShows=result["allshows"])
 
         query = ("SELECT skm.showid, s.showdate, s.bestof, "
                  "s.repeatshowid, skm.guest, skm.description "
@@ -57,29 +56,25 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
         result = cursor.fetchall()
         cursor.close()
 
-        appearance_dict = collections.OrderedDict()
         if result:
             appearances = []
             for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["guest"] = bool(appearance["guest"])
                 if appearance["description"]:
-                    appearance_info["description"] = appearance["description"]
+                    description = appearance["description"]
                 else:
-                    appearance_info["description"] = None
+                    description = None
+
+                appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
+                                              isBestOfShow=bool(appearance["bestof"]),
+                                              isShowRepeat=bool(appearance["repeatshowid"]),
+                                              guest=bool(appearance["guest"]),
+                                              description=description)
 
                 appearances.append(appearance_info)
 
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
+            return OrderedDict(count=appearance_counts, shows=appearances)
 
-        return appearance_dict
+        return OrderedDict(count=0, shows=None)
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
@@ -228,11 +223,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         scorekeepers = []
         for row in result:
-            scorekeeper = collections.OrderedDict()
-            scorekeeper["id"] = row["scorekeeperid"]
-            scorekeeper["name"] = row["scorekeeper"]
-            scorekeeper["slug"] = row["scorekeeperslug"]
-            scorekeeper["gender"] = row["scorekeepergender"]
+            scorekeeper = OrderedDict(id=row["scorekeeperid"],
+                                      name=row["scorekeeper"],
+                                      slug=row["scorekeeperslug"],
+                                      gender=row["scorekeepergender"])
             scorekeepers.append(scorekeeper)
 
         return scorekeepers
@@ -295,13 +289,10 @@ def retrieve_by_id(scorekeeper_id: int,
         cursor.close()
 
         if result:
-            scorekeeper_dict = collections.OrderedDict()
-            scorekeeper_dict = {
-                "id": scorekeeper_id,
-                "name": result["scorekeeper"],
-                "slug": result["scorekeeperslug"],
-                "gender": result["scorekeepergender"]
-                }
+            scorekeeper_dict = OrderedDict(id=scorekeeper_id,
+                                           name=result["scorekeeper"],
+                                           slug=result["scorekeeperslug"],
+                                           gender=result["scorekeepergender"])
             return scorekeeper_dict
 
         return None

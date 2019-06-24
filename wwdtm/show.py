@@ -5,7 +5,7 @@
 Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
-import collections
+from collections import OrderedDict
 import datetime
 from typing import List, Dict
 import dateutil.parser as parser
@@ -24,9 +24,6 @@ def _retrieve_core_info_by_id(show_id: int,
         database_connection (mysql.connector.connect)
     """
     try:
-        show_info = collections.OrderedDict()
-        location_info = collections.OrderedDict()
-
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT s.showid, s.showdate, s.bestof, "
                  "s.repeatshowid, l.city, l.state, l.venue, "
@@ -52,50 +49,55 @@ def _retrieve_core_info_by_id(show_id: int,
         if not result:
             return None
 
-        show_info["id"] = show_id
-        show_info["date"] = result["showdate"].isoformat()
-        show_info["bestOf"] = bool(result["bestof"])
-        if result["repeatshowid"]:
-            show_info["isRepeat"] = True
-            original_show_date = convert_id_to_date(result["repeatshowid"],
+        repeat_show_id = result["repeatshowid"]
+
+        if result["showdescription"]:
+            show_description = str(result["showdescription"]).strip()
+        else:
+            show_description = None
+
+        if result["shownotes"]:
+            show_notes = str(result["shownotes"]).strip()
+        else:
+            show_notes = None
+
+        location_info = OrderedDict(city=result["city"],
+                                    state=result["state"],
+                                    venue=result["venue"])
+
+        host_info = OrderedDict(id=result["hostid"],
+                                name=result["host"],
+                                slug=result["hostslug"],
+                                guest=bool(result["hostguest"]))
+
+        if result["description"]:
+            scorekeeper_description = result["description"]
+        else:
+            scorekeeper_description = None
+
+        scorekeeper_info = OrderedDict(id=result["scorekeeperid"],
+                                       name=result["scorekeeper"],
+                                       slug=result["scorekeeperslug"],
+                                       guest=bool(result["scorekeeperguest"]),
+                                       description=scorekeeper_description)
+
+        show_info = OrderedDict(id=show_id,
+                                date=result["showdate"].isoformat(),
+                                bestOf=bool(result["bestof"]),
+                                isRepeat=bool(repeat_show_id),
+                                originalShowDate=None,
+                                description=show_description,
+                                notes=show_notes,
+                                location=location_info,
+                                host=host_info,
+                                scorekeeper=scorekeeper_info)
+
+        if repeat_show_id:
+            original_show_date = convert_id_to_date(repeat_show_id,
                                                     database_connection)
             show_info["originalShowDate"] = original_show_date.isoformat()
         else:
-            show_info["isRepeat"] = False
-
-        location_info["city"] = result["city"]
-        location_info["state"] = result["state"]
-        location_info["venue"] = result["venue"]
-        show_info["location"] = location_info
-
-        if result["showdescription"]:
-            show_info["description"] = str(result["showdescription"]).strip()
-        else:
-            show_info["description"] = None
-
-        if result["shownotes"]:
-            show_info["notes"] = str(result["shownotes"]).strip()
-        else:
-            show_info["notes"] = None
-
-        show_host = collections.OrderedDict()
-        show_host["id"] = result["hostid"]
-        show_host["name"] = result["host"]
-        show_host["slug"] = result["hostslug"]
-        show_host["guest"] = bool(result["hostguest"])
-        show_info["host"] = show_host
-
-        show_scorekeeper = collections.OrderedDict()
-        show_scorekeeper["id"] = result["scorekeeperid"]
-        show_scorekeeper["name"] = result["scorekeeper"]
-        show_scorekeeper["slug"] = result["scorekeeperslug"]
-        show_scorekeeper["guest"] = bool(result["scorekeeperguest"])
-        if result["description"]:
-            show_scorekeeper["description"] = result["description"]
-        else:
-            show_scorekeeper["description"] = None
-
-        show_info["scorekeeper"] = show_scorekeeper
+            del show_info["originalShowDate"]
 
         return show_info
     except ProgrammingError as err:
@@ -131,14 +133,18 @@ def _retrieve_panelist_info_by_id(show_id: int,
 
         panelists = []
         for panelist in result:
-            panelist_info = collections.OrderedDict()
-            panelist_info["id"] = panelist["panelistid"]
-            panelist_info["name"] = panelist["panelist"]
-            panelist_info["slug"] = panelist["panelistslug"]
-            panelist_info["lightningRoundStart"] = panelist["panelistlrndstart"]
-            panelist_info["lightningRoundCorrect"] = panelist["panelistlrndcorrect"]
-            panelist_info["score"] = panelist["panelistscore"]
-            panelist_info["rank"] = panelist["showpnlrank"]
+            if panelist["showpnlrank"]:
+                panelist_rank = panelist["showpnlrank"]
+            else:
+                panelist_rank = None
+
+            panelist_info = OrderedDict(id=panelist["panelistid"],
+                                        name=panelist["panelist"],
+                                        slug=panelist["panelistslug"],
+                                        lightningRoundStart=panelist["panelistlrndstart"],
+                                        lightningRoundCorrect=panelist["panelistlrndcorrect"],
+                                        score=panelist["panelistscore"],
+                                        rank=panelist_rank)
             panelists.append(panelist_info)
 
         return panelists
@@ -158,7 +164,6 @@ def _retrieve_bluff_info_by_id(show_id: int,
         database_connection (mysql.connector.connect)
     """
     try:
-        bluff_info = collections.OrderedDict()
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT blm.chosenbluffpnlid, p.panelist, "
                  "p.panelistslug "
@@ -170,11 +175,10 @@ def _retrieve_bluff_info_by_id(show_id: int,
         cursor.execute(query, (show_id,))
         chosen_result = cursor.fetchone()
 
-        chosen_bluff_info = collections.OrderedDict()
         if chosen_result:
-            chosen_bluff_info["id"] = chosen_result["chosenbluffpnlid"]
-            chosen_bluff_info["name"] = chosen_result["panelist"]
-            chosen_bluff_info["slug"] = chosen_result["panelistslug"]
+            chosen_bluff_info = OrderedDict(id=chosen_result["chosenbluffpnlid"],
+                                            name=chosen_result["panelist"],
+                                            slug=chosen_result["panelistslug"])
         else:
             chosen_bluff_info = None
 
@@ -189,16 +193,15 @@ def _retrieve_bluff_info_by_id(show_id: int,
         correct_result = cursor.fetchone()
         cursor.close()
 
-        correct_bluff_info = collections.OrderedDict()
         if correct_result:
-            correct_bluff_info["id"] = correct_result["correctbluffpnlid"]
-            correct_bluff_info["name"] = correct_result["panelist"]
-            correct_bluff_info["slug"] = correct_result["panelistslug"]
+            correct_bluff_info = OrderedDict(id=correct_result["correctbluffpnlid"],
+                                             name=correct_result["panelist"],
+                                             slug=correct_result["panelistslug"])
         else:
             correct_bluff_info = None
 
-        bluff_info["chosenPanelist"] = chosen_bluff_info
-        bluff_info["correctPanelist"] = correct_bluff_info
+        bluff_info = OrderedDict(chosenPanelist=chosen_bluff_info,
+                                 correctPanelist=correct_bluff_info)
 
         return bluff_info
     except ProgrammingError as err:
@@ -206,11 +209,11 @@ def _retrieve_bluff_info_by_id(show_id: int,
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def _retrieve_not_my_job_info_by_id(show_id: int,
-                                    database_connection: mysql.connector.connect
-                                   ) -> List[Dict]:
-    """Returns a list of OrderedDicts containing Not My Job information
-    for the requested show ID
+def _retrieve_guest_info_by_id(show_id: int,
+                               database_connection: mysql.connector.connect
+                              ) -> List[Dict]:
+    """Returns a list of OrderedDicts containing guest information for
+    the requested show ID
 
     Arguments:
         show_id (int)
@@ -234,12 +237,11 @@ def _retrieve_not_my_job_info_by_id(show_id: int,
 
         guests = []
         for guest in result:
-            guest_info = collections.OrderedDict()
-            guest_info["id"] = guest["guestid"]
-            guest_info["name"] = guest["guest"]
-            guest_info["slug"] = guest["guestslug"]
-            guest_info["score"] = guest["guestscore"]
-            guest_info["scoreException"] = bool(guest["exception"])
+            guest_info = OrderedDict(id=guest["guestid"],
+                                     name=guest["guest"],
+                                     slug=guest["guestslug"],
+                                     score=guest["guestscore"],
+                                     scoreException=bool(guest["exception"]))
             guests.append(guest_info)
 
         return guests
@@ -428,8 +430,6 @@ def retrieve_by_id(show_id: int,
             return None
 
     try:
-        show_info = collections.OrderedDict()
-
         # Pull in base show information, including: show ID, date,
         # Best Of flag and, if applicable, the show ID of the original
         # show if it is a repeat
@@ -444,16 +444,19 @@ def retrieve_by_id(show_id: int,
         if not result:
             return None
 
-        show_info["id"] = result["showid"]
-        show_info["date"] = result["showdate"].isoformat()
-        show_info["bestOf"] = bool(result["bestof"])
-        if result["repeatshowid"]:
-            show_info["isRepeat"] = True
-            original_show_date = convert_id_to_date(result["repeatshowid"],
-                                                    database_connection)
-            show_info["originalShowDate"] = original_show_date.isoformat()
+        repeat_show_id = result["repeatshowid"]
+        show_info = OrderedDict(id=show_id,
+                                date=result["showdate"].isoformat(),
+                                bestOf=bool(result["bestof"]),
+                                isRepeat=bool(repeat_show_id),
+                                originalShowDate=None)
+
+        if repeat_show_id:
+            show_info["originalShowDate"] = convert_id_to_date(repeat_show_id,
+                                                               database_connection)
         else:
-            show_info["isRepeat"] = False
+            del show_info["originalShowDate"]
+
         return show_info
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
@@ -744,28 +747,33 @@ def retrieve_details_by_id(show_id: int,
         if not validate_id(show_id, database_connection):
             return None
 
-    show_details = collections.OrderedDict()
-
     # Pull in the base show data, including date, host, scorekeeeper and notes
     show_info = _retrieve_core_info_by_id(show_id, database_connection)
     if show_info:
-        show_details["id"] = show_info["id"]
-        show_details["date"] = show_info["date"]
-        show_details["bestOf"] = show_info["bestOf"]
-        show_details["isRepeat"] = show_info["isRepeat"]
-        if show_details["isRepeat"]:
+        show_panelists = _retrieve_panelist_info_by_id(show_id,
+                                                       database_connection)
+        show_bluff = _retrieve_bluff_info_by_id(show_id, database_connection)
+        show_guests = _retrieve_guest_info_by_id(show_id, database_connection)
+
+        show_details = OrderedDict(id=show_info["id"],
+                                   date=show_info["date"],
+                                   bestOf=show_info["bestOf"],
+                                   isRepeat=show_info["isRepeat"],
+                                   originalShowDate=None,
+                                   location=show_info["location"],
+                                   description=show_info["description"],
+                                   notes=show_info["notes"],
+                                   host=show_info["host"],
+                                   scorekeeper=show_info["scorekeeper"],
+                                   panelists=show_panelists,
+                                   bluff=show_bluff,
+                                   guests=show_guests)
+
+        if "originalShowDate" in show_info:
             show_details["originalShowDate"] = show_info["originalShowDate"]
-        show_details["location"] = show_info["location"]
-        show_details["description"] = show_info["description"]
-        show_details["notes"] = show_info["notes"]
-        show_details["host"] = show_info["host"]
-        show_details["scorekeeper"] = show_info["scorekeeper"]
-        show_details["panelists"] = _retrieve_panelist_info_by_id(show_id,
-                                                                  database_connection)
-        show_details["bluff"] = _retrieve_bluff_info_by_id(show_id,
-                                                           database_connection)
-        show_details["guests"] = _retrieve_not_my_job_info_by_id(show_id,
-                                                                 database_connection)
+        else:
+            del show_details["originalShowDate"]
+
         return show_details
 
     return None

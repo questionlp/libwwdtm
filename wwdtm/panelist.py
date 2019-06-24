@@ -5,7 +5,7 @@
 Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
-import collections
+from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
@@ -48,15 +48,14 @@ def _retrieve_appearances_by_id(panelist_id: int,
         result = cursor.fetchone()
         cursor.close()
 
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
-        appearance_counts["showsWithScores"] = result["withscores"]
+        appearance_counts = OrderedDict(regularShows=result["regular"],
+                                        allShows=result["allshows"],
+                                        showsWithScores=result["withscores"])
 
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.showid, s.showdate, s.bestof, "
-                 "s.repeatshowid, pm.panelistlrndstart, "
-                 " pm.panelistlrndcorrect, pm.panelistscore,  "
+                 "s.repeatshowid, pm.panelistlrndstart as start, "
+                 " pm.panelistlrndcorrect as correct, pm.panelistscore, "
                  "pm.showpnlrank FROM ww_showpnlmap pm "
                  "JOIN ww_panelists p ON p.panelistid = pm.panelistid "
                  "JOIN ww_shows s ON s.showid = pm.showid "
@@ -67,27 +66,22 @@ def _retrieve_appearances_by_id(panelist_id: int,
         result = cursor.fetchall()
         cursor.close()
 
-        appearance_dict = collections.OrderedDict()
+        #appearance_dict = collections.OrderedDict()
         if result:
             appearances = []
             for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["lightningRoundStart"] = appearance["panelistlrndstart"]
-                appearance_info["lightningRoundCorrect"] = appearance["panelistlrndcorrect"]
-                appearance_info["score"] = appearance["panelistscore"]
-                appearance_info["rank"] = bool(appearance["showpnlrank"])
+                appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
+                                              isBestOfShow=bool(appearance["bestof"]),
+                                              isShowRepeat=bool(appearance["repeatshowid"]),
+                                              lightningRoundStart=appearance["start"],
+                                              lightningRoundCorrect=appearance["correct"],
+                                              score=appearance["panelistscore"],
+                                              rank=bool(appearance["showpnlrank"]))
                 appearances.append(appearance_info)
 
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
+            return OrderedDict(count=appearance_counts, shows=appearances)
 
-        return appearance_dict
+        return OrderedDict(count=0, shows=None)
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
@@ -128,7 +122,6 @@ def _retrieve_scores_by_id(panelist_id: int,
                  "WHERE panelistid = %s "
                  "AND s.bestof = 0 and s.repeatshowid IS NULL;")
         cursor.execute(query, (panelist_id,))
-
         result = cursor.fetchall()
         cursor.close()
 
@@ -153,7 +146,6 @@ def _retrieve_rank_info_by_id(panelist_id: int,
         database_connection (mysql.connector.connect)
     """
     try:
-        ranks = collections.OrderedDict()
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT ( "
                  "SELECT COUNT(pm.showpnlrank) FROM ww_showpnlmap pm "
@@ -182,18 +174,14 @@ def _retrieve_rank_info_by_id(panelist_id: int,
                                panelist_id,
                                panelist_id,
                                panelist_id,))
-
-        result = cursor.fetchall()
+        result = cursor.fetchone()
         cursor.close()
 
-        for appearance in result:
-            ranks["first"] = appearance["1"]
-            ranks["firstTied"] = appearance["1t"]
-            ranks["second"] = appearance["2"]
-            ranks["secondTied"] = appearance["2t"]
-            ranks["third"] = appearance["3"]
-
-        return ranks
+        return OrderedDict(first=result["1"],
+                           firstTied=result["1t"],
+                           second=result["2"],
+                           secondTied=result["2t"],
+                           third=result["3"])
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
@@ -220,32 +208,27 @@ def _retrieve_statistics_by_id(panelist_id: int,
     if not scores or not ranks:
         return None
 
-    statistics = collections.OrderedDict()
-    scoring = collections.OrderedDict()
-    ranking = collections.OrderedDict()
-
     appearance_count = len(scores)
-    scoring["minimum"] = int(numpy.amin(scores))
-    scoring["maximum"] = int(numpy.amax(scores))
-    scoring["mean"] = round(numpy.mean(scores), 4)
-    scoring["median"] = int(numpy.median(scores))
-    scoring["standardDeviation"] = round(numpy.std(scores), 4)
-    scoring["total"] = int(numpy.sum(scores))
+    scoring = OrderedDict(minimum=int(numpy.amin(scores)),
+                          maximum=int(numpy.amax(scores)),
+                          mean=round(numpy.mean(scores), 4),
+                          median=int(numpy.median(scores)),
+                          standardDeviation=round(numpy.std(scores), 4),
+                          total=int(numpy.sum(scores)))
 
-    ranks_percentage = collections.OrderedDict()
-    ranks_percentage["first"] = round(100 * (ranks["first"] / appearance_count), 4)
-    ranks_percentage["firstTied"] = round(100 * (ranks["firstTied"] / appearance_count), 4)
-    ranks_percentage["second"] = round(100 * (ranks["second"] / appearance_count), 4)
-    ranks_percentage["secondTied"] = round(100 * (ranks["secondTied"] / appearance_count), 4)
-    ranks_percentage["third"] = round(100 * (ranks["third"] / appearance_count), 4)
+    ranks_first = round(100 * (ranks["first"] / appearance_count), 4)
+    ranks_first_tied = round(100 * (ranks["firstTied"] / appearance_count), 4)
+    ranks_second = round(100 * (ranks["second"] / appearance_count), 4)
+    ranks_second_tied = round(100 * (ranks["secondTied"] / appearance_count), 4)
+    ranks_third = round(100 * (ranks["third"] / appearance_count), 4)
+    ranks_percentage = OrderedDict(first=ranks_first,
+                                   firstTied=ranks_first_tied,
+                                   second=ranks_second,
+                                   secondTied=ranks_second_tied,
+                                   third=ranks_third)
 
-    ranking["rank"] = ranks
-    ranking["percentage"] = ranks_percentage
-
-    statistics["scoring"] = scoring
-    statistics["ranking"] = ranking
-
-    return statistics
+    ranking = OrderedDict(rank=ranks, percentage=ranks_percentage)
+    return OrderedDict(scoring=scoring, ranking=ranking)
 
 def _retrieve_statistics_by_slug(panelist_slug: str,
                                  database_connection: mysql.connector.connect
@@ -394,11 +377,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         panelists = []
         for row in result:
-            panelist = collections.OrderedDict()
-            panelist["id"] = row["panelistid"]
-            panelist["name"] = row["panelist"]
-            panelist["slug"] = row["panelistslug"]
-            panelist["gender"] = row["panelistgender"]
+            panelist = OrderedDict(id=row["panelistid"],
+                                   name=row["panelist"],
+                                   slug=row["panelistslug"],
+                                   gender=row["panelistgender"])
             panelists.append(panelist)
 
         return panelists
@@ -459,13 +441,10 @@ def retrieve_by_id(panelist_id: int,
         cursor.close()
 
         if result:
-            panelist_dict = collections.OrderedDict()
-            panelist_dict = {
-                "id": panelist_id,
-                "name": result["panelist"],
-                "gender": result["panelistgender"],
-                "slug": result["panelistslug"]
-                }
+            panelist_dict = OrderedDict(id=panelist_id,
+                                        name=result["panelist"],
+                                        gender=result["panelistgender"],
+                                        slug=result["panelistslug"])
             return panelist_dict
 
         return None
@@ -588,16 +567,13 @@ def retrieve_scores_list_by_id(panelist_id: int,
         if not result:
             return None
 
-        scores = collections.OrderedDict()
         show_list = []
         score_list = []
         for shows in result:
             show_list.append(shows["showdate"].isoformat())
             score_list.append(shows["panelistscore"])
 
-        scores["shows"] = show_list
-        scores["scores"] = score_list
-        return scores
+        return OrderedDict(shows=show_list, scores=score_list)
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:

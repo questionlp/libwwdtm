@@ -5,7 +5,7 @@
 Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
-import collections
+from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
@@ -40,10 +40,9 @@ def _retrieve_recordings_by_id(location_id: int,
 
         recordings = []
         for recording in result:
-            recording_info = collections.OrderedDict()
-            recording_info["date"] = recording["showdate"].isoformat()
-            recording_info["isBestOfShow"] = bool(recording["bestof"])
-            recording_info["isShowRepeat"] = bool(recording["repeatshowid"])
+            recording_info = OrderedDict(date=recording["showdate"].isoformat(),
+                                         isBestOfShow=bool(recording["bestof"]),
+                                         isShowRepeat=bool(recording["repeatshowid"]))
             recordings.append(recording_info)
 
         return recordings
@@ -112,11 +111,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         locations = []
         for location in result:
-            location_info = collections.OrderedDict()
-            location_info["id"] = location["locationid"]
-            location_info["city"] = location["city"]
-            location_info["state"] = location["state"]
-            location_info["venue"] = location["venue"]
+            location_info = OrderedDict(id=location["locationid"],
+                                        city=location["city"],
+                                        state=location["state"],
+                                        venue=location["venue"])
             locations.append(location_info)
 
         return locations
@@ -179,13 +177,10 @@ def retrieve_by_id(location_id: int,
         result = cursor.fetchone()
         cursor.close()
 
-        location_info = collections.OrderedDict()
-        location_info["id"] = result["locationid"]
-        location_info["city"] = result["city"]
-        location_info["state"] = result["state"]
-        location_info["venue"] = result["venue"]
-
-        return location_info
+        return OrderedDict(id=result["locationid"],
+                           city=result["city"],
+                           state=result["state"],
+                           venue=result["venue"])
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:

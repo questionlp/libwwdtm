@@ -246,7 +246,7 @@ def test_show_module(database_connection: mysql.connector.connect):
 
     # Testing retrieve multiple show details
     test_show.test_retrieve_details_by_year(2006, database_connection)
-    test_show.test_retrieve_details_by_year_month(2007, 3, database_connection)
+    test_show.test_retrieve_details_by_year_month(2006, 12, database_connection)
     test_show.test_retrieve_all_details(database_connection)
 
     # Testing retrieve recent show details

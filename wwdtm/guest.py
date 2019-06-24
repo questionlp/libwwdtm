@@ -5,7 +5,7 @@
 Wait Wait... Don't Tell Me! Stats Page Database.
 """
 
-import collections
+from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
@@ -41,9 +41,8 @@ def _retrieve_appearances_by_id(guest_id: int,
         cursor.execute(query, (guest_id, guest_id,))
         result = cursor.fetchone()
 
-        appearance_counts = collections.OrderedDict()
-        appearance_counts["regularShows"] = result["regular"]
-        appearance_counts["allShows"] = result["allshows"]
+        appearance_counts = OrderedDict(regularShows=result["regular"],
+                                        allShows=result["allshows"])
 
         query = ("SELECT gm.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "gm.guestscore, gm.exception FROM ww_showguestmap gm "
@@ -55,25 +54,19 @@ def _retrieve_appearances_by_id(guest_id: int,
         result = cursor.fetchall()
         cursor.close()
 
-        appearance_dict = collections.OrderedDict()
         if result:
             appearances = []
             for appearance in result:
-                appearance_info = {}
-                appearance_info["date"] = appearance["showdate"].isoformat()
-                appearance_info["isBestOfShow"] = bool(appearance["bestof"])
-                appearance_info["isShowRepeat"] = bool(appearance["repeatshowid"])
-                appearance_info["score"] = appearance["guestscore"]
-                appearance_info["exception"] = bool(appearance["exception"])
+                appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
+                                              isBestOfShow=bool(appearance["bestof"]),
+                                              isShowRepeat=bool(appearance["repeatshowid"]),
+                                              score=appearance["guestscore"],
+                                              exception=bool(appearance["exception"]))
                 appearances.append(appearance_info)
 
-            appearance_dict["count"] = appearance_counts
-            appearance_dict["shows"] = appearances
-        else:
-            appearance_dict["count"] = 0
-            appearance_dict["shows"] = None
+            return OrderedDict(count=appearance_counts, shows=appearances)
 
-        return appearance_dict
+        return OrderedDict(count=0, shows=None)
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
@@ -216,10 +209,9 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         guests = []
         for row in result:
-            guest = collections.OrderedDict()
-            guest["id"] = row["guestid"]
-            guest["name"] = row["guest"]
-            guest["slug"] = row["guestslug"]
+            guest = OrderedDict(id=row["guestid"],
+                                name=row["guest"],
+                                slug=row["guestslug"])
             guests.append(guest)
 
         return guests
@@ -277,13 +269,9 @@ def retrieve_by_id(guest_id: int,
         cursor.close()
 
         if result:
-            guest_dict = collections.OrderedDict()
-            guest_dict = {
-                "id": guest_id,
-                "name": result["guest"],
-                "slug": result["guestslug"]
-                }
-            return guest_dict
+            return OrderedDict(id=guest_id,
+                               name=result["guest"],
+                               slug=result["guestslug"])
 
         return None
     except ProgrammingError as err:
