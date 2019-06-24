@@ -76,7 +76,7 @@ def _retrieve_appearances_by_id(panelist_id: int,
                                               lightningRoundStart=appearance["start"],
                                               lightningRoundCorrect=appearance["correct"],
                                               score=appearance["panelistscore"],
-                                              rank=bool(appearance["showpnlrank"]))
+                                              rank=appearance["showpnlrank"])
                 appearances.append(appearance_info)
 
             return OrderedDict(count=appearance_counts, shows=appearances)
