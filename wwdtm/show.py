@@ -118,7 +118,8 @@ def _retrieve_panelist_info_by_id(show_id: int,
     try:
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.panelistid, p.panelist, p.panelistslug, "
-                 "pm.panelistlrndstart, pm.panelistlrndcorrect, "
+                 "pm.panelistlrndstart as start, "
+                 "pm.panelistlrndcorrect as correct, "
                  "pm.panelistscore, pm.showpnlrank "
                  "FROM ww_showpnlmap pm "
                  "JOIN ww_panelists p on p.panelistid = pm.panelistid "
@@ -141,8 +142,8 @@ def _retrieve_panelist_info_by_id(show_id: int,
             panelist_info = OrderedDict(id=panelist["panelistid"],
                                         name=panelist["panelist"],
                                         slug=panelist["panelistslug"],
-                                        lightningRoundStart=panelist["panelistlrndstart"],
-                                        lightningRoundCorrect=panelist["panelistlrndcorrect"],
+                                        lightningRoundStart=panelist["start"],
+                                        lightningRoundCorrect=panelist["correct"],
                                         score=panelist["panelistscore"],
                                         rank=panelist_rank)
             panelists.append(panelist_info)
