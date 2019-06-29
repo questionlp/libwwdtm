@@ -29,7 +29,7 @@ def _retrieve_recordings_by_id(location_id: int,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT s.showdate, s.bestof, s.repeatshowid "
+        query = ("SELECT lm.showid, s.showdate, s.bestof, s.repeatshowid "
                  "FROM ww_showlocationmap lm "
                  "JOIN ww_shows s ON s.showid = lm.showid "
                  "WHERE lm.locationid = %s "
@@ -38,9 +38,13 @@ def _retrieve_recordings_by_id(location_id: int,
         result = cursor.fetchall()
         cursor.close()
 
+        if not result:
+            return None
+
         recordings = []
         for recording in result:
-            recording_info = OrderedDict(date=recording["showdate"].isoformat(),
+            recording_info = OrderedDict(showId=recording["showid"],
+                                         date=recording["showdate"].isoformat(),
                                          isBestOfShow=bool(recording["bestof"]),
                                          isShowRepeat=bool(recording["repeatshowid"]))
             recordings.append(recording_info)
