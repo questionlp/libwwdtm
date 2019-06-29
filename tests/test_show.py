@@ -59,8 +59,8 @@ def test_retrieve_by_id(show_id: int,
     """Testing response from show.retrieve_by_id"""
     show_info = show.retrieve_by_id(show_id, database_connection)
     assert show_info is not None
-    assert "bestOf" in show_info
-    assert "isRepeat" in show_info
+    assert "best_of" in show_info
+    assert "repeat_show" in show_info
     if print_response:
         print(json.dumps(show_info, indent=2))
 
@@ -84,8 +84,8 @@ def test_retrieve_by_date(show_year: int,
                                       show_day,
                                       database_connection)
     assert show_info is not None
-    assert "bestOf" in show_info
-    assert "isRepeat" in show_info
+    assert "best_of" in show_info
+    assert "repeat_show" in show_info
     if print_response:
         print(json.dumps(show_info, indent=2))
 

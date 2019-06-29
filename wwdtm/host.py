@@ -40,8 +40,8 @@ def _retrieve_appearances_by_id(host_id: int,
         cursor.execute(query, (host_id, host_id,))
         result = cursor.fetchone()
 
-        appearance_counts = OrderedDict(regularShows=result["regular"],
-                                        allShows=result["allshows"])
+        appearance_counts = OrderedDict(regular_shows=result["regular"],
+                                        all_shows=result["allshows"])
 
         query = ("SELECT hm.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "hm.guest FROM ww_showhostmap hm "
@@ -57,8 +57,8 @@ def _retrieve_appearances_by_id(host_id: int,
             appearances = []
             for appearance in result:
                 appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
-                                              isBestOfShow=bool(appearance["bestof"]),
-                                              isShowRepeat=bool(appearance["repeatshowid"]),
+                                              best_of=bool(appearance["bestof"]),
+                                              repeat_show=bool(appearance["repeatshowid"]),
                                               guest=bool(appearance["guest"]))
                 appearances.append(appearance_info)
 

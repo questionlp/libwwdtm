@@ -41,8 +41,8 @@ def _retrieve_appearances_by_id(guest_id: int,
         cursor.execute(query, (guest_id, guest_id,))
         result = cursor.fetchone()
 
-        appearance_counts = OrderedDict(regularShows=result["regular"],
-                                        allShows=result["allshows"])
+        appearance_counts = OrderedDict(regular_shows=result["regular"],
+                                        all_shows=result["allshows"])
 
         query = ("SELECT gm.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "gm.guestscore, gm.exception FROM ww_showguestmap gm "
@@ -58,10 +58,10 @@ def _retrieve_appearances_by_id(guest_id: int,
             appearances = []
             for appearance in result:
                 appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
-                                              isBestOfShow=bool(appearance["bestof"]),
-                                              isShowRepeat=bool(appearance["repeatshowid"]),
+                                              best_of=bool(appearance["bestof"]),
+                                              repeat_show=bool(appearance["repeatshowid"]),
                                               score=appearance["guestscore"],
-                                              exception=bool(appearance["exception"]))
+                                              score_exception=bool(appearance["exception"]))
                 appearances.append(appearance_info)
 
             return OrderedDict(count=appearance_counts, shows=appearances)

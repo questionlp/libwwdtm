@@ -83,9 +83,9 @@ def _retrieve_core_info_by_id(show_id: int,
 
         show_info = OrderedDict(id=show_id,
                                 date=result["showdate"].isoformat(),
-                                bestOf=bool(result["bestof"]),
-                                isRepeat=bool(repeat_show_id),
-                                originalShowDate=None,
+                                best_of=bool(result["bestof"]),
+                                repeat_show=bool(repeat_show_id),
+                                original_show_date=None,
                                 description=show_description,
                                 notes=show_notes,
                                 location=location_info,
@@ -95,9 +95,9 @@ def _retrieve_core_info_by_id(show_id: int,
         if repeat_show_id:
             original_show_date = convert_id_to_date(repeat_show_id,
                                                     database_connection)
-            show_info["originalShowDate"] = original_show_date.isoformat()
+            show_info["original_show_date"] = original_show_date.isoformat()
         else:
-            del show_info["originalShowDate"]
+            del show_info["original_show_date"]
 
         return show_info
     except ProgrammingError as err:
@@ -142,8 +142,8 @@ def _retrieve_panelist_info_by_id(show_id: int,
             panelist_info = OrderedDict(id=panelist["panelistid"],
                                         name=panelist["panelist"],
                                         slug=panelist["panelistslug"],
-                                        lightningRoundStart=panelist["start"],
-                                        lightningRoundCorrect=panelist["correct"],
+                                        lightning_round_start=panelist["start"],
+                                        lightning_round_correct=panelist["correct"],
                                         score=panelist["panelistscore"],
                                         rank=panelist_rank)
             panelists.append(panelist_info)
@@ -201,8 +201,8 @@ def _retrieve_bluff_info_by_id(show_id: int,
         else:
             correct_bluff_info = None
 
-        bluff_info = OrderedDict(chosenPanelist=chosen_bluff_info,
-                                 correctPanelist=correct_bluff_info)
+        bluff_info = OrderedDict(chosen_panelist=chosen_bluff_info,
+                                 correct_panelist=correct_bluff_info)
 
         return bluff_info
     except ProgrammingError as err:
@@ -242,7 +242,7 @@ def _retrieve_guest_info_by_id(show_id: int,
                                      name=guest["guest"],
                                      slug=guest["guestslug"],
                                      score=guest["guestscore"],
-                                     scoreException=bool(guest["exception"]))
+                                     score_exception=bool(guest["exception"]))
             guests.append(guest_info)
 
         return guests
@@ -448,15 +448,15 @@ def retrieve_by_id(show_id: int,
         repeat_show_id = result["repeatshowid"]
         show_info = OrderedDict(id=show_id,
                                 date=result["showdate"].isoformat(),
-                                bestOf=bool(result["bestof"]),
-                                isRepeat=bool(repeat_show_id),
-                                originalShowDate=None)
+                                best_of=bool(result["bestof"]),
+                                repeat_show=bool(repeat_show_id),
+                                original_show_date=None)
 
         if repeat_show_id:
-            show_info["originalShowDate"] = convert_id_to_date(repeat_show_id,
+            show_info["original_show_date"] = convert_id_to_date(repeat_show_id,
                                                                database_connection)
         else:
-            del show_info["originalShowDate"]
+            del show_info["original_show_date"]
 
         return show_info
     except ProgrammingError as err:
@@ -758,9 +758,9 @@ def retrieve_details_by_id(show_id: int,
 
         show_details = OrderedDict(id=show_info["id"],
                                    date=show_info["date"],
-                                   bestOf=show_info["bestOf"],
-                                   isRepeat=show_info["isRepeat"],
-                                   originalShowDate=None,
+                                   best_of=show_info["best_of"],
+                                   repeat_show=show_info["repeat_show"],
+                                   original_show_date=None,
                                    location=show_info["location"],
                                    description=show_info["description"],
                                    notes=show_info["notes"],
@@ -770,10 +770,10 @@ def retrieve_details_by_id(show_id: int,
                                    bluff=show_bluff,
                                    guests=show_guests)
 
-        if "originalShowDate" in show_info:
-            show_details["originalShowDate"] = show_info["originalShowDate"]
+        if "original_show_date" in show_info:
+            show_details["original_show_date"] = show_info["original_show_date"]
         else:
-            del show_details["originalShowDate"]
+            del show_details["original_show_date"]
 
         return show_details
 

@@ -40,8 +40,8 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
         cursor.execute(query, (scorekeeper_id, scorekeeper_id,))
         result = cursor.fetchone()
 
-        appearance_counts = OrderedDict(regularShows=result["regular"],
-                                        allShows=result["allshows"])
+        appearance_counts = OrderedDict(regular_shows=result["regular"],
+                                        all_shows=result["allshows"])
 
         query = ("SELECT skm.showid, s.showdate, s.bestof, "
                  "s.repeatshowid, skm.guest, skm.description "
@@ -65,8 +65,8 @@ def _retrieve_appearances_by_id(scorekeeper_id: int,
                     description = None
 
                 appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
-                                              isBestOfShow=bool(appearance["bestof"]),
-                                              isShowRepeat=bool(appearance["repeatshowid"]),
+                                              best_of=bool(appearance["bestof"]),
+                                              repeat_show=bool(appearance["repeatshowid"]),
                                               guest=bool(appearance["guest"]),
                                               description=description)
 
