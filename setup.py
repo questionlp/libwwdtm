@@ -27,7 +27,7 @@ setup(name="wwdtm",
       ],
       package_dir={"wwdtm": "wwdtm"},
       project_urls={
-          "Source": "https://bitbucket.org/questionlp/libwwdtm/",
+          "Source": "https://github.com/questionlp/libwwdtm/",
       },
       python_requires=">=3.6",
       install_requires=[
