@@ -454,7 +454,7 @@ def retrieve_by_id(show_id: int,
 
         if repeat_show_id:
             show_info["original_show_date"] = convert_id_to_date(repeat_show_id,
-                                                               database_connection)
+                                                                 database_connection)
         else:
             del show_info["original_show_date"]
 

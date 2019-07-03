@@ -447,8 +447,8 @@ def retrieve_by_id(panelist_id: int,
         if result:
             panelist_dict = OrderedDict(id=panelist_id,
                                         name=result["panelist"],
-                                        gender=result["panelistgender"],
-                                        slug=result["panelistslug"])
+                                        slug=result["panelistslug"],
+                                        gender=result["panelistgender"])
             return panelist_dict
 
         return None
