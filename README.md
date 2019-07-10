@@ -7,8 +7,21 @@ details from an instance of the Wait Wait Don't Tell Me! Stats Page database.
 
 ## Requirements
 
-* Python 3.6 or newer (earlier versions of 3.x have not been tested and are not guaranteed to work)
+* Python 3.6 or newer (Python 2.x is not supported)
 * MySQL or MariaDB database containing data from the Wait Wait Don't Tell Me! Stats Page database
+
+### Notes
+
+Even though the library is currently being developed and tested against Python 3.6, the code makes
+explicit use of `collections.OrderedDict()` to preserve key insertion order into specific
+dictionaries. This was done as the code was original developed on systems with earlier versions of
+Python 3 that not preserve key insertion order for `dict()`.
+
+That behavior has since changed with Python 3.6 and key insertion order for standard `dict()` is now
+part of the language's specifications moving forward.
+
+That said, all development and testing has already been migrated to Python 3.6 and there is no
+guarantee that the library will be 100% functional in any older versions.
 
 ## Installation
 
