@@ -3,41 +3,47 @@
 ## Overview
 
 Data Access Library to provide show, host, scoreekeeper, panelist and guest
-details from an instance of the Wait Wait Don't Tell Me! Stats Page database.
+details from an instance of the
+[Wait Wait... Don't Tell Me! Stats Page](http://wwdt.me) database.
 
 ## Requirements
 
-* Python 3.6 or newer (Python 2.x is not supported)
-* MySQL or MariaDB database containing data from the Wait Wait Don't Tell Me! Stats Page database
+- Python 3.6 or newer (Python 2.x is not supported)
+- MySQL or MariaDB database containing data from the Wait Wait... Don't Tell
+  Me! Stats Page database
 
 ### Notes
 
-Even though the library is currently being developed and tested against Python 3.6, the code makes
-explicit use of `collections.OrderedDict()` to preserve key insertion order into specific
-dictionaries. This was done as the code was original developed on systems with earlier versions of
-Python 3 that not preserve key insertion order for `dict()`.
+Even though the library is currently being developed and tested against Python
+3.6, the code makes explicit use of `collections.OrderedDict()` to preserve key
+insertion order into specific dictionaries. This was done as the code was
+originally developed on systems with earlier versions of Python 3 that not
+preserve key insertion order for `dict()`.
 
-That behavior has since changed with Python 3.6 and key insertion order for standard `dict()` is now
-part of the language's specifications moving forward.
+That behavior has since changed with Python 3.6 and key insertion order for
+standard `dict()` is now part of the language's specifications moving forward.
 
-That said, all development and testing has already been migrated to Python 3.6 and there is no
-guarantee that the library will be 100% functional in any older versions.
+That said, all development and testing has already been migrated to Python 3.6
+and there is no guarantee that the library will be 100% functional in any older
+versions.
 
 ## Installation
 
-A packaged version of the library is available for download and install via `pip` by adding
-https://wheels.wwdt.me/ to your Python index list at install time:
+A packaged version of the library is available for download and install via
+`pip` by adding https://wheels.wwdt.me/ to your Python index list at install
+time:
 
 ```bash
 pip3 install --extra-index-url https://wheels.wwdt.me/ wwdtm
 ```
 
-`pip` will also install packages that are required to use the library, including:
+`pip` will also install packages that are required to use the library,
+including:
 
- * mysql-connector
- * numpy
- * python-dateutil
- * python-slugify
+- mysql-connector
+- numpy
+- python-dateutil
+- python-slugify
 
 ## How to Use
 
@@ -61,7 +67,8 @@ show.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 1. Set up a venv in the current directory by running: `python3 -m venv venv`
 2. Create a copy of `config.dist.json` and name it `config.json`
-3. Edit `config.json` and fill in the `local` section with the appropriate MySQL/MariaDB connection information
+3. Edit `config.json` and fill in the `local` section with the appropriate
+   MySQL/MariaDB connection information
 4. Activate the venv by running: `source ${venv}/bin/activate`
 5. Install any required packages via `pip`: `pip3 install -r requirements.txt`
 6. Run the test script: `python3 test.py`
@@ -74,4 +81,5 @@ python3 setup.py bdist_wheel
 
 ## License
 
-This library is licensed under the terms of the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+This library is licensed under the terms of the
+[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
