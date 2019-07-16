@@ -1,8 +1,9 @@
 # TODO
 
-This document provides a list of tasks that need to be completed for specific
-API service stories, filling in feature gaps required for the next version of
-the [Wait Wait... Don't Tell Me! Stats Page](https://wwdt.me), taking care of
+This document provides a list of tasks that need to be researched and/or
+completed for specific API service stories, filling in feature gaps
+required for the next version of the
+[Wait Wait... Don't Tell Me! Stats Page](https://wwdt.me), taking care of
 technical debts (such as: performance improvements, code clean-up), or simply
 nice-to-have items.
 
