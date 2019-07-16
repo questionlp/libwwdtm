@@ -9,13 +9,19 @@ nice-to-have items.
 
 ## API Service
 
-- TBD
+ - TBD
 
 ## Stats Page
 
 ### Panelists
 
-- Retrieve a list of shows and whether a panelist had the correct Bluff the Listener story or not and whether the panelist was chosen
+- Retrieve a list of shows and whether a panelist had the correct Bluff the
+  Listener story or not and whether the panelist was chosen
+
+### Scorekeepers
+
+- Retrieve a list of scorekeeper introductions said at the beginning of each
+  show
 
 ### Shows
 
@@ -23,9 +29,12 @@ nice-to-have items.
 
 ## Technical Debts
 
-- Break up `guest`, `host`, `location`, `panelist`, `scorekeeper` and `show` modules into smaller modules
-- Look at the possibility of creating classes with slots to store data instead of using OrderedDicts
-- Look at ways to bypass the need to query the database every time multiple objects need to be returned
+- Break up `guest`, `host`, `location`, `panelist`, `scorekeeper` and `show`
+  modules into smaller modules
+- Look at the possibility of creating classes with slots to store data instead
+  of using OrderedDicts
+- Look at ways to bypass the need to query the database every time multiple
+  objects need to be returned
 
 ## Miscellaneous
 
