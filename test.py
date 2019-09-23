@@ -163,11 +163,11 @@ def test_scorekeeper_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing scorekeeper.id_exists
+    # Testing scorekeeper.utility.id_exists
     test_scorekeeper.test_id_exists(1, database_connection)
     test_scorekeeper.test_id_not_exists(-1, database_connection)
 
-    # Testing scorekeeper.slug_exists
+    # Testing scorekeeper.utilityslug_exists
     test_scorekeeper.test_slug_exists("carl-kasell", database_connection)
     test_scorekeeper.test_slug_not_exists("carl-kassel", database_connection)
 
