@@ -60,7 +60,7 @@ panelist.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 scorekeeper.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-show.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+show.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 ```
 
 ## Running Tests
