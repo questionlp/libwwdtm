@@ -53,7 +53,7 @@ def retrieve_by_slug(host_slug: str,
     return None
 
 def retrieve_all(database_connection: mysql.connector.connect
-                        ) -> List[Dict]:
+                ) -> List[Dict]:
     """Returns a list of OrderedDicts with host details for all hosts
 
     Arguments:
