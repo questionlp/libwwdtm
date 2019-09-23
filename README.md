@@ -56,7 +56,7 @@ host.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 location.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-panelist.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+panelist.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 scorekeeper.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 

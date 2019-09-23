@@ -26,9 +26,9 @@ def retrieve_by_id(panelist_id: int,
         if not utility.validate_id(panelist_id, database_connection):
             return None
 
-    panelist = retrieve_by_id(panelist_id,
-                              database_connection,
-                              pre_validated_id=True)
+    panelist = info.retrieve_by_id(panelist_id,
+                                   database_connection,
+                                   pre_validated_id=True)
     panelist["statistics"] = core.retrieve_statistics_by_id(panelist_id,
                                                             database_connection,
                                                             pre_validated_id=True)

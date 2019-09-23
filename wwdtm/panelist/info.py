@@ -9,7 +9,7 @@ from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
-import numpy
+from wwdtm.panelist import core, utility
 
 #region Retrieval Functions
 def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
@@ -83,7 +83,7 @@ def retrieve_by_id(panelist_id: int,
         has been validated
     """
     if not pre_validated_id:
-        if not validate_id(panelist_id, database_connection):
+        if not utility.validate_id(panelist_id, database_connection):
             return None
 
     try:
@@ -117,7 +117,8 @@ def retrieve_by_slug(panelist_slug: str,
         panelist_slug (str)
         database_connection (mysql.connector.connect)
     """
-    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
     if panelist_id:
         return retrieve_by_id(panelist_id, database_connection, True)
 
@@ -136,18 +137,18 @@ def retrieve_details_by_id(panelist_id: int,
         has been validated
     """
     if not pre_validated_id:
-        if not validate_id(panelist_id, database_connection):
+        if not utility.validate_id(panelist_id, database_connection):
             return None
 
     panelist = retrieve_by_id(panelist_id,
                               database_connection,
                               pre_validated_id=True)
-    panelist["statistics"] = _retrieve_statistics_by_id(panelist_id,
-                                                        database_connection,
-                                                        pre_validated_id=True)
-    panelist["appearances"] = _retrieve_appearances_by_id(panelist_id,
-                                                          database_connection,
-                                                          pre_validated_id=True)
+    panelist["statistics"] = core.retrieve_statistics_by_id(panelist_id,
+                                                            database_connection,
+                                                            pre_validated_id=True)
+    panelist["appearances"] = core.retrieve_appearances_by_id(panelist_id,
+                                                              database_connection,
+                                                              pre_validated_id=True)
     return panelist
 
 def retrieve_details_by_slug(panelist_id: int,
@@ -160,7 +161,7 @@ def retrieve_details_by_slug(panelist_id: int,
         panelist_slug (str)
         database_connection (mysql.connector.connect)
     """
-    panelist_id = convert_slug_to_id(panelist_id, database_connection)
+    panelist_id = utility.convert_slug_to_id(panelist_id, database_connection)
     if not panelist_id:
         return None
 
@@ -203,7 +204,7 @@ def retrieve_scores_list_by_id(panelist_id: int,
         has been validated
     """
     if not pre_validated_id:
-        if not validate_id(panelist_id, database_connection):
+        if not utility.validate_id(panelist_id, database_connection):
             return None
 
     try:
@@ -244,7 +245,8 @@ def retrieve_scores_list_by_slug(panelist_slug: str,
         panelist_slug (str)
         database_connection (mysql.connector.connect)
     """
-    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
     if not panelist_id:
         return None
 
@@ -266,7 +268,7 @@ def retrieve_scores_ordered_pair_by_id(panelist_id: int,
         has been validated
     """
     if not pre_validated_id:
-        if not validate_id(panelist_id, database_connection):
+        if not utility.validate_id(panelist_id, database_connection):
             return None
 
     try:
@@ -307,7 +309,8 @@ def retrieve_scores_ordered_pair_by_slug(panelist_slug: str,
         panelist_slug (str)
         database_connection (mysql.connector.connect)
     """
-    panelist_id = convert_slug_to_id(panelist_slug, database_connection)
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
     if not panelist_id:
         return None
 
