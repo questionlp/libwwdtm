@@ -167,7 +167,7 @@ def test_scorekeeper_module(database_connection: mysql.connector.connect):
     test_scorekeeper.test_id_exists(1, database_connection)
     test_scorekeeper.test_id_not_exists(-1, database_connection)
 
-    # Testing scorekeeper.utilityslug_exists
+    # Testing scorekeeper.utility.slug_exists
     test_scorekeeper.test_slug_exists("carl-kasell", database_connection)
     test_scorekeeper.test_slug_not_exists("carl-kassel", database_connection)
 
