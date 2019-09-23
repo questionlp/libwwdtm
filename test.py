@@ -198,11 +198,11 @@ def test_show_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing show.id_exists
+    # Testing show.utility.id_exists
     test_show.test_id_exists(1083, database_connection)
     test_show.test_id_not_exists(-1083, database_connection)
 
-    # Testing show.date_exists
+    # Testing show.utility.date_exists
     test_show.test_date_exists(2006, 8, 19, database_connection)
     test_show.test_date_not_exists(2006, 8, 20, database_connection)
 
