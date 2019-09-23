@@ -119,11 +119,11 @@ def test_panelist_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing panelist.id_exists
+    # Testing panelist.utility.id_exists
     test_panelist.test_id_exists(10, database_connection)
     test_panelist.test_id_not_exists(-10, database_connection)
 
-    # Testing panelist.slug_exists
+    # Testing panelist.utility.slug_exists
     test_panelist.test_slug_exists("faith-salie", database_connection)
     test_panelist.test_slug_not_exists("fait-sale", database_connection)
 
