@@ -18,11 +18,11 @@ def test_guest_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing guest.id_exists
+    # Testing guest.utility.id_exists
     test_guest.test_id_exists(54, database_connection)
     test_guest.test_id_not_exists(-54, database_connection)
 
-    # Testing guest.slug_exists
+    # Testing guest.utility.slug_exists
     test_guest.test_slug_exists("tom-hanks", database_connection)
     test_guest.test_slug_not_exists("thom-hanks", database_connection)
 

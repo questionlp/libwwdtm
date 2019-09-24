@@ -50,7 +50,7 @@ including:
 ```python
 from wwdtm import guest, host, location, panelist, scorekeeper, show
 
-guest.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+guest.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 host.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
