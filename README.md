@@ -54,7 +54,7 @@ guest.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 host.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-location.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+location.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
 panelist.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
