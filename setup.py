@@ -6,7 +6,7 @@
 import setuptools
 
 setuptools.setup(name="wwdtm",
-                 version="0.9.3.3",
+                 version="0.9.3.4",
                  description="Wait Wait... Don't Tell Me! Data Access Library",
                  long_description=("Provides show, host, scorekeeper, panelist and guest details "
                                    "from an instance of the Wait Wait... Don't Tell Me! Stats Page "
