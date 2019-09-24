@@ -87,7 +87,7 @@ def test_location_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing location.id_exists
+    # Testing location.utility.id_exists
     test_location.test_id_exists(2, database_connection)
     test_location.test_id_not_exists(-2, database_connection)
 
