@@ -18,11 +18,11 @@ def test_guest_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing guest.id_exists
+    # Testing guest.utility.id_exists
     test_guest.test_id_exists(54, database_connection)
     test_guest.test_id_not_exists(-54, database_connection)
 
-    # Testing guest.slug_exists
+    # Testing guest.utility.slug_exists
     test_guest.test_slug_exists("tom-hanks", database_connection)
     test_guest.test_slug_not_exists("thom-hanks", database_connection)
 
@@ -52,11 +52,11 @@ def test_host_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing host.id_exists
+    # Testing host.utility.id_exists
     test_host.test_id_exists(1, database_connection)
     test_host.test_id_not_exists(-1, database_connection)
 
-    # Testing host.slug_exists
+    # Testing host.utility.slug_exists
     test_host.test_slug_exists("luke-burbank", database_connection)
     test_host.test_slug_not_exists("buke-lurbank", database_connection)
 
@@ -87,7 +87,7 @@ def test_location_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing location.id_exists
+    # Testing location.utility.id_exists
     test_location.test_id_exists(2, database_connection)
     test_location.test_id_not_exists(-2, database_connection)
 
@@ -119,11 +119,11 @@ def test_panelist_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing panelist.id_exists
+    # Testing panelist.utility.id_exists
     test_panelist.test_id_exists(10, database_connection)
     test_panelist.test_id_not_exists(-10, database_connection)
 
-    # Testing panelist.slug_exists
+    # Testing panelist.utility.slug_exists
     test_panelist.test_slug_exists("faith-salie", database_connection)
     test_panelist.test_slug_not_exists("fait-sale", database_connection)
 
@@ -163,11 +163,11 @@ def test_scorekeeper_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing scorekeeper.id_exists
+    # Testing scorekeeper.utility.id_exists
     test_scorekeeper.test_id_exists(1, database_connection)
     test_scorekeeper.test_id_not_exists(-1, database_connection)
 
-    # Testing scorekeeper.slug_exists
+    # Testing scorekeeper.utility.slug_exists
     test_scorekeeper.test_slug_exists("carl-kasell", database_connection)
     test_scorekeeper.test_slug_not_exists("carl-kassel", database_connection)
 
@@ -198,11 +198,11 @@ def test_show_module(database_connection: mysql.connector.connect):
     # Start Time
     start_time = time.perf_counter()
 
-    # Testing show.id_exists
+    # Testing show.utility.id_exists
     test_show.test_id_exists(1083, database_connection)
     test_show.test_id_not_exists(-1083, database_connection)
 
-    # Testing show.date_exists
+    # Testing show.utility.date_exists
     test_show.test_date_exists(2006, 8, 19, database_connection)
     test_show.test_date_not_exists(2006, 8, 20, database_connection)
 

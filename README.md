@@ -50,17 +50,17 @@ including:
 ```python
 from wwdtm import guest, host, location, panelist, scorekeeper, show
 
-guest.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+guest.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-host.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+host.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-location.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+location.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-panelist.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+panelist.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-scorekeeper.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+scorekeeper.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 
-show.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
+show.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 ```
 
 ## Running Tests
