@@ -29,12 +29,18 @@ def retrieve_by_id(panelist_id: int,
     panelist = info.retrieve_by_id(panelist_id,
                                    database_connection,
                                    pre_validated_id=True)
-    panelist["statistics"] = core.retrieve_statistics_by_id(panelist_id,
-                                                            database_connection,
-                                                            pre_validated_id=True)
-    panelist["appearances"] = core.retrieve_appearances_by_id(panelist_id,
-                                                              database_connection,
-                                                              pre_validated_id=True)
+    statistics = core.retrieve_statistics_by_id(panelist_id,
+                                                database_connection,
+                                                pre_validated_id=True)
+    panelist["statistics"] = statistics
+    bluff_statistics = core.retrieve_bluffs_by_id(panelist_id,
+                                                  database_connection,
+                                                  pre_validated_id=True)
+    panelist["bluffs"] = bluff_statistics
+    appearances = core.retrieve_appearances_by_id(panelist_id,
+                                                  database_connection,
+                                                  pre_validated_id=True)
+    panelist["appearances"] = appearances
     return panelist
 
 def retrieve_by_slug(panelist_id: int,

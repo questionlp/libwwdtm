@@ -55,8 +55,8 @@ def retrieve_appearances_by_id(panelist_id: int,
 
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.showid, s.showdate, s.bestof, "
-                 "s.repeatshowid, pm.panelistlrndstart as start, "
-                 " pm.panelistlrndcorrect as correct, pm.panelistscore, "
+                 "s.repeatshowid, pm.panelistlrndstart AS start, "
+                 " pm.panelistlrndcorrect AS correct, pm.panelistscore, "
                  "pm.showpnlrank FROM ww_showpnlmap pm "
                  "JOIN ww_panelists p ON p.panelistid = pm.panelistid "
                  "JOIN ww_shows s ON s.showid = pm.showid "
@@ -105,6 +105,64 @@ def retrieve_appearances_by_slug(panelist_slug: str,
                                              database_connection)
     if panelist_id:
         return retrieve_appearances_by_id(panelist_id, database_connection, True)
+
+    return None
+
+def retrieve_bluffs_by_id(panelist_id: int,
+                          database_connection: mysql.connector.connect,
+                          pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict containing Bluff the Listener information
+    for the requested panelist ID
+
+    Arguments:
+        panelist_id (int)
+        database_connection (mysql.connector.connect)
+        pre_validated_id (bool): Flag whether or not the panelist ID
+        has been validated or not
+    """
+    if not pre_validated_id:
+        if not utility.validate_id(panelist_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor()
+        query = ("SELECT ( "
+                 "SELECT COUNT(blm.chosenbluffpnlid) FROM ww_showbluffmap blm "
+                 "JOIN ww_shows s ON s.showid = blm.showid "
+                 "WHERE s.repeatshowid IS NULL AND blm.chosenbluffpnlid = %s "
+                 ") AS chosen, ( "
+                 "SELECT COUNT(blm.correctbluffpnlid) FROM ww_showbluffmap blm "
+                 "JOIN ww_shows s ON s.showid = blm.showid "
+                 "WHERE s.repeatshowid IS NULL AND blm.correctbluffpnlid = %s "
+                 ") AS correct;")
+        cursor.execute(query, (panelist_id, panelist_id,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+            return OrderedDict(chosen=result[0], correct=result[1])
+
+        return None
+
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+def retrieve_bluffs_by_slug(panelist_slug: str,
+                            database_connection: mysql.connector.connect
+                           ) -> Dict:
+    """Returns an OrderedDict containing Bluff the Listener information
+    for the requested panelist slug
+
+    Arguments:
+        panelist_slug (str)
+        database_connection (mysql.connector.connect)
+    """
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
+    if panelist_id:
+        return retrieve_bluffs_by_id(panelist_id, database_connection, True)
 
     return None
 
