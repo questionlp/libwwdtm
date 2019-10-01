@@ -88,6 +88,7 @@ def test_retrieve_details_by_id(panelist_id: int,
                                            database_connection)
     assert panelist_dict is not None
     assert "statistics" in panelist_dict
+    assert "bluffs" in panelist_dict
     assert "appearances" in panelist_dict
     if print_response:
         print(json.dumps(panelist_dict, indent=2))
@@ -100,6 +101,7 @@ def test_retrieve_details_by_slug(panelist_slug: str,
                                              database_connection)
     assert panelist_dict is not None
     assert "statistics" in panelist_dict
+    assert "bluffs" in panelist_dict
     assert "appearances" in panelist_dict
     if print_response:
         print(json.dumps(panelist_dict, indent=2))
