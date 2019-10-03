@@ -309,7 +309,11 @@ def retrieve_statistics_by_id(panelist_id: int,
     ranking = OrderedDict()
     ranking['rank'] = ranks
     ranking['percentage'] = ranks_percentage
-    return ranking
+
+    statistics = OrderedDict()
+    statistics['scoring'] = scoring
+    statistics['ranking'] = ranking
+    return statistics
 
 def retrieve_statistics_by_slug(panelist_slug: str,
                                 database_connection: mysql.connector.connect
