@@ -31,11 +31,12 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         scorekeepers = []
         for row in result:
-            scorekeeper = OrderedDict(id=row["scorekeeperid"],
-                                      name=row["scorekeeper"],
-                                      slug=row["scorekeeperslug"],
-                                      gender=row["scorekeepergender"])
-            scorekeepers.append(scorekeeper)
+            info = OrderedDict()
+            info['id'] = row["scorekeeperid"]
+            info['name'] = row["scorekeeper"]
+            info['slug'] = row["scorekeeperslug"]
+            info['gender'] = row["scorekeepergender"]
+            scorekeepers.append(info)
 
         return scorekeepers
     except ProgrammingError as err:
@@ -97,10 +98,11 @@ def retrieve_by_id(scorekeeper_id: int,
         cursor.close()
 
         if result:
-            scorekeeper_dict = OrderedDict(id=scorekeeper_id,
-                                           name=result["scorekeeper"],
-                                           slug=result["scorekeeperslug"],
-                                           gender=result["scorekeepergender"])
+            scorekeeper_dict = OrderedDict()
+            scorekeeper_dict['id'] = scorekeeper_id
+            scorekeeper_dict['name'] = result["scorekeeper"]
+            scorekeeper_dict['slug'] = result["scorekeeperslug"]
+            scorekeeper_dict['gender'] = result["scorekeepergender"]
             return scorekeeper_dict
 
         return None

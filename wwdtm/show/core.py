@@ -60,43 +60,45 @@ def retrieve_core_info_by_id(show_id: int,
         else:
             show_notes = None
 
-        location_info = OrderedDict(city=result["city"],
-                                    state=result["state"],
-                                    venue=result["venue"])
+        location_info = OrderedDict()
+        location_info['city'] = result["city"]
+        location_info['state'] = result["state"]
+        location_info['venue'] = result["venue"]
 
-        host_info = OrderedDict(id=result["hostid"],
-                                name=result["host"],
-                                slug=result["hostslug"],
-                                guest=bool(result["hostguest"]))
+        host_info = OrderedDict()
+        host_info['id'] = result["hostid"]
+        host_info['name'] = result["host"]
+        host_info['slug'] = result["hostslug"]
+        host_info['guest'] = bool(result["hostguest"])
 
         if result["description"]:
             scorekeeper_description = result["description"]
         else:
             scorekeeper_description = None
 
-        scorekeeper_info = OrderedDict(id=result["scorekeeperid"],
-                                       name=result["scorekeeper"],
-                                       slug=result["scorekeeperslug"],
-                                       guest=bool(result["scorekeeperguest"]),
-                                       description=scorekeeper_description)
+        scorekeeper_info = OrderedDict()
+        scorekeeper_info['id'] = result["scorekeeperid"]
+        scorekeeper_info['name'] = result["scorekeeper"]
+        scorekeeper_info['slug'] = result["scorekeeperslug"]
+        scorekeeper_info['guest'] = bool(result["scorekeeperguest"])
+        scorekeeper_info['description'] = scorekeeper_description
 
-        show_info = OrderedDict(id=show_id,
-                                date=result["showdate"].isoformat(),
-                                best_of=bool(result["bestof"]),
-                                repeat_show=bool(repeat_show_id),
-                                original_show_date=None,
-                                description=show_description,
-                                notes=show_notes,
-                                location=location_info,
-                                host=host_info,
-                                scorekeeper=scorekeeper_info)
+        show_info = OrderedDict()
+        show_info['id'] = show_id
+        show_info['date'] = result["showdate"].isoformat()
+        show_info['best_of'] = bool(result["bestof"])
+        show_info['repeat_show'] = bool(repeat_show_id)
 
         if repeat_show_id:
             original_date = utility.convert_id_to_date(repeat_show_id,
                                                        database_connection)
             show_info["original_show_date"] = original_date.isoformat()
-        else:
-            del show_info["original_show_date"]
+
+        show_info['description'] = show_description
+        show_info['notes'] = show_notes
+        show_info['location'] = location_info
+        show_info['host'] = host_info
+        show_info['scorekeeper'] = scorekeeper_info
 
         return show_info
     except ProgrammingError as err:
@@ -138,14 +140,15 @@ def retrieve_panelist_info_by_id(show_id: int,
             else:
                 panelist_rank = None
 
-            panelist_info = OrderedDict(id=panelist["panelistid"],
-                                        name=panelist["panelist"],
-                                        slug=panelist["panelistslug"],
-                                        lightning_round_start=panelist["start"],
-                                        lightning_round_correct=panelist["correct"],
-                                        score=panelist["panelistscore"],
-                                        rank=panelist_rank)
-            panelists.append(panelist_info)
+            info = OrderedDict()
+            info['id'] = panelist["panelistid"]
+            info['name'] = panelist["panelist"]
+            info['slug'] = panelist["panelistslug"]
+            info['lightning_round_start'] = panelist["start"]
+            info['lightning_round_correct'] = panelist["correct"]
+            info['score'] = panelist["panelistscore"]
+            info['rank'] = panelist_rank
+            panelists.append(info)
 
         return panelists
     except ProgrammingError as err:
@@ -176,9 +179,10 @@ def retrieve_bluff_info_by_id(show_id: int,
         chosen_result = cursor.fetchone()
 
         if chosen_result:
-            chosen_bluff_info = OrderedDict(id=chosen_result["chosenbluffpnlid"],
-                                            name=chosen_result["panelist"],
-                                            slug=chosen_result["panelistslug"])
+            chosen_bluff_info = OrderedDict()
+            chosen_bluff_info['id'] = chosen_result["chosenbluffpnlid"]
+            chosen_bluff_info['name'] = chosen_result["panelist"]
+            chosen_bluff_info['slug'] = chosen_result["panelistslug"]
         else:
             chosen_bluff_info = None
 
@@ -194,14 +198,16 @@ def retrieve_bluff_info_by_id(show_id: int,
         cursor.close()
 
         if correct_result:
-            correct_bluff_info = OrderedDict(id=correct_result["correctbluffpnlid"],
-                                             name=correct_result["panelist"],
-                                             slug=correct_result["panelistslug"])
+            correct_bluff_info = OrderedDict()
+            correct_bluff_info['id'] = correct_result["correctbluffpnlid"]
+            correct_bluff_info['name'] = correct_result["panelist"]
+            correct_bluff_info['slug'] = correct_result["panelistslug"]
         else:
             correct_bluff_info = None
 
-        bluff_info = OrderedDict(chosen_panelist=chosen_bluff_info,
-                                 correct_panelist=correct_bluff_info)
+        bluff_info = OrderedDict()
+        bluff_info['chosen_panelist'] = chosen_bluff_info
+        bluff_info['correct_panelist'] = correct_bluff_info
 
         return bluff_info
     except ProgrammingError as err:
@@ -237,12 +243,13 @@ def retrieve_guest_info_by_id(show_id: int,
 
         guests = []
         for guest in result:
-            guest_info = OrderedDict(id=guest["guestid"],
-                                     name=guest["guest"],
-                                     slug=guest["guestslug"],
-                                     score=guest["guestscore"],
-                                     score_exception=bool(guest["exception"]))
-            guests.append(guest_info)
+            info = OrderedDict()
+            info['id'] = guest["guestid"]
+            info['name'] = guest["guest"]
+            info['slug'] = guest["guestslug"]
+            info['score'] = guest["guestscore"]
+            info['score_exception'] = bool(guest["exception"])
+            guests.append(info)
 
         return guests
     except ProgrammingError as err:

@@ -29,9 +29,10 @@ def retrieve_recordings_by_id(location_id: int,
     location = info.retrieve_by_id(location_id,
                                    database_connection,
                                    pre_validated_id=True)
-    location["recordings"] = core.retrieve_recordings_by_id(location_id,
-                                                            database_connection,
-                                                            pre_validated_id=True)
+    recordings = core.retrieve_recordings_by_id(location_id,
+                                                database_connection,
+                                                pre_validated_id=True)
+    location["recordings"] = recordings
     return location
 
 def retrieve_all_recordings(database_connection: mysql.connector.connect

@@ -72,17 +72,15 @@ def retrieve_by_id(show_id: int,
             return None
 
         repeat_show_id = result["repeatshowid"]
-        show_info = OrderedDict(id=show_id,
-                                date=result["showdate"].isoformat(),
-                                best_of=bool(result["bestof"]),
-                                repeat_show=bool(repeat_show_id),
-                                original_show_date=None)
+        show_info = OrderedDict()
+        show_info['id'] = show_id
+        show_info['date'] = result["showdate"].isoformat()
+        show_info['best_of'] = bool(result["bestof"])
+        show_info['repeat_show'] = bool(repeat_show_id)
 
         if repeat_show_id:
             show_info["original_show_date"] = utility.convert_id_to_date(repeat_show_id,
                                                                          database_connection)
-        else:
-            del show_info["original_show_date"]
 
         return show_info
     except ProgrammingError as err:
