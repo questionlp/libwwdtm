@@ -47,6 +47,7 @@ def retrieve_by_id(show_id: int,
         show_details['repeat_show'] = show_info["repeat_show"]
 
         if "original_show_date" in show_info:
+            show_details["original_show_id"] = show_info["original_show_id"]
             show_details["original_show_date"] = show_info["original_show_date"]
 
         show_details['location'] = show_info["location"]
