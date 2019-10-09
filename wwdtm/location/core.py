@@ -44,11 +44,12 @@ def retrieve_recordings_by_id(location_id: int,
 
         recordings = []
         for recording in result:
-            recording_info = OrderedDict(show_id=recording["showid"],
-                                         date=recording["showdate"].isoformat(),
-                                         best_of=bool(recording["bestof"]),
-                                         repeat_show=bool(recording["repeatshowid"]))
-            recordings.append(recording_info)
+            info = OrderedDict()
+            info['show_id'] = recording["showid"]
+            info['date'] = recording["showdate"].isoformat()
+            info['best_of'] = bool(recording["bestof"])
+            info['repeat_show'] = bool(recording["repeatshowid"])
+            recordings.append(info)
 
         return recordings
     except ProgrammingError as err:

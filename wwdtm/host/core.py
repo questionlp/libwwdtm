@@ -41,8 +41,10 @@ def retrieve_appearances_by_id(host_id: int,
         cursor.execute(query, (host_id, host_id,))
         result = cursor.fetchone()
 
-        appearance_counts = OrderedDict(regular_shows=result["regular"],
-                                        all_shows=result["allshows"])
+        appearance_info = OrderedDict()
+        appearance_counts = OrderedDict()
+        appearance_counts['regular_shows'] = result["regular"]
+        appearance_counts['all_shows'] = result["allshows"]
 
         query = ("SELECT hm.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "hm.guest FROM ww_showhostmap hm "
@@ -57,15 +59,20 @@ def retrieve_appearances_by_id(host_id: int,
         if result:
             appearances = []
             for appearance in result:
-                appearance_info = OrderedDict(date=appearance["showdate"].isoformat(),
-                                              best_of=bool(appearance["bestof"]),
-                                              repeat_show=bool(appearance["repeatshowid"]),
-                                              guest=bool(appearance["guest"]))
-                appearances.append(appearance_info)
+                info = OrderedDict()
+                info['date'] = appearance["showdate"].isoformat()
+                info['best_of'] = bool(appearance["bestof"])
+                info['repeat_show'] = bool(appearance["repeatshowid"])
+                info['guest'] = bool(appearance["guest"])
+                appearances.append(info)
 
-            return OrderedDict(count=appearance_counts, shows=appearances)
+            appearance_info['count'] = appearance_counts
+            appearance_info['shows'] = appearances
+        else:
+            appearance_info['count'] = 0
+            appearance_info['shows'] = None
 
-        return OrderedDict(count=0, shows=None)
+        return appearance_info
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:

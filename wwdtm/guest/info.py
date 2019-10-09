@@ -30,9 +30,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
 
         guests = []
         for row in result:
-            guest = OrderedDict(id=row["guestid"],
-                                name=row["guest"],
-                                slug=row["guestslug"])
+            guest = OrderedDict()
+            guest['id'] = row["guestid"]
+            guest['name'] = row["guest"]
+            guest['slug'] = row["guestslug"]
             guests.append(guest)
 
         return guests
@@ -90,9 +91,11 @@ def retrieve_by_id(guest_id: int,
         cursor.close()
 
         if result:
-            return OrderedDict(id=guest_id,
-                               name=result["guest"],
-                               slug=result["guestslug"])
+            guest_info = OrderedDict()
+            guest_info['id'] = guest_id
+            guest_info['name'] = result["guest"]
+            guest_info['slug'] = result["guestslug"]
+            return guest_info
 
         return None
     except ProgrammingError as err:

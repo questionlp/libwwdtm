@@ -40,25 +40,23 @@ def retrieve_by_id(show_id: int,
         show_guests = core.retrieve_guest_info_by_id(show_id,
                                                      database_connection)
 
-        show_details = OrderedDict(id=show_info["id"],
-                                   date=show_info["date"],
-                                   best_of=show_info["best_of"],
-                                   repeat_show=show_info["repeat_show"],
-                                   original_show_date=None,
-                                   location=show_info["location"],
-                                   description=show_info["description"],
-                                   notes=show_info["notes"],
-                                   host=show_info["host"],
-                                   scorekeeper=show_info["scorekeeper"],
-                                   panelists=show_panelists,
-                                   bluff=show_bluff,
-                                   guests=show_guests)
+        show_details = OrderedDict()
+        show_details['id'] = show_info["id"]
+        show_details['date'] = show_info["date"]
+        show_details['best_of'] = show_info["best_of"]
+        show_details['repeat_show'] = show_info["repeat_show"]
 
         if "original_show_date" in show_info:
             show_details["original_show_date"] = show_info["original_show_date"]
-        else:
-            del show_details["original_show_date"]
 
+        show_details['location'] = show_info["location"]
+        show_details['description'] = show_info["description"]
+        show_details['notes'] = show_info["notes"]
+        show_details['host'] = show_info["host"]
+        show_details['scorekeeper'] = show_info["scorekeeper"]
+        show_details['panelists'] = show_panelists
+        show_details['bluff'] = show_bluff
+        show_details['guests'] = show_guests
         return show_details
 
     return None
