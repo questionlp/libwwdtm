@@ -34,10 +34,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         locations = []
         for location in result:
             location_info = OrderedDict()
-            location_info['id'] = location["locationid"]
-            location_info['city'] = location["city"]
-            location_info['state'] = location["state"]
-            location_info['venue'] = location["venue"]
+            location_info["id"] = location["locationid"]
+            location_info["city"] = location["city"]
+            location_info["state"] = location["state"]
+            location_info["venue"] = location["venue"]
             locations.append(location_info)
 
         return locations
@@ -101,10 +101,10 @@ def retrieve_by_id(location_id: int,
         cursor.close()
 
         location_info = OrderedDict()
-        location_info['id'] = result["locationid"]
-        location_info['city'] = result["city"]
-        location_info['state'] = result["state"]
-        location_info['venue'] = result["venue"]
+        location_info["id"] = result["locationid"]
+        location_info["city"] = result["city"]
+        location_info["state"] = result["state"]
+        location_info["venue"] = result["venue"]
         return location_info
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err

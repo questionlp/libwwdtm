@@ -45,10 +45,10 @@ def retrieve_recordings_by_id(location_id: int,
         recordings = []
         for recording in result:
             info = OrderedDict()
-            info['show_id'] = recording["showid"]
-            info['date'] = recording["showdate"].isoformat()
-            info['best_of'] = bool(recording["bestof"])
-            info['repeat_show'] = bool(recording["repeatshowid"])
+            info["show_id"] = recording["showid"]
+            info["date"] = recording["showdate"].isoformat()
+            info["best_of"] = bool(recording["bestof"])
+            info["repeat_show"] = bool(recording["repeatshowid"])
             recordings.append(info)
 
         return recordings

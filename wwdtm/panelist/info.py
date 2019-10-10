@@ -33,10 +33,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         panelists = []
         for row in result:
             panelist = OrderedDict()
-            panelist['id'] = row["panelistid"]
-            panelist['name'] = row["panelist"]
-            panelist['slug'] = row["panelistslug"]
-            panelist['gender'] = row["panelistgender"]
+            panelist["id"] = row["panelistid"]
+            panelist["name"] = row["panelist"]
+            panelist["slug"] = row["panelistslug"]
+            panelist["gender"] = row["panelistgender"]
             panelists.append(panelist)
 
         return panelists
@@ -98,10 +98,10 @@ def retrieve_by_id(panelist_id: int,
 
         if result:
             panelist_dict = OrderedDict()
-            panelist_dict['id'] = panelist_id
-            panelist_dict['name'] = result["panelist"]
-            panelist_dict['slug'] = result["panelistslug"]
-            panelist_dict['gender'] = result["panelistgender"]
+            panelist_dict["id"] = panelist_id
+            panelist_dict["name"] = result["panelist"]
+            panelist_dict["slug"] = result["panelistslug"]
+            panelist_dict["gender"] = result["panelistgender"]
             return panelist_dict
 
         return None
@@ -165,8 +165,8 @@ def retrieve_scores_list_by_id(panelist_id: int,
             score_list.append(shows["panelistscore"])
 
         scores = OrderedDict()
-        scores['shows'] = show_list
-        scores['scores'] = score_list
+        scores["shows"] = show_list
+        scores["scores"] = score_list
         return scores
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err

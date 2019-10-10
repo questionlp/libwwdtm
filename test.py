@@ -259,7 +259,7 @@ def test_show_module(database_connection: mysql.connector.connect):
 
 def load_config(app_environment):
     """Load configuration file from config.json"""
-    with open('config.json', 'r') as config_file:
+    with open("config.json", "r") as config_file:
         config_dict = json.load(config_file)
 
     if app_environment.startswith("develop"):
@@ -269,7 +269,7 @@ def load_config(app_environment):
             raise Exception("Missing 'development' section in config file")
     elif app_environment.startswith("prod"):
         if "production" in config_dict:
-            config = config_dict['production']
+            config = config_dict["production"]
         else:
             raise Exception("Missing 'production' section in config file")
     else:
@@ -311,5 +311,5 @@ def main():
     return
 
 # Only run if executed as a script and not imported
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
