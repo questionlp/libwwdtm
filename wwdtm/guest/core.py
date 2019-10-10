@@ -61,6 +61,7 @@ def retrieve_appearances_by_id(guest_id: int,
             appearances = []
             for appearance in result:
                 info = OrderedDict()
+                info['show_id'] = appearance["showid"]
                 info['date'] = appearance["showdate"].isoformat()
                 info['best_of'] = bool(appearance["bestof"])
                 info['repeat_show'] = bool(appearance["repeatshowid"])

@@ -79,6 +79,7 @@ def retrieve_by_id(show_id: int,
         show_info['repeat_show'] = bool(repeat_show_id)
 
         if repeat_show_id:
+            show_info['original_show_id'] = repeat_show_id
             show_info["original_show_date"] = utility.convert_id_to_date(repeat_show_id,
                                                                          database_connection)
 
