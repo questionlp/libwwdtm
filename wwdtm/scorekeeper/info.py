@@ -32,10 +32,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         scorekeepers = []
         for row in result:
             info = OrderedDict()
-            info['id'] = row["scorekeeperid"]
-            info['name'] = row["scorekeeper"]
-            info['slug'] = row["scorekeeperslug"]
-            info['gender'] = row["scorekeepergender"]
+            info["id"] = row["scorekeeperid"]
+            info["name"] = row["scorekeeper"]
+            info["slug"] = row["scorekeeperslug"]
+            info["gender"] = row["scorekeepergender"]
             scorekeepers.append(info)
 
         return scorekeepers
@@ -99,10 +99,10 @@ def retrieve_by_id(scorekeeper_id: int,
 
         if result:
             scorekeeper_dict = OrderedDict()
-            scorekeeper_dict['id'] = scorekeeper_id
-            scorekeeper_dict['name'] = result["scorekeeper"]
-            scorekeeper_dict['slug'] = result["scorekeeperslug"]
-            scorekeeper_dict['gender'] = result["scorekeepergender"]
+            scorekeeper_dict["id"] = scorekeeper_id
+            scorekeeper_dict["name"] = result["scorekeeper"]
+            scorekeeper_dict["slug"] = result["scorekeeperslug"]
+            scorekeeper_dict["gender"] = result["scorekeepergender"]
             return scorekeeper_dict
 
         return None

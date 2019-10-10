@@ -61,15 +61,15 @@ def retrieve_core_info_by_id(show_id: int,
             show_notes = None
 
         location_info = OrderedDict()
-        location_info['city'] = result["city"]
-        location_info['state'] = result["state"]
-        location_info['venue'] = result["venue"]
+        location_info["city"] = result["city"]
+        location_info["state"] = result["state"]
+        location_info["venue"] = result["venue"]
 
         host_info = OrderedDict()
-        host_info['id'] = result["hostid"]
-        host_info['name'] = result["host"]
-        host_info['slug'] = result["hostslug"]
-        host_info['guest'] = bool(result["hostguest"])
+        host_info["id"] = result["hostid"]
+        host_info["name"] = result["host"]
+        host_info["slug"] = result["hostslug"]
+        host_info["guest"] = bool(result["hostguest"])
 
         if result["description"]:
             scorekeeper_description = result["description"]
@@ -77,29 +77,29 @@ def retrieve_core_info_by_id(show_id: int,
             scorekeeper_description = None
 
         scorekeeper_info = OrderedDict()
-        scorekeeper_info['id'] = result["scorekeeperid"]
-        scorekeeper_info['name'] = result["scorekeeper"]
-        scorekeeper_info['slug'] = result["scorekeeperslug"]
-        scorekeeper_info['guest'] = bool(result["scorekeeperguest"])
-        scorekeeper_info['description'] = scorekeeper_description
+        scorekeeper_info["id"] = result["scorekeeperid"]
+        scorekeeper_info["name"] = result["scorekeeper"]
+        scorekeeper_info["slug"] = result["scorekeeperslug"]
+        scorekeeper_info["guest"] = bool(result["scorekeeperguest"])
+        scorekeeper_info["description"] = scorekeeper_description
 
         show_info = OrderedDict()
-        show_info['id'] = show_id
-        show_info['date'] = result["showdate"].isoformat()
-        show_info['best_of'] = bool(result["bestof"])
-        show_info['repeat_show'] = bool(repeat_show_id)
+        show_info["id"] = show_id
+        show_info["date"] = result["showdate"].isoformat()
+        show_info["best_of"] = bool(result["bestof"])
+        show_info["repeat_show"] = bool(repeat_show_id)
 
         if repeat_show_id:
             original_date = utility.convert_id_to_date(repeat_show_id,
                                                        database_connection)
-            show_info['original_show_id'] = repeat_show_id
+            show_info["original_show_id"] = repeat_show_id
             show_info["original_show_date"] = original_date.isoformat()
 
-        show_info['description'] = show_description
-        show_info['notes'] = show_notes
-        show_info['location'] = location_info
-        show_info['host'] = host_info
-        show_info['scorekeeper'] = scorekeeper_info
+        show_info["description"] = show_description
+        show_info["notes"] = show_notes
+        show_info["location"] = location_info
+        show_info["host"] = host_info
+        show_info["scorekeeper"] = scorekeeper_info
 
         return show_info
     except ProgrammingError as err:
@@ -142,13 +142,13 @@ def retrieve_panelist_info_by_id(show_id: int,
                 panelist_rank = None
 
             info = OrderedDict()
-            info['id'] = panelist["panelistid"]
-            info['name'] = panelist["panelist"]
-            info['slug'] = panelist["panelistslug"]
-            info['lightning_round_start'] = panelist["start"]
-            info['lightning_round_correct'] = panelist["correct"]
-            info['score'] = panelist["panelistscore"]
-            info['rank'] = panelist_rank
+            info["id"] = panelist["panelistid"]
+            info["name"] = panelist["panelist"]
+            info["slug"] = panelist["panelistslug"]
+            info["lightning_round_start"] = panelist["start"]
+            info["lightning_round_correct"] = panelist["correct"]
+            info["score"] = panelist["panelistscore"]
+            info["rank"] = panelist_rank
             panelists.append(info)
 
         return panelists
@@ -181,9 +181,9 @@ def retrieve_bluff_info_by_id(show_id: int,
 
         if chosen_result:
             chosen_bluff_info = OrderedDict()
-            chosen_bluff_info['id'] = chosen_result["chosenbluffpnlid"]
-            chosen_bluff_info['name'] = chosen_result["panelist"]
-            chosen_bluff_info['slug'] = chosen_result["panelistslug"]
+            chosen_bluff_info["id"] = chosen_result["chosenbluffpnlid"]
+            chosen_bluff_info["name"] = chosen_result["panelist"]
+            chosen_bluff_info["slug"] = chosen_result["panelistslug"]
         else:
             chosen_bluff_info = None
 
@@ -200,15 +200,15 @@ def retrieve_bluff_info_by_id(show_id: int,
 
         if correct_result:
             correct_bluff_info = OrderedDict()
-            correct_bluff_info['id'] = correct_result["correctbluffpnlid"]
-            correct_bluff_info['name'] = correct_result["panelist"]
-            correct_bluff_info['slug'] = correct_result["panelistslug"]
+            correct_bluff_info["id"] = correct_result["correctbluffpnlid"]
+            correct_bluff_info["name"] = correct_result["panelist"]
+            correct_bluff_info["slug"] = correct_result["panelistslug"]
         else:
             correct_bluff_info = None
 
         bluff_info = OrderedDict()
-        bluff_info['chosen_panelist'] = chosen_bluff_info
-        bluff_info['correct_panelist'] = correct_bluff_info
+        bluff_info["chosen_panelist"] = chosen_bluff_info
+        bluff_info["correct_panelist"] = correct_bluff_info
 
         return bluff_info
     except ProgrammingError as err:
@@ -245,11 +245,11 @@ def retrieve_guest_info_by_id(show_id: int,
         guests = []
         for guest in result:
             info = OrderedDict()
-            info['id'] = guest["guestid"]
-            info['name'] = guest["guest"]
-            info['slug'] = guest["guestslug"]
-            info['score'] = guest["guestscore"]
-            info['score_exception'] = bool(guest["exception"])
+            info["id"] = guest["guestid"]
+            info["name"] = guest["guest"]
+            info["slug"] = guest["guestslug"]
+            info["score"] = guest["guestscore"]
+            info["score_exception"] = bool(guest["exception"])
             guests.append(info)
 
         return guests

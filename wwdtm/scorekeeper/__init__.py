@@ -5,4 +5,4 @@
 
 from wwdtm.scorekeeper import core, details, info, utility
 
-__all__ = ['core', 'details', 'info', 'utility']
+__all__ = ["core", "details", "info", "utility"]

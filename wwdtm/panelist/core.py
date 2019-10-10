@@ -51,9 +51,9 @@ def retrieve_appearances_by_id(panelist_id: int,
 
         appearance_info = OrderedDict()
         appearance_counts = OrderedDict()
-        appearance_counts['regular_shows'] = result["regular"]
-        appearance_counts['all_shows'] = result["allshows"]
-        appearance_counts['shows_with_scores'] = result["withscores"]
+        appearance_counts["regular_shows"] = result["regular"]
+        appearance_counts["all_shows"] = result["allshows"]
+        appearance_counts["shows_with_scores"] = result["withscores"]
 
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.showid, s.showdate, s.bestof, "
@@ -77,21 +77,21 @@ def retrieve_appearances_by_id(panelist_id: int,
                     rank = None
 
                 info = OrderedDict()
-                info['show_id'] = appearance["showid"]
-                info['date'] = appearance["showdate"].isoformat()
-                info['best_of'] = bool(appearance["bestof"])
-                info['repeat_show'] = bool(appearance["repeatshowid"])
-                info['lightning_round_start'] = appearance["start"]
-                info['lightning_round_correct'] = appearance["correct"]
-                info['score'] = appearance["panelistscore"]
-                info['rank'] = rank
+                info["show_id"] = appearance["showid"]
+                info["date"] = appearance["showdate"].isoformat()
+                info["best_of"] = bool(appearance["bestof"])
+                info["repeat_show"] = bool(appearance["repeatshowid"])
+                info["lightning_round_start"] = appearance["start"]
+                info["lightning_round_correct"] = appearance["correct"]
+                info["score"] = appearance["panelistscore"]
+                info["rank"] = rank
                 appearances.append(info)
 
-            appearance_info['count'] = appearance_counts
-            appearance_info['shows'] = appearances
+            appearance_info["count"] = appearance_counts
+            appearance_info["shows"] = appearances
         else:
-            appearance_info['count'] = 0
-            appearance_info['shows'] = None
+            appearance_info["count"] = 0
+            appearance_info["shows"] = None
 
         return appearance_info
     except ProgrammingError as err:
@@ -149,8 +149,8 @@ def retrieve_bluffs_by_id(panelist_id: int,
 
         if result:
             bluffs = OrderedDict()
-            bluffs['chosen'] = result[0]
-            bluffs['correct'] = result[1]
+            bluffs["chosen"] = result[0]
+            bluffs["correct"] = result[1]
             return bluffs
 
         return None
@@ -252,11 +252,11 @@ def retrieve_rank_info_by_id(panelist_id: int,
         cursor.close()
 
         rank_info = OrderedDict()
-        rank_info['first'] = result["1"]
-        rank_info['first_tied'] = result["1t"]
-        rank_info['second'] = result["2"]
-        rank_info['second_tied'] = result["2t"]
-        rank_info['third'] = result["3"]
+        rank_info["first"] = result["1"]
+        rank_info["first_tied"] = result["1t"]
+        rank_info["second"] = result["2"]
+        rank_info["second_tied"] = result["2t"]
+        rank_info["third"] = result["3"]
 
         return rank_info
     except ProgrammingError as err:
@@ -287,12 +287,12 @@ def retrieve_statistics_by_id(panelist_id: int,
 
     appearance_count = len(scores)
     scoring = OrderedDict()
-    scoring['minimum'] = int(numpy.amin(scores))
-    scoring['maximum'] = int(numpy.amax(scores))
-    scoring['mean'] = round(numpy.mean(scores), 4)
-    scoring['median'] = int(numpy.median(scores))
-    scoring['standard_deviation'] = round(numpy.std(scores), 4)
-    scoring['total'] = int(numpy.sum(scores))
+    scoring["minimum"] = int(numpy.amin(scores))
+    scoring["maximum"] = int(numpy.amax(scores))
+    scoring["mean"] = round(numpy.mean(scores), 4)
+    scoring["median"] = int(numpy.median(scores))
+    scoring["standard_deviation"] = round(numpy.std(scores), 4)
+    scoring["total"] = int(numpy.sum(scores))
 
     ranks_first = round(100 * (ranks["first"] / appearance_count), 4)
     ranks_first_tied = round(100 * (ranks["first_tied"] / appearance_count), 4)
@@ -301,19 +301,19 @@ def retrieve_statistics_by_id(panelist_id: int,
     ranks_third = round(100 * (ranks["third"] / appearance_count), 4)
 
     ranks_percentage = OrderedDict()
-    ranks_percentage['first'] = ranks_first
-    ranks_percentage['first_tied'] = ranks_first_tied
-    ranks_percentage['second'] = ranks_second
-    ranks_percentage['second_tied'] = ranks_second_tied
-    ranks_percentage['third'] = ranks_third
+    ranks_percentage["first"] = ranks_first
+    ranks_percentage["first_tied"] = ranks_first_tied
+    ranks_percentage["second"] = ranks_second
+    ranks_percentage["second_tied"] = ranks_second_tied
+    ranks_percentage["third"] = ranks_third
 
     ranking = OrderedDict()
-    ranking['rank'] = ranks
-    ranking['percentage'] = ranks_percentage
+    ranking["rank"] = ranks
+    ranking["percentage"] = ranks_percentage
 
     statistics = OrderedDict()
-    statistics['scoring'] = scoring
-    statistics['ranking'] = ranking
+    statistics["scoring"] = scoring
+    statistics["ranking"] = ranking
     return statistics
 
 def retrieve_statistics_by_slug(panelist_slug: str,

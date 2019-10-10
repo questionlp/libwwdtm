@@ -41,23 +41,23 @@ def retrieve_by_id(show_id: int,
                                                      database_connection)
 
         show_details = OrderedDict()
-        show_details['id'] = show_info["id"]
-        show_details['date'] = show_info["date"]
-        show_details['best_of'] = show_info["best_of"]
-        show_details['repeat_show'] = show_info["repeat_show"]
+        show_details["id"] = show_info["id"]
+        show_details["date"] = show_info["date"]
+        show_details["best_of"] = show_info["best_of"]
+        show_details["repeat_show"] = show_info["repeat_show"]
 
         if "original_show_date" in show_info:
             show_details["original_show_id"] = show_info["original_show_id"]
             show_details["original_show_date"] = show_info["original_show_date"]
 
-        show_details['location'] = show_info["location"]
-        show_details['description'] = show_info["description"]
-        show_details['notes'] = show_info["notes"]
-        show_details['host'] = show_info["host"]
-        show_details['scorekeeper'] = show_info["scorekeeper"]
-        show_details['panelists'] = show_panelists
-        show_details['bluff'] = show_bluff
-        show_details['guests'] = show_guests
+        show_details["location"] = show_info["location"]
+        show_details["description"] = show_info["description"]
+        show_details["notes"] = show_info["notes"]
+        show_details["host"] = show_info["host"]
+        show_details["scorekeeper"] = show_info["scorekeeper"]
+        show_details["panelists"] = show_panelists
+        show_details["bluff"] = show_bluff
+        show_details["guests"] = show_guests
         return show_details
 
     return None

@@ -44,8 +44,8 @@ def retrieve_appearances_by_id(guest_id: int,
 
         appearance_info = OrderedDict()
         appearance_counts = OrderedDict()
-        appearance_counts['regular_shows'] = result["regular"]
-        appearance_counts['all_shows'] = result["allshows"]
+        appearance_counts["regular_shows"] = result["regular"]
+        appearance_counts["all_shows"] = result["allshows"]
 
         query = ("SELECT gm.showid, s.showdate, s.bestof, s.repeatshowid, "
                  "gm.guestscore, gm.exception FROM ww_showguestmap gm "
@@ -61,19 +61,19 @@ def retrieve_appearances_by_id(guest_id: int,
             appearances = []
             for appearance in result:
                 info = OrderedDict()
-                info['show_id'] = appearance["showid"]
-                info['date'] = appearance["showdate"].isoformat()
-                info['best_of'] = bool(appearance["bestof"])
-                info['repeat_show'] = bool(appearance["repeatshowid"])
-                info['score'] = appearance["guestscore"]
-                info['score_exception'] = bool(appearance["exception"])
+                info["show_id"] = appearance["showid"]
+                info["date"] = appearance["showdate"].isoformat()
+                info["best_of"] = bool(appearance["bestof"])
+                info["repeat_show"] = bool(appearance["repeatshowid"])
+                info["score"] = appearance["guestscore"]
+                info["score_exception"] = bool(appearance["exception"])
                 appearances.append(info)
 
-            appearance_info['count'] = appearance_counts
-            appearance_info['shows'] = appearances
+            appearance_info["count"] = appearance_counts
+            appearance_info["shows"] = appearances
         else:
-            appearance_info['count'] = 0
-            appearance_info['shows'] = None
+            appearance_info["count"] = 0
+            appearance_info["shows"] = None
 
         return appearance_info
     except ProgrammingError as err:

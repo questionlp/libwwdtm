@@ -43,8 +43,8 @@ def retrieve_appearances_by_id(scorekeeper_id: int,
 
         appearance_info = OrderedDict()
         appearance_counts = OrderedDict()
-        appearance_counts['regular_shows'] = result["regular"]
-        appearance_counts['all_shows'] = result["allshows"]
+        appearance_counts["regular_shows"] = result["regular"]
+        appearance_counts["all_shows"] = result["allshows"]
 
         query = ("SELECT skm.showid, s.showdate, s.bestof, "
                  "s.repeatshowid, skm.guest, skm.description "
@@ -68,19 +68,19 @@ def retrieve_appearances_by_id(scorekeeper_id: int,
                     description = None
 
                 info = OrderedDict()
-                info['show_id'] = appearance["showid"]
-                info['date'] = appearance["showdate"].isoformat()
-                info['best_of'] = bool(appearance["bestof"])
-                info['repeat_show'] = bool(appearance["repeatshowid"])
-                info['guest'] = bool(appearance["guest"])
-                info['description'] = description
+                info["show_id"] = appearance["showid"]
+                info["date"] = appearance["showdate"].isoformat()
+                info["best_of"] = bool(appearance["bestof"])
+                info["repeat_show"] = bool(appearance["repeatshowid"])
+                info["guest"] = bool(appearance["guest"])
+                info["description"] = description
                 appearances.append(info)
 
-            appearance_info['count'] = appearance_counts
-            appearance_info['shows'] = appearances
+            appearance_info["count"] = appearance_counts
+            appearance_info["shows"] = appearances
         else:
-            appearance_info['count'] = 0
-            appearance_info['shows'] = None
+            appearance_info["count"] = 0
+            appearance_info["shows"] = None
 
         return appearance_info
     except ProgrammingError as err:

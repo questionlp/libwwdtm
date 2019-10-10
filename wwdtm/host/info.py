@@ -30,10 +30,10 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         hosts = []
         for row in result:
             host = OrderedDict()
-            host['id'] = row["hostid"]
-            host['name'] = row["host"]
-            host['slug'] = row["hostslug"]
-            host['gender'] = row["hostgender"]
+            host["id"] = row["hostid"]
+            host["name"] = row["host"]
+            host["slug"] = row["hostslug"]
+            host["gender"] = row["hostgender"]
             hosts.append(host)
 
         return hosts
@@ -93,10 +93,10 @@ def retrieve_by_id(host_id: int,
 
         if result:
             host_info = OrderedDict()
-            host_info['id'] = host_id
-            host_info['name'] = result["host"]
-            host_info['slug'] = result["hostslug"]
-            host_info['gender'] = result["hostgender"]
+            host_info["id"] = host_id
+            host_info["name"] = result["host"]
+            host_info["slug"] = result["hostslug"]
+            host_info["gender"] = result["hostgender"]
             return host_info
 
         return None
