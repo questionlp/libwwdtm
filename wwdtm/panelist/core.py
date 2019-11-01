@@ -55,6 +55,30 @@ def retrieve_appearances_by_id(panelist_id: int,
         appearance_counts["shows_with_scores"] = result["withscores"]
 
         cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT MIN(s.showid) AS first_id, MIN(s.showdate) AS first, "
+                 "MAX(s.showid) AS most_recent_id, MAX(s.showdate) AS most_recent "
+                 "FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL "
+                 "AND pm.panelistid = %s "
+                 "ORDER BY s.showdate ASC;")
+        cursor.execute(query, (panelist_id,))
+        result = cursor.fetchone()
+
+        if result:
+            milestones = OrderedDict()
+            first = OrderedDict()
+            first["show_id"] = result["first_id"]
+            first["show_date"] = result["first"].isoformat()
+            most_recent = OrderedDict()
+            most_recent["show_id"] = result["most_recent_id"]
+            most_recent["show_date"] = result["most_recent"].isoformat()
+
+            milestones["first"] = first
+            milestones["most_recent"] = most_recent
+            appearance_info["milestones"] = milestones
+
+        cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.showid, s.showdate, s.bestof, "
                  "s.repeatshowid, pm.panelistlrndstart AS start, "
                  " pm.panelistlrndcorrect AS correct, pm.panelistscore, "
@@ -91,30 +115,6 @@ def retrieve_appearances_by_id(panelist_id: int,
         else:
             appearance_info["count"] = 0
             appearance_info["shows"] = None
-
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT MIN(s.showid) AS first_id, MIN(s.showdate) AS first, "
-                 "MAX(s.showid) AS most_recent_id, MAX(s.showdate) AS most_recent "
-                 "FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL "
-                 "AND pm.panelistid = %s "
-                 "ORDER BY s.showdate ASC;")
-        cursor.execute(query, (panelist_id,))
-        result = cursor.fetchone()
-
-        if result:
-            milestones = OrderedDict()
-            first = OrderedDict()
-            first["show_id"] = result["first_id"]
-            first["show_date"] = result["first"].isoformat()
-            most_recent = OrderedDict()
-            most_recent["show_id"] = result["most_recent_id"]
-            most_recent["show_date"] = result["most_recent"].isoformat()
-
-            milestones["first"] = first
-            milestones["most_recent"] = most_recent
-            appearance_info["milestones"] = milestones
 
         return appearance_info
     except ProgrammingError as err:
