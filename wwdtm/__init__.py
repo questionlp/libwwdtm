@@ -5,4 +5,4 @@
 
 from wwdtm import guest, host, location, panelist, scorekeeper, show
 
-VERSION = "0.9.6.1"
+VERSION = "0.9.7"
