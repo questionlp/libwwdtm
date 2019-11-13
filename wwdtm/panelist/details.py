@@ -43,7 +43,7 @@ def retrieve_by_id(panelist_id: int,
     panelist["appearances"] = appearances
     return panelist
 
-def retrieve_by_slug(panelist_id: int,
+def retrieve_by_slug(panelist_slug: str,
                      database_connection: mysql.connector.connect
                     ) -> Dict:
     """Returns an OrderedDict with panelist details based on the
@@ -53,7 +53,7 @@ def retrieve_by_slug(panelist_id: int,
         panelist_slug (str)
         database_connection (mysql.connector.connect)
     """
-    panelist_id = utility.convert_slug_to_id(panelist_id, database_connection)
+    panelist_id = utility.convert_slug_to_id(panelist_slug, database_connection)
     if not panelist_id:
         return None
 
