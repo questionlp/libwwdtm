@@ -65,7 +65,7 @@ def retrieve_appearances_by_id(panelist_id: int,
         cursor.execute(query, (panelist_id,))
         result = cursor.fetchone()
 
-        if result:
+        if result and result["first_id"]:
             milestones = OrderedDict()
             first = OrderedDict()
             first["show_id"] = result["first_id"]
@@ -77,6 +77,8 @@ def retrieve_appearances_by_id(panelist_id: int,
             milestones["first"] = first
             milestones["most_recent"] = most_recent
             appearance_info["milestones"] = milestones
+        else:
+            appearance_info["milestones"] = None
 
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.showid, s.showdate, s.bestof, "
