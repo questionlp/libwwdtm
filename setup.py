@@ -6,7 +6,7 @@
 import setuptools
 
 setuptools.setup(name="wwdtm",
-                 version="0.9.7.2",
+                 version="0.9.7.3",
                  description="Wait Wait... Don't Tell Me! Data Access Library",
                  long_description=("Provides show, host, scorekeeper, panelist and guest details "
                                    "from an instance of the Wait Wait... Don't Tell Me! Stats Page "
@@ -22,7 +22,7 @@ setuptools.setup(name="wwdtm",
                  author="Linh Pham",
                  author_email="dev@wwdt.me",
                  license="Apache License 2.0",
-                 packages=setuptools.find_packages(),
+                 packages=setuptools.find_packages(exclude=["tests"]),
                  package_dir={"wwdtm": "wwdtm"},
                  project_urls={
                      "Source": "https://github.com/questionlp/libwwdtm/",
