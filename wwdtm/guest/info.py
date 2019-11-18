@@ -9,6 +9,7 @@ from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
+from slugify import slugify
 from wwdtm.guest import utility
 
 #region Retrieval Functions
@@ -33,7 +34,11 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
             guest = OrderedDict()
             guest["id"] = row["guestid"]
             guest["name"] = row["guest"]
-            guest["slug"] = row["guestslug"]
+            if row["guestslug"]:
+                guest["slug"] = row["guestslug"]
+            else:
+                guest["slug"] = slugify(guest["name"])
+
             guests.append(guest)
 
         return guests
@@ -94,7 +99,11 @@ def retrieve_by_id(guest_id: int,
             guest_info = OrderedDict()
             guest_info["id"] = guest_id
             guest_info["name"] = result["guest"]
-            guest_info["slug"] = result["guestslug"]
+            if result["guestslug"]:
+                guest_info["slug"] = result["guestslug"]
+            else:
+                guest_info["slug"] = slugify(guest_info["name"])
+
             return guest_info
 
         return None

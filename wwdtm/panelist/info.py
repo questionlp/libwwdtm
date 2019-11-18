@@ -9,6 +9,7 @@ from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
+from slugify import slugify
 from wwdtm.panelist import utility
 
 #region Retrieval Functions
@@ -35,7 +36,11 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
             panelist = OrderedDict()
             panelist["id"] = row["panelistid"]
             panelist["name"] = row["panelist"]
-            panelist["slug"] = row["panelistslug"]
+            if row["panelistslug"]:
+                panelist["slug"] = row["panelistslug"]
+            else:
+                panelist["slug"] = slugify(panelist["name"])
+
             panelist["gender"] = row["panelistgender"]
             panelists.append(panelist)
 
@@ -100,7 +105,11 @@ def retrieve_by_id(panelist_id: int,
             panelist_dict = OrderedDict()
             panelist_dict["id"] = panelist_id
             panelist_dict["name"] = result["panelist"]
-            panelist_dict["slug"] = result["panelistslug"]
+            if result["panelistslug"]:
+                panelist_dict["slug"] = result["panelistslug"]
+            else:
+                panelist_dict["slug"] = slugify(panelist_dict["name"])
+
             panelist_dict["gender"] = result["panelistgender"]
             return panelist_dict
 

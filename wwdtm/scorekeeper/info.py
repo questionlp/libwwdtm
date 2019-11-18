@@ -9,6 +9,7 @@ from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
+from slugify import slugify
 from wwdtm.scorekeeper import utility
 
 #region Retrieval Functions
@@ -34,7 +35,11 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
             info = OrderedDict()
             info["id"] = row["scorekeeperid"]
             info["name"] = row["scorekeeper"]
-            info["slug"] = row["scorekeeperslug"]
+            if row["scorekeeperslug"]:
+                info["slug"] = row["scorekeeperslug"]
+            else:
+                info["slug"] = slugify(info["name"])
+
             info["gender"] = row["scorekeepergender"]
             scorekeepers.append(info)
 
@@ -101,7 +106,11 @@ def retrieve_by_id(scorekeeper_id: int,
             scorekeeper_dict = OrderedDict()
             scorekeeper_dict["id"] = scorekeeper_id
             scorekeeper_dict["name"] = result["scorekeeper"]
-            scorekeeper_dict["slug"] = result["scorekeeperslug"]
+            if result["scorekeeperslug"]:
+                scorekeeper_dict["slug"] = result["scorekeeperslug"]
+            else:
+                scorekeeper_dict["slug"] = slugify(scorekeeper_dict["name"])
+
             scorekeeper_dict["gender"] = result["scorekeepergender"]
             return scorekeeper_dict
 
