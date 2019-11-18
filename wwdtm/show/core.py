@@ -269,7 +269,7 @@ def retrieve_guest_info_by_id(show_id: int,
             if guest["guestslug"]:
                 info["slug"] = guest["guestslug"]
             else:
-                info["slug"] = slugify(guest["guestslug"])
+                info["slug"] = slugify(info["name"])
 
             info["score"] = guest["guestscore"]
             info["score_exception"] = bool(guest["exception"])
