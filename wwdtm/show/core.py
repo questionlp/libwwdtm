@@ -9,6 +9,7 @@ from collections import OrderedDict
 from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
+from slugify import slugify
 from wwdtm.show import utility
 
 #region Core Retrieval Functions
@@ -68,7 +69,11 @@ def retrieve_core_info_by_id(show_id: int,
         host_info = OrderedDict()
         host_info["id"] = result["hostid"]
         host_info["name"] = result["host"]
-        host_info["slug"] = result["hostslug"]
+        if result["hostslug"]:
+            host_info["slug"] = result["hostslug"]
+        else:
+            host_info["slug"] = slugify(host_info["name"])
+
         host_info["guest"] = bool(result["hostguest"])
 
         if result["description"]:
@@ -79,7 +84,11 @@ def retrieve_core_info_by_id(show_id: int,
         scorekeeper_info = OrderedDict()
         scorekeeper_info["id"] = result["scorekeeperid"]
         scorekeeper_info["name"] = result["scorekeeper"]
-        scorekeeper_info["slug"] = result["scorekeeperslug"]
+        if result["scorekeeperslug"]:
+            scorekeeper_info["slug"] = result["scorekeeperslug"]
+        else:
+            scorekeeper_info["slug"] = slugify(scorekeeper_info["name"])
+
         scorekeeper_info["guest"] = bool(result["scorekeeperguest"])
         scorekeeper_info["description"] = scorekeeper_description
 
@@ -144,7 +153,11 @@ def retrieve_panelist_info_by_id(show_id: int,
             info = OrderedDict()
             info["id"] = panelist["panelistid"]
             info["name"] = panelist["panelist"]
-            info["slug"] = panelist["panelistslug"]
+            if panelist["panelistslug"]:
+                info["slug"] = panelist["panelistslug"]
+            else:
+                info["slug"] = slugify(info["name"])
+
             info["lightning_round_start"] = panelist["start"]
             info["lightning_round_correct"] = panelist["correct"]
             info["score"] = panelist["panelistscore"]
@@ -183,7 +196,10 @@ def retrieve_bluff_info_by_id(show_id: int,
             chosen_bluff_info = OrderedDict()
             chosen_bluff_info["id"] = chosen_result["chosenbluffpnlid"]
             chosen_bluff_info["name"] = chosen_result["panelist"]
-            chosen_bluff_info["slug"] = chosen_result["panelistslug"]
+            if chosen_result["panelistslug"]:
+                chosen_bluff_info["slug"] = chosen_result["panelistslug"]
+            else:
+                chosen_bluff_info["slug"] = slugify(chosen_bluff_info["name"])
         else:
             chosen_bluff_info = None
 
@@ -202,7 +218,10 @@ def retrieve_bluff_info_by_id(show_id: int,
             correct_bluff_info = OrderedDict()
             correct_bluff_info["id"] = correct_result["correctbluffpnlid"]
             correct_bluff_info["name"] = correct_result["panelist"]
-            correct_bluff_info["slug"] = correct_result["panelistslug"]
+            if correct_result["panelistslug"]:
+                correct_bluff_info["slug"] = correct_result["panelistslug"]
+            else:
+                correct_bluff_info["slug"] = slugify(correct_bluff_info["name"])
         else:
             correct_bluff_info = None
 
@@ -247,7 +266,11 @@ def retrieve_guest_info_by_id(show_id: int,
             info = OrderedDict()
             info["id"] = guest["guestid"]
             info["name"] = guest["guest"]
-            info["slug"] = guest["guestslug"]
+            if guest["guestslug"]:
+                info["slug"] = guest["guestslug"]
+            else:
+                info["slug"] = slugify(guest["guestslug"])
+
             info["score"] = guest["guestscore"]
             info["score_exception"] = bool(guest["exception"])
             guests.append(info)
