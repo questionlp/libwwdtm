@@ -138,7 +138,7 @@ def retrieve_by_year(show_year: int,
         database_connection (mysql.connector.connect)
     """
     try:
-        parsed_show_year = parser.parse("{}".format(show_year))
+        parsed_show_year = parser.parse("{:04d}".format(show_year))
     except ValueError:
         return None
 
@@ -179,8 +179,10 @@ def retrieve_by_year_month(show_year: int,
         database_connection (mysql.connector.connect)
     """
     try:
-        parsed_show_year_month = parser.parse("{}-{}".format(show_year,
-                                                             show_month))
+        # Validate year/month by trying to parse a date string for
+        # the first day of the year/month
+        parsed_show_year_month = parser.parse("{:04d}-{:02d}-01".format(show_year,
+                                                                        show_month))
     except ValueError:
         return None
 
