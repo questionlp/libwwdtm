@@ -38,7 +38,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-
 def retrieve_all_dates(database_connection: mysql.connector.connect
                       ) -> List[str]:
     """Returns a list of all show dates, sorted by show date
@@ -63,6 +62,87 @@ def retrieve_all_dates(database_connection: mysql.connector.connect
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
+def retrieve_all_dates_tuple(database_connection: mysql.connector.connect
+                            ) -> List[tuple]:
+    """Returns a list of all show dates as a tuple of year, month and
+    day, sorted by show date
+
+    Arguments:
+        database_connection (mysql.connector.connect)
+    """
+    try:
+        cursor = database_connection.cursor()
+        query = ("SELECT YEAR(showdate), MONTH(showdate), DAY(showdate) "
+                 "FROM ww_shows "
+                 "ORDER BY showdate ASC;")
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+
+        show_dates = []
+        for show in result:
+            show_dates.append((show[0], show[1], show[2]))
+
+        return show_dates
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+def retrieve_all_show_years_months(database_connection: mysql.connector.connect
+                                  ) -> List[str]:
+    """Returns a list of all show years and months as a string, sorted
+    by year and month
+
+    Arguments:
+        database_connection (mysql.connector.connect)
+    """
+    try:
+        cursor = database_connection.cursor()
+        query = ("SELECT DISTINCT YEAR(showdate), MONTH(showdate) "
+                 "FROM ww_shows "
+                 "ORDER BY showdate ASC;")
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+
+        show_years_months = []
+        for row in result:
+            year_month = "{}-{}".format(row[0], row[1])
+            show_years_months.append(year_month)
+
+        return show_years_months
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+def retrieve_all_show_years_months_tuple(database_connection: mysql.connector.connect
+                                        ) -> List[tuple]:
+    """Returns a list of all show years and months as a tuple, sorted
+    by year and month
+
+    Arguments:
+        database_connection (mysql.connector.connect)
+    """
+    try:
+        cursor = database_connection.cursor()
+        query = ("SELECT DISTINCT YEAR(showdate), MONTH(showdate) "
+                 "FROM ww_shows "
+                 "ORDER BY showdate ASC;")
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+
+        show_years_months = []
+        for row in result:
+            show_years_months.append((row[0], row[1]))
+
+        return show_years_months
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
 
 def retrieve_by_id(show_id: int,
                    database_connection: mysql.connector.connect,

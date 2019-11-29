@@ -191,6 +191,30 @@ def test_retrieve_all_dates(database_connection: mysql.connector.connect,
     if print_response:
         print(json.dumps(show_dates, indent=2))
 
+def test_retrieve_all_dates_tuple(database_connection: mysql.connector.connect,
+                                  print_response: bool = False):
+    """Testing response from info.retrieve_all_dates_tuple"""
+    show_dates = info.retrieve_all_dates_tuple(database_connection)
+    assert show_dates is not None
+    if print_response:
+        print(json.dumps(show_dates, indent=2))
+
+def test_retrieve_all_years_months(database_connection: mysql.connector.connect,
+                                   print_response: bool = False):
+    """Testing response from info.retrieve_all_show_years_months"""
+    show_years_months = info.retrieve_all_show_years_months(database_connection)
+    assert show_years_months is not None
+    if print_response:
+        print(json.dumps(show_years_months, indent=2))
+
+def test_retrieve_all_years_months_tuple(database_connection: mysql.connector.connect,
+                                         print_response: bool = False):
+    """Testing response from info.retrieve_all_show_years_months_tuple"""
+    show_years_months = info.retrieve_all_show_years_months_tuple(database_connection)
+    assert show_years_months is not None
+    if print_response:
+        print(json.dumps(show_years_months, indent=2))
+
 def test_retrieve_recent(database_connection: mysql.connector.connect,
                          print_response: bool = False):
     """Testing response from info.retrieve_recent"""
