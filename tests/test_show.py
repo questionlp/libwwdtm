@@ -175,6 +175,22 @@ def test_retrieve_all(database_connection: mysql.connector.connect,
     if print_response:
         print(json.dumps(show_info, indent=2))
 
+def test_retrieve_all_ids(database_connection: mysql.connector.connect,
+                          print_response: bool = False):
+    """Testing response from info.retrieve_all_ids"""
+    show_ids = info.retrieve_all_ids(database_connection)
+    assert show_ids is not None
+    if print_response:
+        print(json.dumps(show_ids, indent=2))
+
+def test_retrieve_all_dates(database_connection: mysql.connector.connect,
+                            print_response: bool = False):
+    """Testing response from info.retrieve_all_dates"""
+    show_dates = info.retrieve_all_dates(database_connection)
+    assert show_dates is not None
+    if print_response:
+        print(json.dumps(show_dates, indent=2))
+
 def test_retrieve_recent(database_connection: mysql.connector.connect,
                          print_response: bool = False):
     """Testing response from info.retrieve_recent"""

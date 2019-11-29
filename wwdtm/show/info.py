@@ -39,6 +39,31 @@ def retrieve_all_ids(database_connection: mysql.connector.connect
         raise DatabaseError("Unexpected database error") from err
 
 
+def retrieve_all_dates(database_connection: mysql.connector.connect
+                      ) -> List[str]:
+    """Returns a list of all show dates, sorted by show date
+
+    Arguments:
+        database_connection (mysql.connector.connect)
+    """
+    try:
+        cursor = database_connection.cursor()
+        query = "SELECT showdate FROM ww_shows ORDER BY showdate ASC;"
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+
+        show_dates = []
+        for show in result:
+            show_dates.append(show[0].isoformat())
+
+        return show_dates
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+
 def retrieve_by_id(show_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:

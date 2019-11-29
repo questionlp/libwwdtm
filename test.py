@@ -221,6 +221,8 @@ def test_show_module(database_connection: mysql.connector.connect):
     test_show.test_retrieve_by_year(2006, database_connection)
     test_show.test_retrieve_by_year_month(2006, 8, database_connection)
     test_show.test_retrieve_all(database_connection)
+    test_show.test_retrieve_all_dates(database_connection)
+    test_show.test_retrieve_all_ids(database_connection)
 
     # Testing retrieve recent basic show info
     test_show.test_retrieve_recent(database_connection)
