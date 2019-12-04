@@ -135,6 +135,143 @@ def retrieve_by_slug(panelist_slug: str,
 
     return None
 
+def retrieve_scores_grouped_list_by_id(panelist_id: int,
+                                       database_connection: mysql.connector.connect,
+                                       pre_validated_id: bool = False
+                                      ) -> Dict:
+    """Returns an OrderedDict containing two lists, one with panelist
+    scores and one with corresponding number of instances a panelist
+    has scored that amount, for the requested panelist ID
+
+    Arguments:
+        panelist_id (int)
+        database_connection (mysql.connector.connect)
+        pre_validated_id (bool): Flag whether or not the panelist ID
+        has been validated
+    """
+    if not pre_validated_id:
+        if not utility.validate_id(panelist_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT pm.panelistscore AS score, "
+                 "COUNT(pm.panelistscore) AS score_count "
+                 "FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s "
+                 "AND s.bestof = 0 AND s.repeatshowid IS NULL "
+                 "AND pm.panelistscore IS NOT NULL "
+                 "GROUP BY pm.panelistscore "
+                 "ORDER BY pm.panelistscore ASC;")
+        cursor.execute(query, (panelist_id,))
+        result = cursor.fetchall()
+
+        if not result:
+            return None
+
+        score_list = []
+        score_count_list = []
+        for score in result:
+            score_list.append(score["score"])
+            score_count_list.append(score["score_count"])
+
+        scores = OrderedDict()
+        scores["score"] = score_list
+        scores["count"] = score_count_list
+        return scores
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+def retrieve_scores_grouped_list_by_slug(panelist_slug: str,
+                                         database_connection: mysql.connector.connect
+                                        ) -> Dict:
+    """Returns an OrderedDict containing two lists, one with panelist
+    scores and one with corresponding number of instances a panelist
+    has scored that amount, for the requested panelist slug
+
+    Arguments:
+        panelist_slug (str)
+        database_connection (mysql.connector.connect)
+    """
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
+    if not panelist_id:
+        return None
+
+    return retrieve_scores_grouped_list_by_id(panelist_id,
+                                              database_connection,
+                                              pre_validated_id=True)
+
+def retrieve_scores_grouped_ordered_pair_by_id(panelist_id: int,
+                                               database_connection: mysql.connector.connect,
+                                               pre_validated_id: bool = False
+                                              ) -> List[tuple]:
+    """Returns an list of tuples containing a score and the
+    corresponding number of instances a panelist has scored that amount
+    for the requested panelist ID
+
+    Arguments:
+        panelist_id (int)
+        database_connection (mysql.connector.connect)
+        pre_validated_id (bool): Flag whether or not the panelist ID
+        has been validated
+    """
+    if not pre_validated_id:
+        if not utility.validate_id(panelist_id, database_connection):
+            return None
+
+    try:
+        cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT pm.panelistscore AS score, "
+                 "COUNT(pm.panelistscore) AS score_count "
+                 "FROM ww_showpnlmap pm "
+                 "JOIN ww_shows s ON s.showid = pm.showid "
+                 "WHERE pm.panelistid = %s "
+                 "AND s.bestof = 0 AND s.repeatshowid IS NULL "
+                 "AND pm.panelistscore IS NOT NULL "
+                 "GROUP BY pm.panelistscore "
+                 "ORDER BY pm.panelistscore ASC;")
+        cursor.execute(query, (panelist_id,))
+        result = cursor.fetchall()
+
+        if not result:
+            return None
+
+        score_list = []
+        for score in result:
+            panelist_score = score["score"]
+            score_count = score["score_count"]
+            score_list.append((panelist_score, score_count))
+
+        return score_list
+    except ProgrammingError as err:
+        raise ProgrammingError("Unable to query the database") from err
+    except DatabaseError as err:
+        raise DatabaseError("Unexpected database error") from err
+
+def retrieve_scores_grouped_ordered_pair_by_slug(panelist_slug: str,
+                                                 database_connection: mysql.connector.connect
+                                                ) -> List[tuple]:
+    """Returns an list of tuples containing a score and the
+    corresponding number of instances a panelist has scored that amount
+    for the requested panelist slug
+
+    Arguments:
+        panelist_slug (str)
+        database_connection (mysql.connector.connect)
+    """
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
+    if not panelist_id:
+        return None
+
+    return retrieve_scores_grouped_ordered_pair_by_id(panelist_id,
+                                                      database_connection,
+                                                      pre_validated_id=True)
+
 def retrieve_scores_list_by_id(panelist_id: int,
                                database_connection: mysql.connector.connect,
                                pre_validated_id: bool = False) -> Dict:
@@ -157,7 +294,7 @@ def retrieve_scores_list_by_id(panelist_id: int,
                  "FROM ww_showpnlmap pm "
                  "JOIN ww_shows s ON s.showid = pm.showid "
                  "WHERE pm.panelistid = %s "
-                 "AND s.bestof = 0 and s.repeatshowid IS NULL "
+                 "AND s.bestof = 0 AND s.repeatshowid IS NULL "
                  "AND pm.panelistscore IS NOT NULL "
                  "ORDER BY s.showdate ASC;")
         cursor.execute(query, (panelist_id,))
@@ -224,7 +361,7 @@ def retrieve_scores_ordered_pair_by_id(panelist_id: int,
                  "FROM ww_showpnlmap pm "
                  "JOIN ww_shows s ON s.showid = pm.showid "
                  "WHERE pm.panelistid = %s "
-                 "AND s.bestof = 0 and s.repeatshowid IS NULL "
+                 "AND s.bestof = 0 AND s.repeatshowid IS NULL "
                  "AND pm.panelistscore IS NOT NULL "
                  "ORDER BY s.showdate ASC;")
         cursor.execute(query, (panelist_id,))

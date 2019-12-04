@@ -142,6 +142,14 @@ def test_panelist_module(database_connection: mysql.connector.connect):
                                                 database_connection)
 
     # Testing retrieve panelist scores
+    test_panelist.test_retrieve_scores_grouped_list_by_id(14,
+                                                          database_connection)
+    test_panelist.test_retrieve_scores_grouped_list_by_slug("luke-burbank",
+                                                            database_connection)
+    test_panelist.test_retrieve_scores_grouped_ordered_pair_by_id(14,
+                                                                  database_connection)
+    test_panelist.test_retrieve_scores_grouped_ordered_pair_by_slug("luke-burbank",
+                                                                    database_connection)
     test_panelist.test_retrieve_scores_list_by_id(30, database_connection)
     test_panelist.test_retrieve_scores_list_by_slug("faith-salie",
                                                     database_connection)

@@ -114,6 +114,52 @@ def test_retrieve_all_details(database_connection: mysql.connector.connect,
     if print_response:
         print(json.dumps(panelists_dict, indent=2))
 
+def test_retrieve_scores_grouped_list_by_id(panelist_id: int,
+                                            database_connection: mysql.connector.connect,
+                                            print_response: bool = False):
+    """Testing response from info.retrieve_scores_grouped_list_by_id"""
+    score_list = info.retrieve_scores_grouped_list_by_id(panelist_id,
+                                                         database_connection)
+    assert score_list is not None
+    assert "score" in score_list
+    assert "count" in score_list
+    assert len(score_list["score"]) == len(score_list["count"])
+    if print_response:
+        print(json.dumps(score_list, indent=2))
+
+def test_retrieve_scores_grouped_list_by_slug(panelist_slug: str,
+                                              database_connection: mysql.connector.connect,
+                                              print_response: bool = False):
+    """Testing response from info.retrieve_scores_grouped_list_by_slug"""
+    score_list = info.retrieve_scores_grouped_list_by_slug(panelist_slug,
+                                                           database_connection)
+    assert score_list is not None
+    assert "score" in score_list
+    assert "count" in score_list
+    assert len(score_list["score"]) == len(score_list["count"])
+    if print_response:
+        print(json.dumps(score_list, indent=2))
+
+def test_retrieve_scores_grouped_ordered_pair_by_id(panelist_id: int,
+                                                    database_connection: mysql.connector.connect,
+                                                    print_response: bool = False):
+    """Testing response from info.retrieve_scores_grouped_ordered_pair_by_id"""
+    score_list = info.retrieve_scores_grouped_ordered_pair_by_id(panelist_id,
+                                                                 database_connection)
+    assert score_list is not None
+    if print_response:
+        print(json.dumps(score_list, indent=2))
+
+def test_retrieve_scores_grouped_ordered_pair_by_slug(panelist_slug: str,
+                                                      database_connection: mysql.connector.connect,
+                                                      print_response: bool = False):
+    """Testing response from info.retrieve_scores_grouped_ordered_pair_by_slug"""
+    score_list = info.retrieve_scores_grouped_ordered_pair_by_slug(panelist_slug,
+                                                                   database_connection)
+    assert score_list is not None
+    if print_response:
+        print(json.dumps(score_list, indent=2))
+
 def test_retrieve_scores_list_by_id(panelist_id: int,
                                     database_connection: mysql.connector.connect,
                                     print_response: bool = False):
