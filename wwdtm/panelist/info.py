@@ -155,6 +155,23 @@ def retrieve_scores_grouped_list_by_id(panelist_id: int,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT MIN(pm.panelistscore) AS min, "
+                 "MAX(pm.panelistscore) AS max "
+                 "FROM ww_showpnlmap pm;")
+        cursor.execute(query)
+        result = cursor.fetchone()
+
+        if not result:
+            return None
+
+        min_score = result["min"]
+        max_score = result["max"]
+
+        scores = OrderedDict()
+        for score in range(min_score, max_score + 1):
+            scores[score] = 0
+
+        cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.panelistscore AS score, "
                  "COUNT(pm.panelistscore) AS score_count "
                  "FROM ww_showpnlmap pm "
@@ -166,20 +183,18 @@ def retrieve_scores_grouped_list_by_id(panelist_id: int,
                  "ORDER BY pm.panelistscore ASC;")
         cursor.execute(query, (panelist_id,))
         result = cursor.fetchall()
+        cursor.close()
 
         if not result:
             return None
 
-        score_list = []
-        score_count_list = []
-        for score in result:
-            score_list.append(score["score"])
-            score_count_list.append(score["score_count"])
+        for row in result:
+            scores[row["score"]] = row["score_count"]
 
-        scores = OrderedDict()
-        scores["score"] = score_list
-        scores["count"] = score_count_list
-        return scores
+        scores_list = OrderedDict()
+        scores_list["score"] = list(scores.keys())
+        scores_list["count"] = list(scores.values())
+        return scores_list
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
@@ -225,6 +240,23 @@ def retrieve_scores_grouped_ordered_pair_by_id(panelist_id: int,
 
     try:
         cursor = database_connection.cursor(dictionary=True)
+        query = ("SELECT MIN(pm.panelistscore) AS min, "
+                 "MAX(pm.panelistscore) AS max "
+                 "FROM ww_showpnlmap pm;")
+        cursor.execute(query)
+        result = cursor.fetchone()
+
+        if not result:
+            return None
+
+        min_score = result["min"]
+        max_score = result["max"]
+
+        scores = OrderedDict()
+        for score in range(min_score, max_score + 1):
+            scores[score] = 0
+
+        cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT pm.panelistscore AS score, "
                  "COUNT(pm.panelistscore) AS score_count "
                  "FROM ww_showpnlmap pm "
@@ -236,17 +268,15 @@ def retrieve_scores_grouped_ordered_pair_by_id(panelist_id: int,
                  "ORDER BY pm.panelistscore ASC;")
         cursor.execute(query, (panelist_id,))
         result = cursor.fetchall()
+        cursor.close()
 
         if not result:
             return None
 
-        score_list = []
-        for score in result:
-            panelist_score = score["score"]
-            score_count = score["score_count"]
-            score_list.append((panelist_score, score_count))
+        for row in result:
+            scores[row["score"]] = row["score_count"]
 
-        return score_list
+        return list(scores.items())
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
