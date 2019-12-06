@@ -265,6 +265,9 @@ def test_show_module(database_connection: mysql.connector.connect):
     # Testing retrieve recent show details
     test_show.test_retrieve_recent_details(database_connection)
 
+    # Testing retrieve show scores
+    test_show.test_retrieve_all_scores(database_connection)
+
     # Calculate time elapsed
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
