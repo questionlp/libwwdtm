@@ -76,49 +76,6 @@ def retrieve_all_ids(database_connection: mysql.connector.connect
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def retrieve_all_panelist_scores(database_connection: mysql.connector.connect
-                                ) -> List[tuple]:
-    """Returns a list of all panelist scores across all shows as a
-    tuple
-
-    Arguments:
-        database_connection (mysql.connector.connect)
-    """
-    try:
-        scores_list = []
-        shows = OrderedDict()
-        cursor = database_connection.cursor(dictionary=True)
-        query = ("SELECT s.showdate, pm.panelistscore AS score "
-                 "FROM ww_showpnlmap pm "
-                 "JOIN ww_shows s ON s.showid = pm.showid "
-                 "WHERE s.bestof = 0 AND s.repeatshowid IS NULL "
-                 "AND pm.panelistscore IS NOT NULL "
-                 "ORDER BY s.showdate ASC, pm.panelistscore ASC;")
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        if not result:
-            return None
-
-        for row in result:
-            show_date = row["showdate"].isoformat()
-            if show_date not in shows:
-                shows[show_date] = []
-
-            shows[show_date].append(row["score"])
-
-        for show in shows:
-            show_score = shows[show]
-            show_score.insert(0, show)
-            scores_list.append(tuple(show_score))
-
-        return scores_list
-    except ProgrammingError as err:
-        raise ProgrammingError("Unable to query the database") from err
-    except DatabaseError as err:
-        raise DatabaseError("Unexpected database error") from err
-
-
 def retrieve_by_id(panelist_id: int,
                    database_connection: mysql.connector.connect,
                    pre_validated_id: bool = False) -> Dict:

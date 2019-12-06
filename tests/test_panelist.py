@@ -59,14 +59,6 @@ def test_retrieve_all_ids(database_connection: mysql.connector.connect,
     if print_response:
         print(json.dumps(panelist_ids, indent=2))
 
-def test_retrieve_all_panelist_scores(database_connection: mysql.connector.connect,
-                                      print_response: bool = False):
-    """Testing repsonse from info.retrieve_all_panelist_scores"""
-    scores = info.retrieve_all_panelist_scores(database_connection)
-    assert scores is not None
-    if print_response:
-        print(json.dumps(scores, indent=2))
-
 def test_retrieve_by_id(panelist_id: int,
                         database_connection: mysql.connector.connect,
                         print_response: bool = False):
