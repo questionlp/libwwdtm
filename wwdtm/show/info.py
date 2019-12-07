@@ -89,13 +89,20 @@ def retrieve_all_dates_tuple(database_connection: mysql.connector.connect
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def retrieve_all_scores(database_connection: mysql.connector.connect
-                       ) -> List[tuple]:
-    """Returns a list of panelist scores across all shows as a tuple
+def retrieve_scores_by_year(show_year: int,
+                            database_connection: mysql.connector.connect
+                           ) -> List[tuple]:
+    """Returns a list of tuples containing panelist scores for all
+    shows in the requested year
 
     Arguments:
         database_connection (mysql.connector.connect)
     """
+    try:
+        _ = parser.parse("{:04d}".format(show_year))
+    except ValueError as err:
+        raise ValueError("Invalid year value") from err
+
     try:
         show_scores = []
         shows = OrderedDict()
@@ -105,8 +112,9 @@ def retrieve_all_scores(database_connection: mysql.connector.connect
                  "JOIN ww_shows s ON s.showid = pm.showid "
                  "WHERE s.bestof = 0 AND s.repeatshowid IS NULL "
                  "AND pm.panelistscore IS NOT NULL "
+                 "AND YEAR(s.showdate) = %s "
                  "ORDER BY s.showdate ASC, pm.panelistscore ASC;")
-        cursor.execute(query)
+        cursor.execute(query, (show_year,))
         result = cursor.fetchall()
 
         if not result:

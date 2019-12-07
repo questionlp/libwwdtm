@@ -199,10 +199,11 @@ def test_retrieve_all_dates_tuple(database_connection: mysql.connector.connect,
     if print_response:
         print(json.dumps(show_dates, indent=2))
 
-def test_retrieve_all_scores(database_connection: mysql.connector.connect,
-                             print_response: bool = False):
-    """Testing response from info.retrieve_all_scores"""
-    show_scores = info.retrieve_all_scores(database_connection)
+def test_retrieve_scores_by_year(show_year: int,
+                                 database_connection: mysql.connector.connect,
+                                 print_response: bool = False):
+    """Testing response from info.retrieve_scores_by_year"""
+    show_scores = info.retrieve_scores_by_year(show_year, database_connection)
     assert show_scores is not None
     if print_response:
         print(json.dumps(show_scores, indent=2))
