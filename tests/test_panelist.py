@@ -205,3 +205,25 @@ def test_retrieve_scores_ordered_pair_by_slug(panelist_slug: str,
     assert score_list is not None
     if print_response:
         print(json.dumps(score_list, indent=2))
+
+def test_retrieve_yearly_appearances_by_id(panelist_id: int,
+                                           database_connection: mysql.connector.connect,
+                                           print_response: bool = False):
+    """Testing response from info.retrieve_yearly_appearances_by_id"""
+    appearances = info.retrieve_yearly_appearances_by_id(panelist_id,
+                                                         database_connection)
+
+    assert appearances is not None
+    if print_response:
+        print(json.dumps(appearances, indent=2))
+
+def test_retrieve_yearly_appearances_by_slug(panelist_slug: str,
+                                             database_connection: mysql.connector.connect,
+                                             print_response: bool = False):
+    """Testing response from info.retrieve_yearly_appearances_by_slug"""
+    appearances = info.retrieve_yearly_appearances_by_slug(panelist_slug,
+                                                           database_connection)
+
+    assert appearances is not None
+    if print_response:
+        print(json.dumps(appearances, indent=2))

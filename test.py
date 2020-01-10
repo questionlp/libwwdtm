@@ -158,6 +158,11 @@ def test_panelist_module(database_connection: mysql.connector.connect):
     test_panelist.test_retrieve_scores_ordered_pair_by_slug("faith-salie",
                                                             database_connection)
 
+    # Testing retrieve panelist appearances
+    test_panelist.test_retrieve_yearly_appearances_by_id(14, database_connection)
+    test_panelist.test_retrieve_yearly_appearances_by_slug("luke-burbank",
+                                                           database_connection)
+
     # Calculate time elapsed
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time

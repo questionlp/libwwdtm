@@ -432,4 +432,76 @@ def retrieve_scores_ordered_pair_by_slug(panelist_slug: str,
                                               database_connection,
                                               pre_validated_id=True)
 
+
+def retrieve_yearly_appearances_by_id(panelist_id: int,
+                                      database_connection: mysql.connector.connect,
+                                      pre_validated_id: bool = False) -> Dict:
+    """Returns an OrderedDict containing a list of years and the
+    corresponding number of appearances the panelist has made for the
+    requested panelist ID
+
+    Arguments:
+        panelist_id (int)
+        database_connection (mysql.connector.connect)
+        pre_validated_id (bool): Flag whether or not the panelist ID
+        has been validated or not
+    """
+    if not pre_validated_id:
+        if not utility.validate_id(panelist_id, database_connection):
+            return None
+
+    years = OrderedDict()
+    cursor = database_connection.cursor(dictionary=True)
+    query = ("SELECT DISTINCT YEAR(s.showdate) AS year FROM ww_shows s "
+             "ORDER BY YEAR(s.showdate) ASC")
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    if not result:
+        return None
+
+    for row in result:
+        years[row["year"]] = 0
+
+    cursor = database_connection.cursor(dictionary=True)
+    query = ("SELECT YEAR(s.showdate) AS year, COUNT(p.panelist) AS count "
+             "FROM ww_showpnlmap pm "
+             "JOIN ww_shows s ON s.showid = pm.showid "
+             "JOIN ww_panelists p ON p.panelistid = pm.panelistid "
+             "WHERE pm.panelistid = %s AND s.bestof = 0 "
+             "AND s.repeatshowid IS NULL "
+             "GROUP BY p.panelist, YEAR(s.showdate) "
+             "ORDER BY p.panelist ASC, YEAR(s.showdate) ASC")
+    cursor.execute(query, (panelist_id, ))
+    result = cursor.fetchall()
+
+    if not result:
+        return None
+
+    for row in result:
+        years[row["year"]] = row["count"]
+
+    return years
+
+def retrieve_yearly_appearances_by_slug(panelist_slug: str,
+                                        database_connection: mysql.connector.connect
+                                       ) -> Dict:
+    """Returns an OrderedDict containing a list of years and the
+    corresponding number of appearances the panelist has made for the
+    requested panelist slug
+
+    Arguments:
+        panelist_slug (str)
+        database_connection (mysql.connector.connect)
+    """
+
+    panelist_id = utility.convert_slug_to_id(panelist_slug,
+                                             database_connection)
+    if panelist_id:
+        return retrieve_yearly_appearances_by_id(panelist_id,
+                                                 database_connection,
+                                                 True)
+
+    return None
+
 #endregion
