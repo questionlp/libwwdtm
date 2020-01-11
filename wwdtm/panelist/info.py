@@ -474,6 +474,7 @@ def retrieve_yearly_appearances_by_id(panelist_id: int,
              "ORDER BY p.panelist ASC, YEAR(s.showdate) ASC")
     cursor.execute(query, (panelist_id, ))
     result = cursor.fetchall()
+    cursor.close()
 
     if not result:
         return None
