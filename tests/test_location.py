@@ -114,9 +114,11 @@ def test_retrieve_recordings_by_slug(location_slug: str,
         print(json.dumps(location_dict, indent=2))
 
 def test_retrieve_all_recordings(database_connection: mysql.connector.connect,
+                                 sort_by_venue: bool = False,
                                  print_response: bool = False):
     """Testing response from details.retrieve_all_recordings"""
-    locations_dict = details.retrieve_all_recordings(database_connection)
+    locations_dict = details.retrieve_all_recordings(database_connection,
+                                                     sort_by_venue)
     assert locations_dict is not None
     if print_response:
         print(json.dumps(locations_dict, indent=2))

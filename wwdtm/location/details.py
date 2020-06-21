@@ -53,7 +53,8 @@ def retrieve_recordings_by_slug(location_slug: str,
 
     return None
 
-def retrieve_all_recordings(database_connection: mysql.connector.connect
+def retrieve_all_recordings(database_connection: mysql.connector.connect,
+                            sort_by_venue: bool = False,
                            ) -> List[Dict]:
     """Returns a list of OrderedDicts with location information and
     recordings based on location ID
@@ -65,7 +66,7 @@ def retrieve_all_recordings(database_connection: mysql.connector.connect
         list[OrderedDict]: Returns a list of OrderedDicts containing
         location city, state, venue and recordings
     """
-    location_ids = info.retrieve_all_ids(database_connection)
+    location_ids = info.retrieve_all_ids(database_connection, sort_by_venue)
     if not location_ids:
         return None
 
