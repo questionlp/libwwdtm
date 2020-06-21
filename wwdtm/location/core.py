@@ -59,7 +59,6 @@ def retrieve_recordings_by_id(location_id: int,
         if not result:
             return None
 
-        
         shows = []
         for recording in result:
             info = OrderedDict()
