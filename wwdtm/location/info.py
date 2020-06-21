@@ -12,7 +12,8 @@ from mysql.connector.errors import DatabaseError, ProgrammingError
 from wwdtm.location import utility
 
 #region Retrieval Functions
-def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
+def retrieve_all(database_connection: mysql.connector.connect,
+                 sort_by_venue: bool = False) -> List[Dict]:
     """Returns a list of OrderedDicts with location information for all
     locations, ordered by state, then city, then venue
 
@@ -25,8 +26,13 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         # Exclude any entries that are considered to be fully TBD
         query = ("SELECT locationid, locationslug, city, state, venue "
                  "FROM ww_locations "
-                 "WHERE locationid NOT IN (3) "
-                 "ORDER BY state ASC, city ASC, venue ASC;")
+                 "WHERE locationid NOT IN (3) ")
+
+        if sort_by_venue:
+            query = query + "ORDER BY venue ASC, state ASC, city ASC;"
+        else:
+            query = query + "ORDER BY state ASC, city ASC, venue ASC;"
+
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()
@@ -47,7 +53,8 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
 
-def retrieve_all_ids(database_connection: mysql.connector.connect
+def retrieve_all_ids(database_connection: mysql.connector.connect,
+                     sort_by_venue: bool = False
                     ) -> List[int]:
     """Returns a list of location IDs for all locations, ordered by
     state, then city, then venue
@@ -59,8 +66,13 @@ def retrieve_all_ids(database_connection: mysql.connector.connect
         cursor = database_connection.cursor()
         # Exclude any entries that are considered to be fully TBD
         query = ("SELECT locationid FROM ww_locations "
-                 "WHERE locationid NOT IN (3) "
-                 "ORDER BY state ASC, city ASC, venue ASC;")
+                 "WHERE locationid NOT IN (3) ")
+
+        if sort_by_venue:
+            query = query + "ORDER BY venue ASC, state ASC, city ASC;"
+        else:
+            query = query + "ORDER BY state ASC, city ASC, venue ASC;"
+
         cursor.execute(query)
         result = cursor.fetchall()
         cursor.close()

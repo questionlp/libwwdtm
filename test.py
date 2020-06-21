@@ -98,10 +98,12 @@ def test_location_module(database_connection: mysql.connector.connect):
                                        database_connection)
 
     # Testing location.retrieve_all
-    test_location.test_retrieve_all(database_connection)
+    test_location.test_retrieve_all(database_connection, sort_by_venue=False)
+    test_location.test_retrieve_all(database_connection, sort_by_venue=True)
 
     # Testing location.retrieve_all_ids
-    test_location.test_retrieve_all_ids(database_connection)
+    test_location.test_retrieve_all_ids(database_connection, sort_by_venue=True)
+    test_location.test_retrieve_all_ids(database_connection, sort_by_venue=False)
 
     # Testing retrieve individual location
     test_location.test_retrieve_by_id(32, database_connection)
