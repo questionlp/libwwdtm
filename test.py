@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Linh Pham
+# Copyright (c) 2018-2020 Linh Pham
 # wwdtm is relased under the terms of the Apache License 2.0
 """Testing modules within the wwdtm package"""
 
@@ -91,17 +91,27 @@ def test_location_module(database_connection: mysql.connector.connect):
     test_location.test_id_exists(2, database_connection)
     test_location.test_id_not_exists(-2, database_connection)
 
+    # Testing host.utility.slug_exists
+    test_location.test_slug_exists("chase-auditorium-chicago-il",
+                                   database_connection)
+    test_location.test_slug_not_exists("case-auditorium-chicago-il",
+                                       database_connection)
+
     # Testing location.retrieve_all
     test_location.test_retrieve_all(database_connection)
 
     # Testing location.retrieve_all_ids
     test_location.test_retrieve_all_ids(database_connection)
 
-    # Testing location.retrieve_by_id
+    # Testing retrieve individual location
     test_location.test_retrieve_by_id(32, database_connection)
+    test_location.test_retrieve_by_slug("moore-theatre-seattle-wa",
+                                        database_connection)
 
-    # Testing location.retrieve_recordings_by_id
+    # Testing retrieve individual location recordings
     test_location.test_retrieve_recordings_by_id(32, database_connection)
+    test_location.test_retrieve_recordings_by_slug("moore-theatre-seattle-wa",
+                                                   database_connection)
 
     # Testing location.retrieve_all_recordings
     test_location.test_retrieve_all_recordings(database_connection)

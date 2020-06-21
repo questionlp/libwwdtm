@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Linh Pham
+# Copyright (c) 2018-2020 Linh Pham
 # wwdtm is relased under the terms of the Apache License 2.0
 """This module provides functions for retrieving location details from
 the Wait Wait... Don't Tell Me! Stats Page Database.
@@ -34,6 +34,24 @@ def retrieve_recordings_by_id(location_id: int,
                                                 pre_validated_id=True)
     location["recordings"] = recordings
     return location
+
+def retrieve_recordings_by_slug(location_slug: str,
+                                database_connection: mysql.connector.connect
+                               ) -> Dict:
+    """Returns an OrderedDict with host details based on the requested
+    location slug
+
+    Arguments:
+        location_slug (str)
+        database_connection (mysql.connector.connect)
+    """
+    location_id = utility.convert_slug_to_id(location_slug, database_connection)
+    if location_id:
+        return retrieve_recordings_by_id(location_id,
+                                         database_connection,
+                                         pre_validated_id=True)
+
+    return None
 
 def retrieve_all_recordings(database_connection: mysql.connector.connect
                            ) -> List[Dict]:
