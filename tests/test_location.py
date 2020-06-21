@@ -44,17 +44,19 @@ def test_slug_not_exists(location_slug: str,
         print(json.dumps(response, indent=2))
 
 def test_retrieve_all(database_connection: mysql.connector.connect,
+                      sort_by_venue: bool = False,
                       print_response: bool = False):
     """Testing response from info.retrieve_all"""
-    response = info.retrieve_all(database_connection)
+    response = info.retrieve_all(database_connection, sort_by_venue)
     assert response is not None
     if print_response:
         print(json.dumps(response, indent=2))
 
 def test_retrieve_all_ids(database_connection: mysql.connector.connect,
+                          sort_by_venue: bool = False,
                           print_response: bool = False):
     """Testing response from info.retrieve_all_ids"""
-    response = info.retrieve_all_ids(database_connection)
+    response = info.retrieve_all_ids(database_connection, sort_by_venue)
     assert response is not None
     if print_response:
         print(json.dumps(response, indent=2))
