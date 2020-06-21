@@ -98,8 +98,8 @@ def test_location_module(database_connection: mysql.connector.connect):
                                        database_connection)
 
     # Testing location.retrieve_all
-    test_location.test_retrieve_all(database_connection, sort_by_venue=False)
     test_location.test_retrieve_all(database_connection, sort_by_venue=True)
+    test_location.test_retrieve_all(database_connection, sort_by_venue=False)
 
     # Testing location.retrieve_all_ids
     test_location.test_retrieve_all_ids(database_connection, sort_by_venue=True)
@@ -116,7 +116,10 @@ def test_location_module(database_connection: mysql.connector.connect):
                                                    database_connection)
 
     # Testing location.retrieve_all_recordings
-    test_location.test_retrieve_all_recordings(database_connection)
+    test_location.test_retrieve_all_recordings(database_connection,
+                                               sort_by_venue=True)
+    test_location.test_retrieve_all_recordings(database_connection,
+                                               sort_by_venue=False)
 
     # Calculate time elapsed
     end_time = time.perf_counter()
