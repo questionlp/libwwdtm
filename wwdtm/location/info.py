@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Linh Pham
+# Copyright (c) 2018-2020 Linh Pham
 # wwdtm is relased under the terms of the Apache License 2.0
 """This module provides functions for retrieving location information
 from the Wait Wait... Don't Tell Me! Stats Page Database.
@@ -23,7 +23,7 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
     try:
         cursor = database_connection.cursor(dictionary=True)
         # Exclude any entries that are considered to be fully TBD
-        query = ("SELECT locationid, city, state, venue "
+        query = ("SELECT locationid, locationslug, city, state, venue "
                  "FROM ww_locations "
                  "WHERE locationid NOT IN (3) "
                  "ORDER BY state ASC, city ASC, venue ASC;")
@@ -35,6 +35,7 @@ def retrieve_all(database_connection: mysql.connector.connect) -> List[Dict]:
         for location in result:
             location_info = OrderedDict()
             location_info["id"] = location["locationid"]
+            location_info["slug"] = location["locationslug"]
             location_info["city"] = location["city"]
             location_info["state"] = location["state"]
             location_info["venue"] = location["venue"]
@@ -93,7 +94,7 @@ def retrieve_by_id(location_id: int,
     try:
         cursor = database_connection.cursor(dictionary=True)
         # Exclude any entries that are considered to be fully TBD
-        query = ("SELECT locationid, city, state, venue "
+        query = ("SELECT locationid, city, state, venue, locationslug "
                  "FROM ww_locations "
                  "WHERE locationid = %s; ")
         cursor.execute(query, (location_id,))
@@ -102,6 +103,7 @@ def retrieve_by_id(location_id: int,
 
         location_info = OrderedDict()
         location_info["id"] = result["locationid"]
+        location_info["slug"] = result["locationslug"]
         location_info["city"] = result["city"]
         location_info["state"] = result["state"]
         location_info["venue"] = result["venue"]
@@ -110,5 +112,20 @@ def retrieve_by_id(location_id: int,
         raise ProgrammingError("Unable to query the database") from err
     except DatabaseError as err:
         raise DatabaseError("Unexpected database error") from err
+
+def retrieve_by_slug(location_slug: str,
+                     database_connection: mysql.connector.connect) -> Dict:
+    """Returns an OrderedDict with host information based on the
+    requested location slug
+
+    Arguments:
+        location_slug (str)
+        database_connection (mysql.connector.connect)
+    """
+    location_id = utility.convert_slug_to_id(location_slug, database_connection)
+    if location_id:
+        return retrieve_by_id(location_id, database_connection, True)
+
+    return None
 
 #endregion

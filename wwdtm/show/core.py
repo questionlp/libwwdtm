@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Linh Pham
+# Copyright (c) 2018-2020 Linh Pham
 # wwdtm is relased under the terms of the Apache License 2.0
 """This module provides core functions for retrieving show information
 from the Wait Wait... Don't Tell Me! Stats Page Database.
@@ -26,11 +26,12 @@ def retrieve_core_info_by_id(show_id: int,
     try:
         cursor = database_connection.cursor(dictionary=True)
         query = ("SELECT s.showid, s.showdate, s.bestof, "
-                 "s.repeatshowid, l.city, l.state, l.venue, "
-                 "h.hostid, h.host, h.hostslug, hm.guest as hostguest, "
-                 "sk.scorekeeperid, sk.scorekeeper, sk.scorekeeperslug, "
-                 "skm.guest AS scorekeeperguest, skm.description, "
-                 "sd.showdescription, sn.shownotes "
+                 "s.repeatshowid, l.locationid, l.city, l.state, "
+                 "l.venue, l.locationslug , h.hostid, h.host, "
+                 "h.hostslug, hm.guest as hostguest, "
+                 "sk.scorekeeperid, sk.scorekeeper, "
+                 "sk.scorekeeperslug, skm.guest AS scorekeeperguest, "
+                 "skm.description, sd.showdescription, sn.shownotes "
                  "FROM ww_shows s "
                  "JOIN ww_showlocationmap lm ON lm.showid = s.showid "
                  "JOIN ww_locations l ON l.locationid = lm.locationid "
@@ -62,6 +63,8 @@ def retrieve_core_info_by_id(show_id: int,
             show_notes = None
 
         location_info = OrderedDict()
+        location_info["id"] = result["locationid"]
+        location_info["slug"] = result["locationslug"]
         location_info["city"] = result["city"]
         location_info["state"] = result["state"]
         location_info["venue"] = result["venue"]
