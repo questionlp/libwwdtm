@@ -95,6 +95,8 @@ def test_retrieve_recordings_by_id(location_id: int,
                                                       database_connection)
     assert location_dict is not None
     assert "recordings" in location_dict
+    assert "count" in location_dict["recordings"]
+    assert "shows" in location_dict["recordings"]
     if print_response:
         print(json.dumps(location_dict, indent=2))
 
@@ -106,6 +108,8 @@ def test_retrieve_recordings_by_slug(location_slug: str,
                                                         database_connection)
     assert location_dict is not None
     assert "recordings" in location_dict
+    assert "count" in location_dict["recordings"]
+    assert "shows" in location_dict["recordings"]
     if print_response:
         print(json.dumps(location_dict, indent=2))
 
