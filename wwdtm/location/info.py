@@ -29,7 +29,7 @@ def retrieve_all(database_connection: mysql.connector.connect,
                  "WHERE locationid NOT IN (3) ")
 
         if sort_by_venue:
-            query = query + "ORDER BY venue ASC, state ASC, city ASC;"
+            query = query + "ORDER BY venue ASC, city ASC, state ASC;"
         else:
             query = query + "ORDER BY state ASC, city ASC, venue ASC;"
 
@@ -69,7 +69,7 @@ def retrieve_all_ids(database_connection: mysql.connector.connect,
                  "WHERE locationid NOT IN (3) ")
 
         if sort_by_venue:
-            query = query + "ORDER BY venue ASC, state ASC, city ASC;"
+            query = query + "ORDER BY venue ASC, city ASC, state ASC;"
         else:
             query = query + "ORDER BY state ASC, city ASC, venue ASC;"
 
