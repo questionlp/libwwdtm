@@ -79,6 +79,12 @@ show.info.retrieve_by_id(id: int, database_connect: mysql.connector.connect)
 python3 setup.py bdist_wheel
 ```
 
+## Contributing
+
+If you would like contribute to this project, please make sure to review both
+the [Code of Conduct](CODE_OF_CONDUCT.md) and the
+[Contributing](CONTRIBUTING.md) documents in this repository.
+
 ## License
 
 This library is licensed under the terms of the
