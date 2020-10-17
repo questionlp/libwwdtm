@@ -90,7 +90,7 @@ def convert_id_to_date(show_id: int,
         cursor.close()
 
         if result:
-            return result[0]
+            return result[0].isoformat()
 
         return None
     except ProgrammingError as err:
