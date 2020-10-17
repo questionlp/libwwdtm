@@ -105,7 +105,7 @@ def retrieve_core_info_by_id(show_id: int,
             original_date = utility.convert_id_to_date(repeat_show_id,
                                                        database_connection)
             show_info["original_show_id"] = repeat_show_id
-            show_info["original_show_date"] = original_date.isoformat()
+            show_info["original_show_date"] = original_date
 
         show_info["description"] = show_description
         show_info["notes"] = show_notes
