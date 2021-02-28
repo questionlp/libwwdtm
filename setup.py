@@ -6,13 +6,13 @@
 import setuptools
 
 setuptools.setup(name="wwdtm",
-                 version="1.2.1.3",
+                 version="1.2.1.4",
                  description="Wait Wait... Don't Tell Me! Data Access Library",
                  long_description=("Provides show, host, scorekeeper, panelist and guest details "
                                    "from an instance of the Wait Wait... Don't Tell Me! Stats Page "
                                    "database"),
                  classifiers=[
-                     "Development Status :: 4 - Beta",
+                     "Development Status :: 5 - Production/Stable",
                      "Intended Audience :: Developers",
                      "License :: OSI Approved :: Apache Software License 2.0",
                      "Programming Language :: Python :: 3.6",
@@ -29,10 +29,11 @@ setuptools.setup(name="wwdtm",
                  },
                  python_requires=">=3.6",
                  install_requires=[
-                     "mysql-connector-python",
-                     "numpy",
+                     "mysql-connector-python>=8.0.23",
+                     "numpy>=1.19.0",
                      "python-dateutil",
-                     "python-slugify",
+                     "python-slugify>=4.0.1",
+                     "pytz>=2021.1"
                  ],
                  include_package_data=True
                  )
