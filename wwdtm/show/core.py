@@ -10,6 +10,7 @@ from typing import List, Dict
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
 from slugify import slugify
+from wwdtm.location import utility as location_utility
 from wwdtm.show import utility
 
 #region Core Retrieval Functions
@@ -62,12 +63,24 @@ def retrieve_core_info_by_id(show_id: int,
         else:
             show_notes = None
 
+        location_id = result["locationid"]
+        location_slug = result["locationslug"]
+        location_city = result["city"]
+        location_state = result["state"]
+        location_venue = result["venue"]
+
+        if not location_slug:
+            location_slug = location_utility.slugify_location(location_id=location_id,
+                                                              city=location_city,
+                                                              state=location_state,
+                                                              venue=location_venue)
+
         location_info = OrderedDict()
-        location_info["id"] = result["locationid"]
-        location_info["slug"] = result["locationslug"]
-        location_info["city"] = result["city"]
-        location_info["state"] = result["state"]
-        location_info["venue"] = result["venue"]
+        location_info["id"] = location_id
+        location_info["slug"] = location_slug
+        location_info["city"] = location_city
+        location_info["state"] = location_state
+        location_info["venue"] = location_venue
 
         host_info = OrderedDict()
         host_info["id"] = result["hostid"]

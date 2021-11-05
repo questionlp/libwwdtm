@@ -39,12 +39,24 @@ def retrieve_all(database_connection: mysql.connector.connect,
 
         locations = []
         for location in result:
+            location_id = location["locationid"]
+            slug = location["locationslug"]
+            city = location["city"]
+            state = location["state"]
+            venue = location["venue"]
+
+            if not slug:
+                slug = utility.slugify_location(location_id=location_id,
+                                                city=city,
+                                                state=state,
+                                                venue=venue)
+
             location_info = OrderedDict()
-            location_info["id"] = location["locationid"]
-            location_info["slug"] = location["locationslug"]
-            location_info["city"] = location["city"]
-            location_info["state"] = location["state"]
-            location_info["venue"] = location["venue"]
+            location_info["id"] = location_id
+            location_info["slug"] = slug
+            location_info["city"] = city
+            location_info["state"] = state
+            location_info["venue"] = venue
             locations.append(location_info)
 
         return locations
@@ -113,12 +125,27 @@ def retrieve_by_id(location_id: int,
         result = cursor.fetchone()
         cursor.close()
 
+        if not result:
+            return None
+
+        location_id = result["locationid"]
+        slug = result["locationslug"]
+        city = result["city"]
+        state = result["state"]
+        venue = result["venue"]
+
+        if not slug:
+            slug = utility.slugify_location(location_id=location_id,
+                                            city=city,
+                                            state=state,
+                                            venue=venue)
+
         location_info = OrderedDict()
-        location_info["id"] = result["locationid"]
-        location_info["slug"] = result["locationslug"]
-        location_info["city"] = result["city"]
-        location_info["state"] = result["state"]
-        location_info["venue"] = result["venue"]
+        location_info["id"] = location_id
+        location_info["slug"] = slug
+        location_info["city"] = city
+        location_info["state"] = state
+        location_info["venue"] = venue
         return location_info
     except ProgrammingError as err:
         raise ProgrammingError("Unable to query the database") from err
