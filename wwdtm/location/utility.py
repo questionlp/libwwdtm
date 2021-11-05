@@ -7,6 +7,7 @@ information from the Wait Wait... Don't Tell Me! Stats Page Database.
 
 import mysql.connector
 from mysql.connector.errors import DatabaseError, ProgrammingError
+from slugify import slugify
 
 #region Utility Functions
 def convert_slug_to_id(location_slug: str,
@@ -102,5 +103,29 @@ def slug_exists(location_slug: str,
         database_connection (mysql.connector.connect)
     """
     return validate_slug(location_slug, database_connection)
+
+def slugify_location(location_id: int=None,
+                     venue: str=None,
+                     city: str=None,
+                     state: str=None) -> str:
+    """Generates a slug string based on the location's venue name,
+    city, state and/or location ID.
+
+    Arguments:
+        location_id (int)
+        venue (str)
+        city (str)
+        state (str)
+    """
+    if venue and city and state:
+        return slugify("{} {} {}".format(venue, city, state))
+    elif venue and city and not state:
+        return slugify("{} {}".format(venue, city))
+    elif venue and (not city and not state):
+        return slugify(venue)
+    elif id:
+        return slugify("locationid-{}".format(location_id))
+    else:
+        raise ValueError("Invalid location information provided")
 
 #endregion
