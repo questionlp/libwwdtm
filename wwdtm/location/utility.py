@@ -122,9 +122,9 @@ def slugify_location(location_id: int=None,
     elif venue and city and not state:
         return slugify("{} {}".format(venue, city))
     elif id and venue and (not city and not state):
-        return slugify("{} {}".format(id, venue))
+        return slugify("{} {}".format(location_id, venue))
     elif id and city and state and not venue:
-        return slugify("{} {} {}".format(id, city, state))
+        return slugify("{} {} {}".format(location_id, city, state))
     elif id:
         return "location-{}".format(location_id)
     else:
