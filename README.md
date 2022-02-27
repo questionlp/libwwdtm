@@ -1,5 +1,11 @@
 # WWDTM
 
+## Note
+
+This version of the Wait Wait Stats Library has been superceded by version 2.
+The repository for the new version of the Stats Page is available at
+[wwdtm](https://github.com/questionlp/wwdtm).
+
 ## Overview
 
 Data Access Library to provide show, host, scoreekeeper, panelist and guest
