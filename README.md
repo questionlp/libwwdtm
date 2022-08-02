@@ -6,6 +6,9 @@ This version of the Wait Wait Stats Library has been superceded by version 2.
 The repository for the new version of the Stats Page is available at
 [wwdtm](https://github.com/questionlp/wwdtm).
 
+No further development or bugfixes will be made to this project and the
+repository has been marked as read-only.
+
 ## Overview
 
 Data Access Library to provide show, host, scoreekeeper, panelist and guest
@@ -36,7 +39,7 @@ versions.
 ## Installation
 
 A packaged version of the library is available for download and install via
-`pip` by adding https://wheels.wwdt.me/ to your Python index list at install
+`pip` by adding <https://wheels.wwdt.me/> to your Python index list at install
 time:
 
 ```bash
